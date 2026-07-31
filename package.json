@@ -1,0 +1,26 @@
+{
+  "name": "asean-ai-event-portal",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview",
+    "generate": "nuxt generate",
+    "lint": "eslint . --ext .ts,.vue"
+  },
+  "dependencies": {
+    "@pinia/nuxt": "^0.5.4",
+    "nuxt": "^4.0.0",
+    "pinia": "^3.0.0",
+    "vue": "^3.5.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.12.0",
+    "@types/node": "^22.7.0",
+    "@types/vue": "^3.5.14",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --bg-primary: #020617;
+  --bg-secondary: #0f172a;
+  --bg-panel: rgba(15, 23, 42, 0.72);
+  --line-soft: rgba(255, 255, 255, 0.1);
+  --text-muted: #cbd5e1;
+  --cyan-glow: rgba(34, 211, 238, 0.18);
+  --orange-glow: rgba(251, 146, 60, 0.16);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at top left, var(--cyan-glow), transparent 30%),
+      radial-gradient(circle at 85% 15%, var(--orange-glow), transparent 24%),
+      linear-gradient(180deg, #020617 0%, #081120 46%, #020617 100%);
+    color: white;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: -0.03em;
+  }
+
+  a {
+    transition: color 180ms ease, opacity 180ms ease, transform 180ms ease;
+  }
+}
+
+@layer components {
+  .site-shell {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .glass-card {
+    border: 1px solid var(--line-soft);
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.52));
+    box-shadow: 0 30px 80px rgba(2, 6, 23, 0.38);
+    backdrop-filter: blur(16px);
+  }
+
+  .ambient {
+    pointer-events: none;
+    position: fixed;
+    z-index: 0;
+    border-radius: 9999px;
+    filter: blur(80px);
+    opacity: 0.6;
+  }
+
+  .ambient-one {
+    top: 90px;
+    left: -100px;
+    height: 280px;
+    width: 280px;
+    background: rgba(34, 211, 238, 0.22);
+  }
+
+  .ambient-two {
+    right: -120px;
+    top: 340px;
+    height: 320px;
+    width: 320px;
+    background: rgba(249, 115, 22, 0.18);
+  }
+}
