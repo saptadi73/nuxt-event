@@ -1,0 +1,1 @@
+import{r as e}from"./Dn6eYzwe.js";var t=e(`/foto/ai_summit2.png`);export{t};

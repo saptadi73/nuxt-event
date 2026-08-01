@@ -1,117 +1,40 @@
 <template>
-  <section class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-    <div class="glass-card rounded-[2rem] p-6 sm:p-8">
-      <p class="text-sm uppercase tracking-[0.35em] text-cyan-200/75">Quick Registration</p>
-      <h1 class="mt-3 text-4xl font-bold text-white">Mulai profil peserta dan draft registrasi</h1>
-      <p class="mt-3 max-w-2xl text-slate-300">
-        Form ini disiapkan untuk alur awal sesuai API reference terbaru: simpan profil peserta dulu,
-        lalu kirim draft registrasi ke backend.
-      </p>
+  <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+    <p class="text-sm uppercase tracking-[.35em] text-cyan-200">Participant Registration</p>
+    <h1 class="mt-4 max-w-4xl text-5xl font-black">Join the ASEAN AI for Education Summit 2026</h1>
+    <p class="mt-4 max-w-3xl text-lg leading-8 text-slate-300">Complete your professional profile, choose your ticket and workshop interest, then submit your registration draft.</p>
 
-      <form class="mt-8 grid gap-5" @submit.prevent="submitRegistration">
-        <div class="grid gap-5 md:grid-cols-2">
-          <label class="grid gap-2">
-            <span class="text-sm text-slate-300">Nama Lengkap</span>
-            <input v-model="form.full_name" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none" required />
-          </label>
-          <label class="grid gap-2">
-            <span class="text-sm text-slate-300">Organisasi</span>
-            <input v-model="form.organization_name" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none" />
-          </label>
-        </div>
+    <div v-if="loadingOptions" class="mt-10 grid gap-5"><div v-for="n in 3" :key="n" class="h-40 animate-pulse rounded-[2rem] bg-white/5" /></div>
+    <div v-else-if="optionsError" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">Registration options could not be loaded from the event backend.</div>
 
-        <label class="grid gap-2">
-          <span class="text-sm text-slate-300">Biografi Singkat</span>
-          <textarea v-model="form.biography" rows="4" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none"></textarea>
-        </label>
+    <form v-else class="mt-10 space-y-7" @submit.prevent="submitRegistration">
+      <fieldset class="glass-card rounded-[2rem] p-6 sm:p-8"><legend class="px-2 text-xl font-bold">1. Professional profile</legend><div class="mt-4 grid gap-5 md:grid-cols-2"><label class="grid gap-2"><span class="text-sm text-slate-300">Full name *</span><input v-model.trim="form.full_name" required minlength="2" autocomplete="name" class="field" /></label><label class="grid gap-2"><span class="text-sm text-slate-300">Organization</span><input v-model.trim="form.organization_name" autocomplete="organization" class="field" /></label></div><label class="mt-5 grid gap-2"><span class="text-sm text-slate-300">Professional biography</span><textarea v-model.trim="form.biography" rows="4" class="field" placeholder="Introduce your experience, current work, and AI interests." /></label></fieldset>
 
-        <div class="grid gap-5 md:grid-cols-2">
-          <label class="grid gap-2">
-            <span class="text-sm text-slate-300">Event ID</span>
-            <input v-model="form.event_id" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none" required />
-          </label>
-          <label class="grid gap-2">
-            <span class="text-sm text-slate-300">Ticket Type ID</span>
-            <input v-model="form.ticket_type_id" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none" placeholder="Opsional" />
-          </label>
-        </div>
+      <fieldset class="glass-card rounded-[2rem] p-6 sm:p-8"><legend class="px-2 text-xl font-bold">2. Select a ticket *</legend><div class="mt-4 grid gap-4 md:grid-cols-2"><label v-for="ticket in tickets" :key="ticket.id" class="cursor-pointer rounded-3xl border p-5 transition" :class="form.ticket_type_id===ticket.id?'border-cyan-300 bg-cyan-300/10':'border-white/10 bg-white/5'"><input v-model="form.ticket_type_id" type="radio" :value="ticket.id" class="sr-only" required /><span class="text-xs uppercase tracking-[.2em] text-cyan-200">{{ ticket.code }}</span><span class="mt-2 flex items-center justify-between gap-4"><strong class="text-xl">{{ ticket.name }}</strong><strong>{{ formatPrice(ticket.price,ticket.currency) }}</strong></span><span class="mt-3 block text-sm leading-6 text-slate-400">{{ ticket.description }}</span><span class="mt-3 block text-xs text-slate-500">Capacity {{ ticket.capacity }}</span></label></div></fieldset>
 
-        <div class="grid gap-5 md:grid-cols-2">
-          <label class="grid gap-2">
-            <span class="text-sm text-slate-300">Kontak Darurat</span>
-            <input v-model="form.emergency_contact_name" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none" />
-          </label>
-          <label class="grid gap-2">
-            <span class="text-sm text-slate-300">Nomor Darurat</span>
-            <input v-model="form.emergency_contact_phone" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none" />
-          </label>
-        </div>
+      <fieldset class="glass-card rounded-[2rem] p-6 sm:p-8"><legend class="px-2 text-xl font-bold">3. Workshop interest</legend><p class="mt-3 text-sm text-slate-400">Your preference helps the organizer plan teams. Final allocation follows capacity and confirmation.</p><div class="mt-5 grid gap-3"><label v-for="track in tracks" :key="track.id" class="flex cursor-pointer gap-4 rounded-2xl border p-4" :class="form.workshop_track_id===track.id?'border-orange-300/60 bg-orange-300/10':'border-white/10 bg-white/5'"><input v-model="form.workshop_track_id" type="radio" :value="track.id" class="mt-1 accent-orange-300" /><span><strong>{{ track.name }}</strong><span class="mt-1 block text-sm leading-6 text-slate-400">{{ track.description }}</span></span></label></div></fieldset>
 
-        <label class="grid gap-2">
-          <span class="text-sm text-slate-300">Dietary Preference</span>
-          <input v-model="form.dietary_preference" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none" />
-        </label>
+      <fieldset class="glass-card rounded-[2rem] p-6 sm:p-8"><legend class="px-2 text-xl font-bold">4. Participant requirements</legend><div class="mt-4 grid gap-5 md:grid-cols-2"><label class="grid gap-2"><span class="text-sm text-slate-300">Dietary preference</span><input v-model.trim="form.dietary_preference" class="field" placeholder="Vegetarian, halal, allergies..." /></label><label class="grid gap-2"><span class="text-sm text-slate-300">Accessibility requirements</span><input v-model.trim="form.accessibility_requirements" class="field" placeholder="Tell us how we can support you" /></label><label class="grid gap-2"><span class="text-sm text-slate-300">Emergency contact name</span><input v-model.trim="form.emergency_contact_name" class="field" /></label><label class="grid gap-2"><span class="text-sm text-slate-300">Emergency contact phone</span><input v-model.trim="form.emergency_contact_phone" type="tel" class="field" /></label></div></fieldset>
 
-        <button
-          type="submit"
-          class="rounded-full bg-cyan-400 px-6 py-3 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
-          :disabled="submitting"
-        >
-          {{ submitting ? 'Menyimpan...' : 'Simpan Draft Registrasi' }}
-        </button>
-      </form>
+      <fieldset class="glass-card rounded-[2rem] p-6 sm:p-8"><legend class="px-2 text-xl font-bold">5. Consent and review</legend><div class="mt-4 space-y-4"><label class="flex gap-3 text-sm leading-6 text-slate-300"><input v-model="form.privacy_consent" type="checkbox" required class="mt-1 h-4 w-4 accent-cyan-300" /><span>I have read and accept the <NuxtLink to="/privacy" class="text-cyan-200 underline">Privacy Policy</NuxtLink> and <NuxtLink to="/terms" class="text-cyan-200 underline">Terms and Conditions</NuxtLink>.</span></label><label class="flex gap-3 text-sm leading-6 text-slate-300"><input v-model="form.directory_consent" type="checkbox" class="mt-1 h-4 w-4 accent-cyan-300" /><span>I consent to showing my approved professional information in the authenticated participant directory.</span></label><label class="flex gap-3 text-sm leading-6 text-slate-300"><input v-model="form.code_of_conduct_consent" type="checkbox" required class="mt-1 h-4 w-4 accent-cyan-300" /><span>I agree to follow the <NuxtLink to="/code-of-conduct" class="text-cyan-200 underline">Code of Conduct</NuxtLink>.</span></label></div></fieldset>
 
-      <div v-if="feedback" class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
-        {{ feedback }}
-      </div>
-    </div>
+      <div v-if="feedback" role="status" class="rounded-2xl border p-5 text-sm" :class="success?'border-green-400/30 bg-green-950/30 text-green-100':'border-red-400/30 bg-red-950/30 text-red-100'">{{ feedback }}</div>
+      <div class="flex flex-wrap items-center justify-between gap-4"><p class="text-sm text-slate-400">Ticket price is always validated by the backend.</p><button type="submit" class="rounded-full bg-cyan-400 px-7 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50" :disabled="submitting||!form.ticket_type_id">{{ submitting?'Submitting...':'Create Registration' }}</button></div>
+    </form>
   </section>
 </template>
 
 <script setup lang="ts">
-const { upsertMyProfile } = useParticipant();
-const { createRegistration } = useRegistration();
-
-const submitting = ref(false);
-const feedback = ref('');
-
-const form = reactive({
-  full_name: '',
-  organization_name: '',
-  biography: '',
-  event_id: '',
-  ticket_type_id: '',
-  dietary_preference: '',
-  emergency_contact_name: '',
-  emergency_contact_phone: ''
-});
-
-const submitRegistration = async () => {
-  submitting.value = true;
-  feedback.value = '';
-
-  try {
-    const profileResult = await upsertMyProfile({
-      full_name: form.full_name,
-      organization_name: form.organization_name || undefined,
-      biography: form.biography || undefined
-    });
-
-    const registrationResult = await createRegistration({
-      event_id: form.event_id,
-      participant_id: profileResult.data.id,
-      ticket_type_id: form.ticket_type_id || null,
-      dietary_preference: form.dietary_preference || undefined,
-      emergency_contact_name: form.emergency_contact_name || undefined,
-      emergency_contact_phone: form.emergency_contact_phone || undefined,
-      consent_snapshot: JSON.stringify({ privacy: true })
-    });
-
-    feedback.value = `Draft registrasi berhasil dibuat dengan nomor ${registrationResult.data.registration_number}.`;
-  } catch (error) {
-    feedback.value = error instanceof Error ? error.message : 'Terjadi kegagalan saat menyimpan registrasi.';
-  } finally {
-    submitting.value = false;
-  }
-};
+import {useEvent} from '~/composables/useEvent';
+definePageMeta({middleware:'auth'});
+useSeoMeta({title:'Register | ASEAN AI for Education Summit 2026',description:'Create your participant registration, select a ticket, and choose a workshop interest.'});
+const route=useRoute(); const {upsertMyProfile}=useParticipant(); const {createRegistration}=useRegistration(); const {getEvents,getEventTicketTypes,getEventWorkshopTracks}=useEvent();
+const submitting=ref(false); const feedback=ref(''); const success=ref(false);
+const form=reactive({full_name:'',organization_name:'',biography:'',event_id:'',ticket_type_id:typeof route.query.ticket==='string'?route.query.ticket:'',workshop_track_id:'',dietary_preference:'',accessibility_requirements:'',emergency_contact_name:'',emergency_contact_phone:'',privacy_consent:false,directory_consent:false,code_of_conduct_consent:false});
+const {data:options,pending:loadingOptions,error:optionsError}=await useAsyncData('registration-options',async()=>{const events=await getEvents(1,1);const event=events.data[0];if(!event?.slug)throw new Error('Event not found');const [ticketResponse,trackResponse]=await Promise.all([getEventTicketTypes(event.slug),getEventWorkshopTracks(event.slug)]);return {event,tickets:ticketResponse.data.filter(item=>item.is_active),tracks:trackResponse.data}});
+const tickets=computed(()=>options.value?.tickets??[]); const tracks=computed(()=>options.value?.tracks??[]); watchEffect(()=>{if(options.value?.event.id)form.event_id=options.value.event.id});
+const formatPrice=(price:number,currency:string)=>new Intl.NumberFormat('en-US',{style:'currency',currency,maximumFractionDigits:0}).format(price);
+const submitRegistration=async()=>{submitting.value=true;feedback.value='';success.value=false;try{const profile=await upsertMyProfile({full_name:form.full_name,organization_name:form.organization_name||undefined,biography:form.biography||undefined});const registration=await createRegistration({event_id:form.event_id,participant_id:profile.data.id,ticket_type_id:form.ticket_type_id, dietary_preference:form.dietary_preference||undefined,accessibility_requirements:form.accessibility_requirements||undefined,emergency_contact_name:form.emergency_contact_name||undefined,emergency_contact_phone:form.emergency_contact_phone||undefined,consent_snapshot:JSON.stringify({privacy:form.privacy_consent,directory:form.directory_consent,code_of_conduct:form.code_of_conduct_consent,workshop_track_id:form.workshop_track_id||null,consented_at:new Date().toISOString()})});success.value=true;feedback.value=`Registration ${registration.data.registration_number} was created successfully.`}catch(error){feedback.value=error instanceof Error?error.message:'Registration could not be created.'}finally{submitting.value=false}};
 </script>
+
+<style scoped>.field{@apply rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-cyan-300;}</style>

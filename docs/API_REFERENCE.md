@@ -239,6 +239,16 @@ Semua endpoint `participants` saat ini butuh header:
 
 `Authorization: Bearer <access_token>`
 
+### `GET /participants`
+
+- Direktori profil peserta untuk peserta yang sudah login.
+- Menampilkan data profil publik: nama, organisasi, bio, dan foto profil. Data registrasi pribadi (misalnya kontak darurat atau preferensi makan) tidak ditampilkan.
+- Query: `page` (default `1`) dan `size` (default `20`, maksimum `100`).
+
+### `GET /participants/{participant_id}`
+
+- Detail profil publik seorang peserta; hanya peserta yang sudah login yang dapat melihatnya.
+
 ### `GET /participants/me`
 - Success Response Data:
 
@@ -249,6 +259,7 @@ Semua endpoint `participants` saat ini butuh header:
   "full_name": "Ayu Data",
   "organization_name": "Open University",
   "biography": "Bio singkat",
+  "profile_photo_url": "/uploads/participants/uuid.jpg",
   "created_at": "2026-08-01T07:00:00Z",
   "updated_at": "2026-08-01T07:00:00Z"
 }
@@ -272,6 +283,12 @@ Semua endpoint `participants` saat ini butuh header:
 ```json
 { "organization_name": "University X" }
 ```
+
+### `POST /participants/me/photo`
+
+- Upload foto profil peserta. Gunakan `multipart/form-data` dengan field file bernama `file`.
+- Format: JPG, PNG, atau WebP. Maksimum 5 MB.
+- Profil peserta harus dibuat terlebih dahulu melalui `PUT /participants/me`.
 
 ## Registrations (`/registrations`)
 
@@ -542,6 +559,11 @@ Response data list check-ins untuk event tersebut.
 - `PUT /workshop-tracks/{track_id}`
 
 ## Speakers (`/speakers`)
+
+### `POST /speakers/{speaker_id}/photo`
+
+- Upload foto speaker dengan `multipart/form-data`, field file bernama `file`.
+- Format: JPG, PNG, atau WebP. Maksimum 5 MB. URL foto akan tersimpan pada `profile_photo_url` dan tersedia secara publik di `/uploads/speakers/...`.
 
 ### `GET /speakers`
 

@@ -6,6 +6,7 @@ export interface ParticipantProfile {
   full_name: string;
   organization_name?: string;
   biography?: string;
+  profile_photo_url?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -21,6 +22,9 @@ export function useParticipant() {
 
   const getMyProfile = () => api<ApiResponse<ParticipantProfile>>('/participants/me');
 
+  const getParticipants = (page = 1, size = 20) =>
+    api<ApiResponse<ParticipantProfile[] | { items: ParticipantProfile[] }>>(`/participants?page=${page}&size=${size}`);
+
   const upsertMyProfile = (payload: ParticipantPayload) =>
     api<ApiResponse<ParticipantProfile>>('/participants/me', {
       method: 'PUT',
@@ -33,9 +37,21 @@ export function useParticipant() {
       body: payload
     });
 
+  const uploadMyPhoto = (file: File) => {
+    const body = new FormData();
+    body.append('file', file);
+
+    return api<ApiResponse<ParticipantProfile>>('/participants/me/photo', {
+      method: 'POST',
+      body
+    });
+  };
+
   return {
     getMyProfile,
+    getParticipants,
     upsertMyProfile,
-    patchMyProfile
+    patchMyProfile,
+    uploadMyPhoto
   };
 }
