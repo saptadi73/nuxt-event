@@ -456,17 +456,24 @@ Response:
 ### `GET /tickets/{ticket_id}/qr`
 
 - Gunakan token user login. QR hanya dapat diakses oleh pemilik ticket.
+- Backend mengembalikan `qr_token` sebagai source of truth untuk verifikasi.
+- Frontend bertanggung jawab merender QR secara lokal dari `qr_token` (misalnya library `qrcode`).
+- Frontend tidak perlu dan seharusnya tidak menampilkan `qr_token` mentah ke user interface.
+- Endpoint ini **tidak** lagi menjadi sumber URL gambar QR; gunakan token hanya untuk generate gambar QR di client.
 
 ```json
 {
   "success": true,
   "message": "QR ticket tersedia",
   "data": {
-    "qr_token": "qr-...",
-    "qr_image_url": "data:image/svg+xml;utf8,<svg>...</svg>"
+    "qr_token": "qr-..."
   }
 }
 ```
+
+Catatan:
+
+- Jika UI perlu menyimpan QR hasil render (mis. unduh tiket), gunakan proses konversi data QR (`toDataURL`) di frontend untuk menyimpan gambar.
 
 ### `POST /tickets/{ticket_id}/reissue`
 

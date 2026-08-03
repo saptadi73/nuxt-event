@@ -1,0 +1,1 @@
+import{i as e}from"./BuEsy29-.js";function t(){let t=e().$api;return{createMidtransTransaction:e=>t(`/payments/midtrans/create`,{method:`POST`,body:{registration_id:e}}),getOrder:e=>t(`/orders/${e}`),getPayment:e=>t(`/payments/${e}`)}}export{t};

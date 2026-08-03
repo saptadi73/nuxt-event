@@ -1,0 +1,1 @@
+import{i as e}from"./BuEsy29-.js";function t(){let t=e().$api;return{getEvents:(e=1,n=20)=>t(`/events?page=${e}&size=${n}`),getEvent:e=>t(`/events/${e}`),getEventSessions:e=>t(`/events/${e}/sessions`),getEventSpeakers:e=>t(`/events/${e}/speakers`),getEventWorkshopTracks:e=>t(`/events/${e}/workshop-tracks`),getEventTicketTypes:e=>t(`/events/${e}/ticket-types`)}}export{t};

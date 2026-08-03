@@ -2,7 +2,7 @@
   <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
     <p class="text-sm uppercase tracking-[0.3em] text-cyan-200/70">Speakers</p>
     <div class="mt-3 flex items-end justify-between gap-4">
-      <h1 class="text-4xl font-black text-white">Pembicara yang tampil di event</h1>
+      <h1 class="text-4xl font-black text-white">Featured speakers at the event</h1>
       <span class="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs uppercase tracking-[0.25em] text-slate-200">
         {{ loading ? 'Loading...' : `${displayItems.length} speakers` }}
       </span>

@@ -13,7 +13,7 @@
         <input v-model="form.password" type="password" class="w-full rounded border border-white/10 bg-slate-900 px-3 py-2" placeholder="password" required />
       </label>
 
-      <button type="submit" class="rounded bg-blue-500 px-4 py-2">Masuk</button>
+      <button type="submit" class="rounded bg-blue-500 px-4 py-2">Log In</button>
     </form>
 
     <div v-if="message" class="mt-3 text-sm">{{ message }}</div>
@@ -26,18 +26,18 @@ const { login } = useAuth();
 const message = ref('');
 
 const onSubmit = async () => {
-  message.value = 'Mengirim login...';
+  message.value = 'Submitting login...';
   try {
     const result = await login(form);
     if (result.success) {
-      message.value = 'Login sukses, token tersimpan. Mengarahkan ke dashboard...';
+      message.value = 'Login successful. Redirecting to the dashboard...';
       await navigateTo('/dashboard');
       return;
     }
 
-    message.value = `Gagal: ${result.message}`;
+    message.value = `Failed: ${result.message}`;
   } catch (error) {
-    message.value = `Gagal: ${error instanceof Error ? error.message : 'Login tidak dapat diproses.'}`;
+    message.value = `Failed: ${error instanceof Error ? error.message : 'Login could not be processed.'}`;
   }
 };
 </script>

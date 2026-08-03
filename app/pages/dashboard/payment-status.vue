@@ -2,9 +2,9 @@
   <section class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
     <div class="glass-card rounded-[2rem] p-6">
       <p class="text-sm uppercase tracking-[0.3em] text-cyan-200/70">Payment Status</p>
-      <h1 class="mt-3 text-4xl font-bold text-white">Monitoring status pembayaran</h1>
+      <h1 class="mt-3 text-4xl font-bold text-white">Monitor payment status</h1>
       <p class="mt-3 text-slate-300">
-        Cek status terbaru dari `GET /orders/{order_id}` dan `GET /payments/{payment_id}` sesuai API.
+        Check the latest status from `GET /orders/{order_id}` and `GET /payments/{payment_id}`.
       </p>
 
       <div class="mt-8 grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
@@ -29,7 +29,7 @@
           :disabled="checking"
           @click="check"
         >
-          {{ checking ? 'Memuat...' : 'Cek Status' }}
+          {{ checking ? 'Loading...' : 'Check Status' }}
         </button>
       </div>
 
@@ -43,7 +43,7 @@
             <p class="mt-1 text-sm text-slate-300">Total: {{ formatCurrency(order.total_amount) }}</p>
             <p class="mt-1 text-sm text-slate-300">Expires: {{ formatDate(order.expires_at) }}</p>
           </div>
-          <p v-else class="mt-2 text-sm text-slate-300">Belum query order.</p>
+          <p v-else class="mt-2 text-sm text-slate-300">No order queried yet.</p>
         </article>
 
         <article class="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
@@ -55,7 +55,7 @@
             <p class="mt-1 text-sm text-slate-300">Amount: {{ formatCurrency(payment.gross_amount) }}</p>
             <p class="mt-1 text-sm text-slate-300">Paid At: {{ formatDate(payment.paid_at) }}</p>
           </div>
-          <p v-else class="mt-2 text-sm text-slate-300">Belum query payment.</p>
+          <p v-else class="mt-2 text-sm text-slate-300">No payment queried yet.</p>
         </article>
       </div>
 
@@ -94,18 +94,18 @@ const check = async () => {
       payment.value = paymentResp.data;
     }
   } catch (e: unknown) {
-    error.value = e instanceof Error ? e.message : 'Terjadi error saat mengambil status pembayaran';
+    error.value = e instanceof Error ? e.message : 'An error occurred while retrieving payment status.';
   } finally {
     checking.value = false;
   }
 };
 
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
 
 const formatDate = (value?: string | null) => {
   if (!value) return '-';
-  return new Intl.DateTimeFormat('id-ID', {
+  return new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',

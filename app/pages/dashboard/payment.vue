@@ -2,9 +2,9 @@
   <section class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
     <div class="glass-card rounded-[2rem] p-6">
       <p class="text-sm uppercase tracking-[0.3em] text-cyan-200/70">Midtrans</p>
-      <h1 class="mt-3 text-4xl font-bold text-white">Buat transaksi pembayaran</h1>
+      <h1 class="mt-3 text-4xl font-bold text-white">Create a payment transaction</h1>
       <p class="mt-3 text-slate-300">
-        Gunakan halaman ini untuk membuat transaksi via `POST /payments/midtrans/create` dan mendapatkan snap token.
+        Use this page to create a transaction via `POST /payments/midtrans/create` and retrieve a Snap token.
       </p>
 
       <form class="mt-8 grid gap-5 md:grid-cols-[1fr_auto] md:items-end" @submit.prevent="create">
@@ -14,14 +14,14 @@
             v-model="registrationId"
             required
             class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none"
-            placeholder="uuid registrasi"
+            placeholder="registration uuid"
           />
         </label>
         <button
           class="rounded-full bg-cyan-400 px-6 py-3 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
           :disabled="submitting"
         >
-          {{ submitting ? 'Membuat transaksi...' : 'Buat Transaksi' }}
+          {{ submitting ? 'Creating transaction...' : 'Create Transaction' }}
         </button>
       </form>
 

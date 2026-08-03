@@ -1,1 +1,0 @@
-import{c as e,u as t}from"./CfN4yTTG.js";import{t as n}from"./CSvO5AjF.js";var r=e(()=>{if(!n().isAuthenticated)return t(`/auth/login`)});export{r as default};

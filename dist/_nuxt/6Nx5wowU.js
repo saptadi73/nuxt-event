@@ -1,0 +1,1 @@
+import{a as e}from"./BuEsy29-.js";function t(){let t=e();return{mediaUrl:e=>e?/^(https?:|data:|blob:)/i.test(e)?e:`${t.public.apiBaseUrl.replace(/\/api\/v1\/?$/,``)}${e.startsWith(`/`)?e:`/${e}`}`:``}}export{t};

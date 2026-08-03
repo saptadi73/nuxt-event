@@ -1,7 +1,7 @@
 <template>
   <section class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-    <h1 class="text-4xl font-black text-white">Profil Saya</h1>
-    <p class="mt-3 text-slate-300">Update data yang digunakan endpoint `PUT /participants/me` dan `PATCH /participants/me`.</p>
+    <h1 class="text-4xl font-black text-white">My Profile</h1>
+    <p class="mt-3 text-slate-300">Update the data used by the `PUT /participants/me` and `PATCH /participants/me` endpoints.</p>
 
     <div class="mt-8 grid gap-4 rounded-[2rem] border border-white/10 bg-white/5 p-6">
       <div class="flex flex-wrap items-center gap-4">
@@ -13,17 +13,17 @@
         </label>
       </div>
       <label class="grid gap-2">
-        <span class="text-sm text-slate-300">Nama Lengkap</span>
+        <span class="text-sm text-slate-300">Full Name</span>
         <input v-model="form.full_name" class="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none" />
       </label>
 
       <label class="grid gap-2">
-        <span class="text-sm text-slate-300">Organisasi</span>
+        <span class="text-sm text-slate-300">Organization</span>
         <input v-model="form.organization_name" class="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none" />
       </label>
 
       <label class="grid gap-2">
-        <span class="text-sm text-slate-300">Biografi</span>
+        <span class="text-sm text-slate-300">Biography</span>
         <textarea v-model="form.biography" rows="5" class="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none"></textarea>
       </label>
 
@@ -32,13 +32,13 @@
           @click="save('put')"
           class="rounded-full bg-cyan-400 px-6 py-3 text-sm font-semibold text-slate-950"
         >
-          Simpan Semua
+          Save All
         </button>
         <button
           @click="save('patch')"
           class="rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-white"
         >
-          Simpan Parsial
+          Save Partial
         </button>
       </div>
     </div>
@@ -97,13 +97,13 @@ const save = async (mode: 'put' | 'patch') => {
       organization_name: form.organization_name || undefined,
       biography: form.biography || undefined
     });
-    feedback.value = `Profil tersimpan. ID=${result.data.id}`;
+    feedback.value = `Profile saved. ID=${result.data.id}`;
   } else {
     const result = await patchMyProfile({
       organization_name: form.organization_name || undefined,
       biography: form.biography || undefined
     });
-    feedback.value = `Profil tersimpan. ID=${result.data.id}`;
+    feedback.value = `Profile saved. ID=${result.data.id}`;
   }
 };
 </script>
