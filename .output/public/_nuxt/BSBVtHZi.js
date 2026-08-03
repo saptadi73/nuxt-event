@@ -1,0 +1,1 @@
+import{i as e}from"./D3BL1CzM.js";function t(){let t=e().$api;return{createMidtransTransaction:()=>t(`/payments/midtrans/create`,{method:`POST`}),getOrder:e=>t(`/orders/${e}`),getPayment:e=>t(`/payments/${e}`),getMyInvoices:()=>t(`/payments/me/invoices`),getInvoiceByRegistration:e=>t(`/payments/registrations/${e}/invoice`)}}export{t};

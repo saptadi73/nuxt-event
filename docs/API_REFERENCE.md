@@ -339,7 +339,7 @@ Semua endpoint `participants` saat ini butuh header:
 - Untuk membuat registrasi, pakai ID yang didapat dari profile dan event.
 - Semua error validasi akan tetap mengikuti schema error baku.
 
-## Payments (`/payments`, `/orders`, `/webhooks`)
+## Payments (`/payments`, `/orders`, `/webhooks`, `/payments/registrations`)
 
 ### `POST /payments/midtrans/create`
 - Request Body
@@ -358,7 +358,33 @@ Semua endpoint `participants` saat ini butuh header:
   "message": "Midtrans transaksi berhasil dibuat",
   "data": {
     "snap_token": "snap-ORD-...",
-    "redirect_url": "https://app.midtrans.com/snap/..."
+    "redirect_url": "https://app.midtrans.com/snap/...",
+    "already_paid": false,
+    "payment_id": "uuid",
+    "order_status": "pending",
+    "requires_payment": true
+  },
+  "meta": {
+    "order_id": "uuid",
+    "order_number": "ORD-..."
+  },
+  "request_id": "uuid"
+}
+```
+
+Jika registrasi sudah lunas:
+
+```json
+{
+  "success": true,
+  "message": "Anda sudah melakukan pembayaran",
+  "data": {
+    "snap_token": "",
+    "redirect_url": "",
+    "already_paid": true,
+    "payment_id": "uuid",
+    "order_status": "paid",
+    "requires_payment": false
   },
   "meta": {
     "order_id": "uuid",
@@ -427,6 +453,126 @@ Response:
 }
 ```
 
+### `GET /payments/registrations/{registration_id}/invoice`
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Invoice ditemukan",
+  "data": {
+    "registration": {
+      "id": "uuid",
+      "registration_number": "REG-AIEDU26-0001",
+      "status": "confirmed",
+      "event_id": "uuid",
+      "event_name": "ASEAN AI for Education Summit 2026",
+      "participant_id": "uuid",
+      "ticket_type_id": "uuid",
+      "ticket_type_code": "DEVELOPER",
+      "ticket_type_name": "Developer Pass",
+      "confirmed_at": "2026-10-02T03:30:00Z"
+    },
+    "participant": {
+      "id": "uuid",
+      "full_name": "Camila Reyes",
+      "organization_name": "Manila AI Guild",
+      "email": "camila.reyes@example.com"
+    },
+    "order": {
+      "id": "uuid",
+      "registration_id": "uuid",
+      "order_number": "ORD-AIEDU26-0005",
+      "subtotal": 149,
+      "discount_amount": 0,
+      "tax_amount": 0,
+      "service_fee": 5,
+      "total_amount": 154,
+      "currency": "USD",
+      "status": "paid",
+      "expires_at": "2026-10-20T16:59:00Z"
+    },
+    "payment": {
+      "id": "uuid",
+      "order_id": "uuid",
+      "provider": "midtrans",
+      "provider_transaction_id": "MTX-AIEDU26-0005",
+      "provider_order_id": "ORD-AIEDU26-0005",
+      "payment_type": "bank_transfer",
+      "gross_amount": 154,
+      "currency": "USD",
+      "transaction_status": "success",
+      "fraud_status": "accept",
+      "paid_at": "2026-10-02T03:30:00Z"
+    }
+  }
+}
+```
+
+### `GET /payments/me/invoices`
+
+- Gunakan `Authorization: Bearer <token>`.
+- Optional query: `event_id` (UUID) untuk memfilter invoice berdasarkan event.
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Daftar invoice peserta ditemukan",
+  "data": [
+    {
+      "registration": {
+        "id": "uuid",
+        "registration_number": "REG-AIEDU26-0005",
+        "status": "confirmed",
+        "event_id": "uuid",
+        "event_name": "ASEAN AI for Education Summit 2026",
+        "participant_id": "uuid",
+        "ticket_type_id": "uuid",
+        "ticket_type_code": "DEVELOPER",
+        "ticket_type_name": "Developer Pass",
+        "confirmed_at": "2026-10-02T03:30:00Z"
+      },
+      "participant": {
+        "id": "uuid",
+        "full_name": "Camila Reyes",
+        "organization_name": "Manila AI Guild",
+        "email": "camila.reyes@example.com"
+      },
+      "order": {
+        "id": "uuid",
+        "registration_id": "uuid",
+        "order_number": "ORD-AIEDU26-0005",
+        "subtotal": 149,
+        "discount_amount": 0,
+        "tax_amount": 0,
+        "service_fee": 5,
+        "total_amount": 154,
+        "currency": "USD",
+        "status": "paid",
+        "expires_at": "2026-10-20T16:59:00Z"
+      },
+      "payment": {
+        "id": "uuid",
+        "order_id": "uuid",
+        "provider": "midtrans",
+        "provider_transaction_id": "MTX-AIEDU26-0005",
+        "provider_order_id": "ORD-AIEDU26-0005",
+        "payment_type": "bank_transfer",
+        "gross_amount": 154,
+        "currency": "USD",
+        "transaction_status": "success",
+        "fraud_status": "accept",
+        "paid_at": "2026-10-02T03:30:00Z"
+      }
+    }
+  ],
+  "request_id": "uuid"
+}
+```
+
 ## Tickets (`/tickets`)
 
 ### `POST /tickets`
@@ -456,10 +602,7 @@ Response:
 ### `GET /tickets/{ticket_id}/qr`
 
 - Gunakan token user login. QR hanya dapat diakses oleh pemilik ticket.
-- Backend mengembalikan `qr_token` sebagai source of truth untuk verifikasi.
-- Frontend bertanggung jawab merender QR secara lokal dari `qr_token` (misalnya library `qrcode`).
-- Frontend tidak perlu dan seharusnya tidak menampilkan `qr_token` mentah ke user interface.
-- Endpoint ini **tidak** lagi menjadi sumber URL gambar QR; gunakan token hanya untuk generate gambar QR di client.
+- Frontend bertanggung jawab merender QR dari `qr_token` ini (mis. library QR di sisi client).
 
 ```json
 {
@@ -470,10 +613,6 @@ Response:
   }
 }
 ```
-
-Catatan:
-
-- Jika UI perlu menyimpan QR hasil render (mis. unduh tiket), gunakan proses konversi data QR (`toDataURL`) di frontend untuk menyimpan gambar.
 
 ### `POST /tickets/{ticket_id}/reissue`
 

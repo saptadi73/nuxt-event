@@ -1,0 +1,1 @@
+import{c as e,u as t}from"./DEt_kFhY.js";import{t as n}from"./BnbGX54f.js";var r=e(()=>{if(!n().isAuthenticated)return t(`/auth/login`)});export{r as default};

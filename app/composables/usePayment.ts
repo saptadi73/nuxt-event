@@ -3,6 +3,10 @@ import { useApi, type ApiResponse } from '~/composables/useApi';
 export interface MidtransTransaction {
   snap_token: string;
   redirect_url: string;
+  already_paid: boolean;
+  payment_id: string;
+  order_status: string;
+  requires_payment: boolean;
 }
 
 export interface OrderItem {
@@ -33,22 +37,46 @@ export interface PaymentItem {
   paid_at?: string | null;
 }
 
+export interface Invoice {
+  registration: {
+    id: string;
+    registration_number: string;
+    status: string;
+    event_name: string;
+    ticket_type_name: string | null;
+    confirmed_at?: string | null;
+  };
+  participant: {
+    full_name: string;
+    organization_name?: string | null;
+    email: string;
+  };
+  order: OrderItem;
+  payment: PaymentItem;
+}
+
 export function usePayment() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
 
-  const createMidtransTransaction = (registrationId: string) =>
+  const createMidtransTransaction = () =>
     api<ApiResponse<MidtransTransaction>>('/payments/midtrans/create', {
-      method: 'POST',
-      body: { registration_id: registrationId }
+      method: 'POST'
     });
 
   const getOrder = (orderId: string) => api<ApiResponse<OrderItem>>(`/orders/${orderId}`);
 
   const getPayment = (paymentId: string) => api<ApiResponse<PaymentItem>>(`/payments/${paymentId}`);
 
+  const getMyInvoices = () => api<ApiResponse<Invoice[]>>('/payments/me/invoices');
+
+  const getInvoiceByRegistration = (registrationId: string) =>
+    api<ApiResponse<Invoice>>(`/payments/registrations/${registrationId}/invoice`);
+
   return {
     createMidtransTransaction,
     getOrder,
-    getPayment
+    getPayment,
+    getMyInvoices,
+    getInvoiceByRegistration
   };
 }
