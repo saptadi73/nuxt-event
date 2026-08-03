@@ -55,22 +55,60 @@ export interface Invoice {
   payment: PaymentItem;
 }
 
+export type InvoiceResponseData =
+  | Invoice[]
+  | Invoice
+  | { items: Invoice[] }
+  | { data: Invoice[] }
+  | { data: Invoice }
+  | { items: Invoice[]; data: Invoice[] };
+
+export const normalizeInvoices = (data: InvoiceResponseData): Invoice[] => {
+  if (!data) return [];
+
+  const candidate = data as {
+    data?: Invoice | Invoice[] | null;
+    items?: Invoice[] | null;
+    registration?: unknown;
+    order?: unknown;
+    payment?: unknown;
+  };
+
+  if (Array.isArray(data)) return data;
+
+  if (Array.isArray(candidate.items)) return candidate.items;
+
+  if (candidate.data) {
+    if (Array.isArray(candidate.data)) return candidate.data;
+    if ('registration' in (candidate.data as Record<string, unknown>) && 'order' in (candidate.data as Record<string, unknown>) && 'payment' in (candidate.data as Record<string, unknown>)) {
+      return [candidate.data as Invoice];
+    }
+  }
+
+  if ('registration' in candidate && 'order' in candidate && 'payment' in candidate) {
+    return [candidate as Invoice];
+  }
+
+  return [];
+};
+
 export function usePayment() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
 
-  const createMidtransTransaction = () =>
+  const createMidtransTransaction = (registrationId?: string) =>
     api<ApiResponse<MidtransTransaction>>('/payments/midtrans/create', {
-      method: 'POST'
+      method: 'POST',
+      body: registrationId ? { registration_id: registrationId } : {}
     });
 
   const getOrder = (orderId: string) => api<ApiResponse<OrderItem>>(`/orders/${orderId}`);
 
   const getPayment = (paymentId: string) => api<ApiResponse<PaymentItem>>(`/payments/${paymentId}`);
 
-  const getMyInvoices = () => api<ApiResponse<Invoice[]>>('/payments/me/invoices');
+  const getMyInvoices = () => api<ApiResponse<InvoiceResponseData>>('/payments/me/invoices');
 
   const getInvoiceByRegistration = (registrationId: string) =>
-    api<ApiResponse<Invoice>>(`/payments/registrations/${registrationId}/invoice`);
+    api<ApiResponse<Invoice>>(`/payments/registrations/${encodeURIComponent(registrationId)}/invoice`);
 
   return {
     createMidtransTransaction,

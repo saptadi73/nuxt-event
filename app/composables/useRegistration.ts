@@ -36,8 +36,15 @@ export function useRegistration() {
   const getRegistration = (registrationId: string) =>
     api<ApiResponse<RegistrationItem>>(`/registrations/${registrationId}`);
 
+  const getMyRegistrations = (eventId?: string) =>
+    api<ApiResponse<RegistrationItem[]>>('/registrations/me', {
+      query: eventId ? { event_id: eventId } : undefined
+    });
+
   return {
     createRegistration,
     getRegistration
+    ,
+    getMyRegistrations
   };
 }

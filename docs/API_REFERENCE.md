@@ -333,6 +333,12 @@ Semua endpoint `participants` saat ini butuh header:
 ### `GET /registrations/{registration_id}`
 - Response Data: object RegistrationRead.
 
+### `GET /registrations/me`
+
+- Membutuhkan `Authorization: Bearer <access_token>`.
+- Mengembalikan seluruh registrasi yang dimiliki akun aktif.
+- Query `event_id` bersifat opsional.
+
 ## Notes untuk Frontend
 
 - Gunakan `Authorization: Bearer <access_token>` untuk endpoint yang membutuhkan auth.
@@ -342,12 +348,22 @@ Semua endpoint `participants` saat ini butuh header:
 ## Payments (`/payments`, `/orders`, `/webhooks`, `/payments/registrations`)
 
 ### `POST /payments/midtrans/create`
+
+- Membutuhkan `Authorization: Bearer <access_token>`.
+- `registration_id` bersifat opsional. Jika tidak dikirim, backend memilih registrasi
+  `awaiting_payment` atau `draft` milik akun aktif.
 - Request Body
 
 ```json
 {
   "registration_id": "uuid"
 }
+```
+
+Untuk deteksi registrasi otomatis, body dapat dikirim kosong:
+
+```json
+{}
 ```
 
 - Response:
@@ -453,7 +469,10 @@ Response:
 }
 ```
 
-### `GET /payments/registrations/{registration_id}/invoice`
+### `GET /payments/registrations/{registration_ref}/invoice`
+
+`registration_ref` dapat berupa UUID registrasi atau nomor registrasi publik, misalnya
+`REG-AIEDU26-0005`.
 
 Response:
 
