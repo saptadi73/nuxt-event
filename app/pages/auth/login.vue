@@ -27,12 +27,17 @@ const message = ref('');
 
 const onSubmit = async () => {
   message.value = 'Mengirim login...';
-  const result = await login(form);
-  if (result.success) {
-    message.value = 'Login sukses, token tersimpan. Mengarahkan ke dashboard...';
-    await navigateTo('/dashboard');
-  } else {
+  try {
+    const result = await login(form);
+    if (result.success) {
+      message.value = 'Login sukses, token tersimpan. Mengarahkan ke dashboard...';
+      await navigateTo('/dashboard');
+      return;
+    }
+
     message.value = `Gagal: ${result.message}`;
+  } catch (error) {
+    message.value = `Gagal: ${error instanceof Error ? error.message : 'Login tidak dapat diproses.'}`;
   }
 };
 </script>

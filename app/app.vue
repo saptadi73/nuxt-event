@@ -28,10 +28,13 @@
         </nav>
 
         <div class="ml-auto flex shrink-0 items-center gap-2 xl:ml-2">
-          <NuxtLink to="/register" class="hidden whitespace-nowrap rounded-full border border-cyan-300/30 px-4 py-2 text-sm font-semibold text-cyan-100 sm:inline-flex">
+          <NuxtLink v-if="!isAuthenticated" to="/register" class="hidden whitespace-nowrap rounded-full border border-cyan-300/30 px-4 py-2 text-sm font-semibold text-cyan-100 sm:inline-flex">
             Sign Up
           </NuxtLink>
-          <NuxtLink to="/auth/login" class="whitespace-nowrap rounded-full bg-cyan-400 px-5 py-2 text-sm font-semibold text-slate-950">
+          <button v-if="isAuthenticated" type="button" class="whitespace-nowrap rounded-full bg-cyan-400 px-5 py-2 text-sm font-semibold text-slate-950" @click="handleLogout">
+            Log Out
+          </button>
+          <NuxtLink v-else to="/auth/login" class="whitespace-nowrap rounded-full bg-cyan-400 px-5 py-2 text-sm font-semibold text-slate-950">
             Log In
           </NuxtLink>
           <details class="relative xl:hidden">
@@ -71,7 +74,15 @@
 </template>
 
 <script setup lang="ts">
-const config = useRuntimeConfig();
+const authStore = useAuthStore();
+const { isAuthenticated } = storeToRefs(authStore);
+const { logout } = useAuth();
+
+const handleLogout = async () => {
+  await logout();
+  await navigateTo('/');
+};
+
 const primaryNav = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },

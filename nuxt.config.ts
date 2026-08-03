@@ -1,5 +1,10 @@
 export default defineNuxtConfig({
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
+  nitro: {
+    prerender: {
+      concurrency: 1
+    }
+  },
   app: {
     head: {
       title: 'ASEAN AI Event Portal',
@@ -14,8 +19,8 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
     public: {
-      apiBaseUrl: 'http://localhost:8000/api/v1',
-      siteUrl: 'http://localhost:3000',
+      apiBaseUrl: 'https://api-event.gagakrimang.web.id/api/v1',
+      siteUrl: 'https://event.gagakrimang.web.id',
       appName: 'ASEAN AI for Education Summit',
       midtransClientKey: '',
       midtransSnapUrl: 'https://app.sandbox.midtrans.com/snap/snap.js'

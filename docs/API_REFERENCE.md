@@ -451,9 +451,11 @@ Response:
 ### `GET /tickets/me`
 
 - Gunakan token user login.
-- Response adalah list ticket milik user (implementasi awal placeholder).
+- Response adalah list ticket milik user yang sedang login.
 
 ### `GET /tickets/{ticket_id}/qr`
+
+- Gunakan token user login. QR hanya dapat diakses oleh pemilik ticket.
 
 ```json
 {
