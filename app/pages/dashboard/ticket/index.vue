@@ -116,13 +116,6 @@
             >
               {{ downloading ? 'Downloading...' : 'Download Ticket' }}
             </button>
-            <button
-              type="button"
-              class="rounded-full border border-white/15 px-5 py-3 text-sm font-semibold text-white transition hover:border-cyan-200/40 hover:bg-white/5"
-              @click="window.print()"
-            >
-              Print Ticket
-            </button>
           </div>
         </div>
 
