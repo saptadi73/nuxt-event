@@ -293,6 +293,8 @@ Semua endpoint `participants` saat ini butuh header:
 ## Registrations (`/registrations`)
 
 ### `POST /registrations`
+- Auth: `Authorization: Bearer <access_token>` (wajib).
+- `participant_id` harus milik akun yang sedang login.
 - Request Body
 
 ```json
@@ -331,6 +333,9 @@ Semua endpoint `participants` saat ini butuh header:
 ```
 
 ### `GET /registrations/{registration_id}`
+- Auth: `Authorization: Bearer <access_token>` (wajib).
+- Hanya registrasi milik akun login yang dapat diakses.
+- Jika `registration_id` bukan format UUID, request akan ditolak validasi (`422`).
 - Response Data: object RegistrationRead.
 
 ### `GET /registrations/me`
@@ -338,6 +343,17 @@ Semua endpoint `participants` saat ini butuh header:
 - Membutuhkan `Authorization: Bearer <access_token>`.
 - Mengembalikan seluruh registrasi yang dimiliki akun aktif.
 - Query `event_id` bersifat opsional.
+
+Smoke test front-end:
+
+- Tanpa token:
+  - `POST /registrations` → harus gagal auth (`401`).
+  - `GET /registrations/{id}` → harus gagal auth (`401`).
+- Login user A:
+  - `POST /registrations` dengan `participant_id` milik user A → harus sukses.
+  - simpan `registration_id` dari response.
+- Login user B:
+  - `GET /registrations/{registration_id milik A}` → harus gagal (`404`).
 
 ## Notes untuk Frontend
 
