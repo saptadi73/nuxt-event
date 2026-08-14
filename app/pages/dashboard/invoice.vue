@@ -18,7 +18,7 @@
       <dl class="mt-6 grid gap-5 sm:grid-cols-2">
         <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Registration number</dt><dd class="mt-2 text-lg font-semibold">{{ invoice.registration.registration_number }}</dd></div>
         <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Participant</dt><dd class="mt-2 text-lg font-semibold">{{ invoice.participant.full_name }}</dd><p class="text-sm text-slate-400">{{ invoice.participant.email }}</p></div>
-        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Ticket category</dt><dd class="mt-2 text-lg font-semibold">{{ invoice.registration.ticket_type_name || '-' }}</dd></div>
+        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Delegate package</dt><dd class="mt-2 text-lg font-semibold">{{ invoice.registration.delegate_package_name || invoice.registration.ticket_type_name || '-' }}</dd></div>
         <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Payment status</dt><dd class="mt-2 text-lg font-semibold text-emerald-300">Paid</dd><p class="text-sm text-slate-400">{{ formatDate(invoice.payment.paid_at) }}</p></div>
       </dl>
       <div class="mt-7 flex items-center justify-between border-t border-white/10 pt-6"><span class="text-slate-400">Total paid</span><strong class="text-2xl text-cyan-200">{{ formatCurrency(invoice.order.total_amount, invoice.order.currency) }}</strong></div>
@@ -33,7 +33,7 @@ import { useRegistration } from '~/composables/useRegistration';
 import { useTicket } from '~/composables/useTicket';
 
 definePageMeta({ middleware: 'auth' });
-useSeoMeta({ title: 'Invoice | ASEAN AI for Education' });
+useSeoMeta({ title: 'Invoice | IWBIF 2026' });
 
 const { getMyInvoices, getInvoiceByRegistration } = usePayment();
 const { getRegistration } = useRegistration();

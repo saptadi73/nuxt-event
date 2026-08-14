@@ -1,163 +1,17 @@
-<template>
-  <section class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-    <div class="glass-card rounded-[2rem] p-6">
-      <p class="text-sm uppercase tracking-[0.3em] text-cyan-200/70">Midtrans</p>
-      <h1 class="mt-3 text-4xl font-bold text-white">Payment</h1>
-      <p class="mt-3 text-slate-300">
-        Create or continue your payment securely. Your registration is identified automatically from your account.
-      </p>
-
-      <div v-if="checking" class="mt-8 text-slate-300">Checking your payment status...</div>
-      <div v-else-if="hasPaidInvoice" class="mt-8 space-y-3 rounded-2xl border border-emerald-300/20 bg-emerald-300/5 p-5 text-slate-200">
-        <p class="text-lg font-semibold text-emerald-300">Thank you, your payment has been received.</p>
-        <p>Your registration is confirmed. You can download your invoice from the Invoice dashboard.</p>
-        <NuxtLink :to="`/dashboard/invoice?registration_id=${registrationId}`" class="inline-flex rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950">Go to invoice dashboard</NuxtLink>
-      </div>
-      <form v-else class="mt-8" @submit.prevent="create">
-        <button
-          class="rounded-full bg-cyan-400 px-6 py-3 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
-          :disabled="submitting"
-        >
-          {{ submitting ? 'Preparing payment...' : 'Proceed to payment' }}
-        </button>
-      </form>
-
-      <div v-if="result && !result.already_paid" class="mt-8 space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
-        <p class="text-white font-semibold">Your payment is ready to continue.</p>
-        <a v-if="result.redirect_url" :href="result.redirect_url" class="inline-flex rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950">Continue to payment</a>
-      </div>
-      <p v-if="errorMessage" class="mt-5 rounded-2xl border border-red-400/30 bg-red-950/30 p-4 text-sm text-red-100">
-        {{ errorMessage }}
-      </p>
-    </div>
-  </section>
-</template>
-
+<template><section class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8"><div class="glass-card rounded-[2rem] p-6"><p class="text-sm uppercase tracking-[.3em] text-amber-200">DOKU Checkout</p><h1 class="mt-3 text-4xl font-bold">Secure payment</h1><p class="mt-3 text-slate-300">Continue to DOKU's secure checkout. The final amount is determined by the backend from your delegate package.</p>
+  <div v-if="checking" class="mt-8 text-slate-300">Checking your registration and payment status…</div>
+  <div v-else-if="paid" class="mt-8 rounded-2xl border border-emerald-300/20 bg-emerald-300/5 p-5"><p class="text-lg font-semibold text-emerald-300">Payment received</p><p class="mt-2 text-slate-300">Payment is complete. Organizer confirmation of your registration is handled separately.</p><NuxtLink :to="`/dashboard/invoice?registration_id=${registrationId}`" class="mt-5 inline-flex rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950">View invoice</NuxtLink></div>
+  <div v-else-if="!registrationId" class="mt-8 rounded-2xl border border-amber-300/20 bg-amber-300/5 p-5 text-amber-100">No registration eligible for payment was found.</div>
+  <div v-else class="mt-8"><button class="rounded-full bg-amber-300 px-6 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60" :disabled="submitting" @click="createCheckout">{{ submitting?'Preparing DOKU Checkout…':'Proceed to DOKU Checkout' }}</button><p class="mt-3 text-xs text-slate-500">Click once and wait for the secure redirect.</p></div>
+  <div v-if="checkout && checkout.requires_payment" class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4"><p>Checkout is ready.</p><button class="mt-4 rounded-full border border-white/20 px-5 py-3 font-semibold" @click="redirectToDoku">Continue to DOKU</button><p v-if="checkout.expires_at" class="mt-3 text-xs text-slate-400">Expires {{ formatDate(checkout.expires_at) }}</p></div>
+  <div v-if="errorMessage" class="mt-5 rounded-2xl border border-red-400/30 bg-red-950/30 p-4 text-sm text-red-100"><p>{{ errorMessage }}</p><p v-if="requestId" class="mt-2 text-xs text-red-200/70">Reference: {{ requestId }}</p></div>
+</div></section></template>
 <script setup lang="ts">
-import { normalizeInvoices, usePayment, type Invoice } from '~/composables/usePayment';
-import { useRegistration } from '~/composables/useRegistration';
-
-definePageMeta({ middleware: 'auth' });
-
-const { createMidtransTransaction, getMyInvoices, getInvoiceByRegistration } = usePayment();
-const { getRegistration, getMyRegistrations } = useRegistration();
-const { getMyTickets } = useTicket();
-
-const submitting = ref(false);
-const checking = ref(true);
-const hasPaidInvoice = ref(false);
-const result = ref<Awaited<ReturnType<typeof createMidtransTransaction>>['data'] | null>(null);
-const errorMessage = ref('');
-const registrationId = ref('');
-const currentInvoice = useState<Invoice | null>('current-invoice', () => null);
-const LAST_REGISTRATION_KEY = 'last-paid-registration-id';
-
-const rememberInvoice = (invoice: Invoice) => {
-  currentInvoice.value = invoice;
-  sessionStorage.setItem('current-invoice', JSON.stringify(invoice));
-  if (invoice.registration?.id) {
-    sessionStorage.setItem(LAST_REGISTRATION_KEY, invoice.registration.id);
-  }
-};
-
-const rememberRegistration = (id: string) => {
-  const trimmed = id.trim();
-  if (!trimmed) return;
-  sessionStorage.setItem(LAST_REGISTRATION_KEY, trimmed);
-};
-
-const loadInvoiceFromIdentifier = async (identifier: string) => {
-  const trimmed = identifier.trim();
-  if (!trimmed) return null;
-
-  try {
-    const response = await getInvoiceByRegistration(trimmed);
-    return response.data;
-  } catch {
-    try {
-      const registrationResponse = await getRegistration(trimmed);
-      const registrationNumber = registrationResponse.data.registration_number?.trim();
-      if (!registrationNumber) return null;
-      const response = await getInvoiceByRegistration(registrationNumber);
-      return response.data;
-    } catch {
-      return null;
-    }
-  }
-};
-
-const create = async () => {
-  submitting.value = true;
-  result.value = null;
-  errorMessage.value = '';
-
-  try {
-    const response = await createMidtransTransaction(registrationId.value || undefined);
-    result.value = response.data;
-    hasPaidInvoice.value = response.data.already_paid || response.data.order_status === 'paid';
-  } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : 'Payment could not be created.';
-  } finally {
-    submitting.value = false;
-  }
-};
-
-onMounted(async () => {
-  try {
-    try {
-      const registrationResponse = await getMyRegistrations();
-      const registrations = Array.isArray(registrationResponse.data) ? registrationResponse.data : [];
-      const activeRegistration = registrations.find((item) => ['awaiting_payment', 'draft', 'payment_pending'].includes(item.status))
-        || registrations[0];
-
-      if (activeRegistration) {
-        registrationId.value = activeRegistration.id;
-        rememberRegistration(activeRegistration.id);
-      }
-    } catch {
-      // Continue with invoice and ticket fallbacks below.
-    }
-
-    try {
-      const response = await getMyInvoices();
-      const invoices = normalizeInvoices(response.data);
-      const paidInvoice = invoices.find((item) => item.order.status?.toLowerCase() === 'paid');
-      if (paidInvoice) {
-        registrationId.value = paidInvoice.registration.id;
-        hasPaidInvoice.value = true;
-        rememberInvoice(paidInvoice);
-      }
-    } catch {
-      // Continue with the ticket-based lookup below.
-    }
-
-    if (!hasPaidInvoice.value) {
-      try {
-        const response = await getMyTickets();
-        const tickets = Array.isArray(response.data) ? response.data : [];
-        const ticket = tickets[0];
-        if (!ticket) return;
-
-        if (!registrationId.value) {
-          registrationId.value = ticket.registration_id;
-          rememberRegistration(ticket.registration_id);
-        }
-
-        const invoiceData = await loadInvoiceFromIdentifier(ticket.registration_id);
-        if (invoiceData) {
-          hasPaidInvoice.value = invoiceData.order.status?.toLowerCase() === 'paid';
-          if (hasPaidInvoice.value) rememberInvoice(invoiceData);
-        } else {
-          // Tickets are issued only after successful payment.
-          hasPaidInvoice.value = ticket.status === 'issued' || ticket.status === 'used';
-        }
-      } catch {
-        // No paid registration was found; keep the payment action available.
-      }
-    }
-    if (registrationId.value) rememberRegistration(registrationId.value);
-  } finally {
-    checking.value = false;
-  }
-});
+import {normalizeInvoices,usePayment,type DokuCheckoutData} from '~/composables/usePayment'; import {useRegistration} from '~/composables/useRegistration';
+definePageMeta({middleware:'auth'}); useSeoMeta({title:'DOKU Payment | IWBIF 2026'});
+const {createDokuCheckout,getMyInvoices}=usePayment(); const {getMyRegistrations}=useRegistration(); const checking=ref(true);const submitting=ref(false);const paid=ref(false);const registrationId=ref('');const checkout=ref<DokuCheckoutData|null>(null);const errorMessage=ref('');const requestId=ref('');const STORAGE_REGISTRATION='iwbif-doku-registration-id';const STORAGE_PAYMENT='iwbif-doku-payment-id';
+const apiError=(error:unknown)=>{const value=error as {data?:{message?:string;request_id?:string;errors?:Array<{message:string}>}};requestId.value=value.data?.request_id||'';return value.data?.errors?.[0]?.message||value.data?.message||(error instanceof Error?error.message:'DOKU Checkout could not be created.')};
+const redirectToDoku=()=>{if(!checkout.value?.payment_url)return;sessionStorage.setItem(STORAGE_REGISTRATION,registrationId.value);if(checkout.value.payment_id)sessionStorage.setItem(STORAGE_PAYMENT,checkout.value.payment_id);window.location.assign(checkout.value.payment_url)};
+const createCheckout=async()=>{if(submitting.value||!registrationId.value)return;submitting.value=true;errorMessage.value='';requestId.value='';try{const response=await createDokuCheckout(registrationId.value);checkout.value=response.data;paid.value=response.data.already_paid||!response.data.requires_payment||response.data.order_status==='paid';if(!paid.value){if(!response.data.payment_url)throw new Error('DOKU Checkout URL is unavailable.');redirectToDoku()}}catch(error){errorMessage.value=apiError(error)}finally{submitting.value=false}};
+onMounted(async()=>{try{const registrations=await getMyRegistrations();const items=Array.isArray(registrations.data)?registrations.data:[];const selected=items.find(item=>['draft','awaiting_payment','payment_pending','paid'].includes(item.status))||items[0];if(selected)registrationId.value=selected.id;try{const invoices=normalizeInvoices((await getMyInvoices()).data);const invoice=invoices.find(item=>item.registration.id===registrationId.value)||invoices[0];paid.value=invoice?.order.status?.toLowerCase()==='paid'||invoice?.payment.transaction_status?.toLowerCase()==='success'}catch{}}catch(error){errorMessage.value=apiError(error)}finally{checking.value=false}});const formatDate=(value:string)=>new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
 </script>

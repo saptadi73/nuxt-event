@@ -70,17 +70,17 @@
             <div class="flex h-16 w-16 items-center justify-center overflow-hidden rounded-3xl border border-cyan-200/25 bg-white/10 p-2 shadow-lg shadow-cyan-950/30 sm:h-20 sm:w-20">
               <img
                 src="/branding/ai-asean.png"
-                alt="ASEAN AI for Education logo"
+                alt="IWBIF 2026 event mark"
                 class="h-full w-full rounded-xl object-contain"
               />
             </div>
             <div>
-              <p class="text-sm font-semibold uppercase tracking-[0.28em] text-white sm:text-base sm:tracking-[0.32em]">ASEAN AI Developer</p>
-              <p class="text-sm uppercase tracking-[0.24em] text-cyan-100/70 sm:text-base sm:tracking-[0.28em]">Workshop 2026</p>
+              <p class="text-sm font-semibold uppercase tracking-[0.28em] text-white sm:text-base sm:tracking-[0.32em]">International Women Business</p>
+              <p class="text-sm uppercase tracking-[0.24em] text-cyan-100/70 sm:text-base sm:tracking-[0.28em]">&amp; Investment Forum 2026</p>
             </div>
           </div>
           <h2 class="mt-3 max-w-2xl text-3xl font-black leading-tight text-white sm:text-4xl">
-            You are officially registered for the ASEAN AI Developer Workshop event.
+            You are officially registered for IWBIF 2026.
           </h2>
           <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-200 sm:text-base">
             Please present this QR code during re-registration and check-in at the venue.
@@ -93,7 +93,7 @@
             </div>
             <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
               <p class="text-[11px] uppercase tracking-[0.3em] text-cyan-100/70">Event</p>
-              <p class="mt-2 text-sm font-semibold leading-7 text-white sm:text-base sm:leading-8">ASEAN AI Developer Workshop</p>
+              <p class="mt-2 text-sm font-semibold leading-7 text-white sm:text-base sm:leading-8">IWBIF 2026</p>
             </div>
             <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
               <p class="text-[11px] uppercase tracking-[0.3em] text-cyan-100/70">Ticket Number</p>
@@ -101,7 +101,7 @@
             </div>
             <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
               <p class="text-[11px] uppercase tracking-[0.3em] text-cyan-100/70">Date & Venue</p>
-              <p class="mt-2 text-sm font-semibold leading-7 text-white sm:text-[15px]">18-19 November 2026</p>
+              <p class="mt-2 text-sm font-semibold leading-7 text-white sm:text-[15px]">14–17 October 2026</p>
               <p class="mt-1 text-xs leading-5 text-slate-300 sm:leading-6">Jakarta, Indonesia</p>
             </div>
           </div>

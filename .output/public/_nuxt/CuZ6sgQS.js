@@ -1,1 +1,0 @@
-import{i as e}from"./BuEsy29-.js";function t(){let t=e().$api;return{getMyTickets:()=>t(`/tickets/me`),getQrByTicket:e=>t(`/tickets/${e}/qr`),reissueTicket:e=>t(`/tickets/${e}/reissue`,{method:`POST`})}}export{t};

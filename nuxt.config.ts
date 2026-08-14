@@ -7,7 +7,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'ASEAN AI Event Portal',
+      title: 'IWBIF 2026',
       link: [
         { rel: 'icon', type: 'image/png', href: '/favicon.png' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }
@@ -15,7 +15,7 @@ export default defineNuxtConfig({
       meta: [
         {
           name: 'description',
-          content: 'Portal pendaftaran acara ASEAN AI for Education.'
+          content: 'International Women Business & Investment Forum 2026.'
         }
       ]
     }
@@ -23,11 +23,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
     public: {
-      apiBaseUrl: 'https://api-event.gagakrimang.web.id/api/v1',
+      apiBaseUrl: 'http://127.0.0.1:8000/api/v1',
       siteUrl: 'https://event.gagakrimang.web.id',
-      appName: 'ASEAN AI for Education Summit',
-      midtransClientKey: '',
-      midtransSnapUrl: 'https://app.sandbox.midtrans.com/snap/snap.js'
+      appName: 'IWBIF 2026'
     }
   },
   routeRules: {
@@ -36,6 +34,10 @@ export default defineNuxtConfig({
     '/workshops': { prerender: true },
     '/tickets': { prerender: true },
     '/partners': { prerender: true },
+    '/business-matching': { prerender: true },
+    '/deal-room': { prerender: true },
+    '/participants': { prerender: true },
+    '/exhibition': { prerender: true },
     '/faq': { prerender: true },
     '/privacy': { prerender: true },
     '/terms': { prerender: true },

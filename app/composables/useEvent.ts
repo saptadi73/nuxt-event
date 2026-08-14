@@ -61,6 +61,31 @@ export interface TicketTypeItem {
   is_active: boolean;
 }
 
+export interface DelegatePackageItem extends TicketTypeItem {
+  amount: number;
+  inclusions?: string[];
+  accommodation_nights?: number;
+}
+
+export interface ActivityItem extends WorkshopTrackItem {
+  is_active?: boolean;
+  activity_type?: string;
+  start_at?: string;
+  end_at?: string;
+}
+
+export interface ExhibitorItem {
+  id: string;
+  company_name: string;
+  country?: string;
+  industry?: string;
+  product?: string;
+  description?: string;
+  website?: string;
+  booth_number?: string;
+  logo_url?: string;
+}
+
 export function useEvent() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
 
@@ -83,12 +108,24 @@ export function useEvent() {
   const getEventTicketTypes = (slug: string) =>
     api<ApiResponse<TicketTypeItem[]>>(`/events/${slug}/ticket-types`);
 
+  const getEventDelegatePackages = (eventId: string) =>
+    api<ApiResponse<DelegatePackageItem[]>>(`/events/${eventId}/delegate-packages`);
+
+  const getEventActivities = (eventId: string) =>
+    api<ApiResponse<ActivityItem[]>>(`/events/${eventId}/activities`);
+
+  const getEventExhibitors = (eventId: string) =>
+    api<ApiResponse<ExhibitorItem[]>>(`/events/${eventId}/exhibitors`);
+
   return {
     getEvents,
     getEvent,
     getEventSessions,
     getEventSpeakers,
     getEventWorkshopTracks,
-    getEventTicketTypes
+    getEventTicketTypes,
+    getEventDelegatePackages,
+    getEventActivities,
+    getEventExhibitors
   };
 }
