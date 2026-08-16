@@ -39,6 +39,7 @@ export default defineNuxtConfig({
     '/participants': { prerender: true },
     '/exhibition': { prerender: true },
     '/faq': { prerender: true },
+    '/contact': { prerender: true },
     '/privacy': { prerender: true },
     '/terms': { prerender: true },
     '/code-of-conduct': { prerender: true },

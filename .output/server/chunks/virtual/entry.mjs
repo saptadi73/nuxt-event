@@ -1218,6 +1218,10 @@ var sensitiveMatcher = /* @__PURE__ */ (() => {
 			__proto__: null,
 			"": [$0]
 		},
+		"/contact": {
+			__proto__: null,
+			"": [$0]
+		},
 		"/privacy": {
 			__proto__: null,
 			"": [$0]
@@ -1303,7 +1307,7 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 		name: "admin-speakers",
 		path: "/admin/speakers",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/speakers-Chr-BdC1.mjs')
+		component: () => import('../build/speakers-TnANDkX6.mjs')
 	},
 	{
 		name: "auth-login",
@@ -1314,19 +1318,19 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 		name: "dashboard-announcements",
 		path: "/dashboard/announcements",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/announcements-hJPBnNa5.mjs')
+		component: () => import('../build/announcements-DIRWO0y-.mjs')
 	},
 	{
 		name: "dashboard-certificate",
 		path: "/dashboard/certificate",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/certificate-B57f1MNB.mjs')
+		component: () => import('../build/certificate-DGhX1zDl.mjs')
 	},
 	{
 		name: "dashboard-directory",
 		path: "/dashboard/directory",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/directory-vkr7vfSm.mjs')
+		component: () => import('../build/directory-BsY-OiNv.mjs')
 	},
 	{
 		name: "dashboard-invoice",
@@ -1356,34 +1360,39 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 		name: "dashboard-schedule",
 		path: "/dashboard/schedule",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/schedule-uIg9s8u4.mjs')
+		component: () => import('../build/schedule-dGTlcGRC.mjs')
 	},
 	{
 		name: "dashboard-ticket",
 		path: "/dashboard/ticket",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/ticket-DzDSvfV3.mjs')
+		component: () => import('../build/ticket-DWz9AqJH.mjs')
 	},
 	{
 		name: "about",
 		path: "/about",
-		component: () => import('../build/about-BrjDz6OT.mjs')
+		component: () => import('../build/about-oa3JS5MO.mjs')
 	},
 	{
 		name: "business-matching",
 		path: "/business-matching",
-		component: () => import('../build/business-matching-D9pwvf2E.mjs')
+		component: () => import('../build/business-matching-BWBLSADU.mjs')
 	},
 	{
 		name: "code-of-conduct",
 		path: "/code-of-conduct",
-		component: () => import('../build/code-of-conduct-BIGOmNxA.mjs')
+		component: () => import('../build/code-of-conduct-DNcUm1XW.mjs')
+	},
+	{
+		name: "contact",
+		path: "/contact",
+		component: () => import('../build/contact-C27Alcnc.mjs')
 	},
 	{
 		name: "dashboard",
 		path: "/dashboard",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/dashboard-9de3kfI6.mjs')
+		component: () => import('../build/dashboard-CKAwhmqu.mjs')
 	},
 	{
 		name: "deal-room",
@@ -1393,58 +1402,58 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 	{
 		name: "directory-consent",
 		path: "/directory-consent",
-		component: () => import('../build/directory-consent-DhyFM-nl.mjs')
+		component: () => import('../build/directory-consent-CPk1G7IR.mjs')
 	},
 	{
 		name: "exhibition",
 		path: "/exhibition",
-		component: () => import('../build/exhibition-Bhw6klRG.mjs')
+		component: () => import('../build/exhibition-ZWCm7GLj.mjs')
 	},
 	{
 		name: "faq",
 		path: "/faq",
-		component: () => import('../build/faq-BhcLuWmC.mjs')
+		component: () => import('../build/faq-7xupLVNC.mjs')
 	},
 	{
 		name: "participants",
 		path: "/participants",
-		component: () => import('../build/participants-Dk3H8B4f.mjs')
+		component: () => import('../build/participants-CMeboIPB.mjs')
 	},
 	{
 		name: "partners",
 		path: "/partners",
-		component: () => import('../build/partners-ryY_NLra.mjs')
+		component: () => import('../build/partners-BHwd5Qkc.mjs')
 	},
 	{
 		name: "privacy",
 		path: "/privacy",
-		component: () => import('../build/privacy-DPSHYtmH.mjs')
+		component: () => import('../build/privacy-BTemMEHC.mjs')
 	},
 	{
 		name: "program",
 		path: "/program",
-		component: () => import('../build/program-CnxPacdl.mjs')
+		component: () => import('../build/program-yaMthDNh.mjs')
 	},
 	{
 		name: "refund-policy",
 		path: "/refund-policy",
-		component: () => import('../build/refund-policy-CVquo_5Q.mjs')
+		component: () => import('../build/refund-policy-VvPHCdAD.mjs')
 	},
 	{
 		name: "register",
 		path: "/register",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/register-Dl0t7-V2.mjs')
+		component: () => import('../build/register-DM38LmoW.mjs')
 	},
 	{
 		name: "speakers",
 		path: "/speakers",
-		component: () => import('../build/speakers-5ABzfwsA.mjs')
+		component: () => import('../build/speakers-C09HEpKS.mjs')
 	},
 	{
 		name: "terms",
 		path: "/terms",
-		component: () => import('../build/terms-3e3dpkwL.mjs')
+		component: () => import('../build/terms-Ft1YfRB_.mjs')
 	},
 	{
 		name: "tickets",
@@ -1459,7 +1468,7 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 	{
 		name: "index",
 		path: "/",
-		component: () => import('../build/pages-CYiItSKw.mjs')
+		component: () => import('../build/pages-CYF1pPJi.mjs')
 	}
 ];
 //#endregion
@@ -3296,13 +3305,13 @@ var app_vue_vue_type_script_setup_true_lang_default = /*@__PURE__*/ defineCompon
 			{
 				to: "/business-matching",
 				label: "Business Matching"
-			},
-			{
-				to: "/exhibition",
-				label: "Exhibition"
 			}
 		];
 		const secondaryNav = [
+			{
+				to: "/exhibition",
+				label: "Exhibition"
+			},
 			{
 				to: "/deal-room",
 				label: "Deal Room"
@@ -3314,6 +3323,10 @@ var app_vue_vue_type_script_setup_true_lang_default = /*@__PURE__*/ defineCompon
 			{
 				to: "/tickets",
 				label: "Delegate Packages"
+			},
+			{
+				to: "/contact",
+				label: "Contact"
 			},
 			{
 				to: "/partners",

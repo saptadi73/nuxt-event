@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,13 +6,19 @@
 
 :root {
   color-scheme: dark;
-  --bg-primary: #020617;
-  --bg-secondary: #0f172a;
-  --bg-panel: rgba(15, 23, 42, 0.72);
-  --line-soft: rgba(255, 255, 255, 0.1);
-  --text-muted: #cbd5e1;
-  --cyan-glow: rgba(34, 211, 238, 0.18);
-  --orange-glow: rgba(251, 146, 60, 0.16);
+  --bg-primary: #04152d;
+  --bg-secondary: #071d3a;
+  --bg-alt: #0b2447;
+  --bg-panel: rgba(11, 36, 71, 0.68);
+  --line-soft: rgba(255, 255, 255, 0.12);
+  --text-muted: #cbd2dc;
+  --text-soft: #f8f6f1;
+  --cyan-glow: rgba(8, 36, 67, 0.24);
+  --gold-glow: rgba(216, 172, 89, 0.22);
+  --premium-gold: #d8ac59;
+  --premium-gold-soft: #e6c477;
+  --deep-blue: #00102a;
+  --deep-navy: #071d3a;
 }
 
 @layer base {
@@ -20,12 +26,28 @@
     scroll-behavior: smooth;
   }
 
+  :focus-visible {
+    outline: 2px solid var(--premium-gold, #d8ac59);
+    outline-offset: 3px;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--premium-gold, #d8ac59);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 3px rgba(216, 172, 89, 0.25);
+  }
+
   body {
     min-height: 100vh;
     background:
-      radial-gradient(circle at top left, var(--cyan-glow), transparent 30%),
-      radial-gradient(circle at 85% 15%, var(--orange-glow), transparent 24%),
-      linear-gradient(180deg, #020617 0%, #081120 46%, #020617 100%);
+      radial-gradient(circle at 0% 15%, rgba(11, 36, 71, 0.78), transparent 40%),
+      radial-gradient(circle at 86% 18%, rgba(232, 198, 125, 0.16), transparent 30%),
+      radial-gradient(circle at 12% 88%, rgba(7, 29, 58, 0.45), transparent 42%),
+      linear-gradient(180deg, var(--bg-primary) 0%, #010f2a 46%, var(--bg-secondary) 100%);
     color: white;
     font-family: 'Plus Jakarta Sans', sans-serif;
   }
@@ -36,12 +58,25 @@
   h4,
   h5,
   h6 {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Playfair Display', 'Times New Roman', serif;
     letter-spacing: -0.03em;
   }
 
   a {
     transition: color 180ms ease, opacity 180ms ease, transform 180ms ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -53,8 +88,8 @@
 
   .glass-card {
     border: 1px solid var(--line-soft);
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0.78), rgba(15, 23, 42, 0.52));
-    box-shadow: 0 30px 80px rgba(2, 6, 23, 0.38);
+    background: linear-gradient(180deg, rgba(11, 36, 71, 0.74), rgba(11, 36, 71, 0.44));
+    box-shadow: 0 30px 80px rgba(2, 10, 24, 0.45);
     backdrop-filter: blur(16px);
   }
 
@@ -72,7 +107,7 @@
     left: -100px;
     height: 280px;
     width: 280px;
-    background: rgba(34, 211, 238, 0.22);
+    background: rgba(11, 36, 71, 0.35);
   }
 
   .ambient-two {
@@ -80,6 +115,6 @@
     top: 340px;
     height: 320px;
     width: 320px;
-    background: rgba(249, 115, 22, 0.18);
+    background: rgba(216, 172, 89, 0.2);
   }
 }

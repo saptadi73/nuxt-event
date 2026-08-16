@@ -1,0 +1,32 @@
+﻿<template>
+  <section class="mx-auto max-w-5xl px-4 py-14 sm:px-6 lg:px-8">
+    <p class="text-sm uppercase tracking-[.35em] text-amber-200">Contact</p>
+    <h1 class="mt-4 text-5xl font-black">Connect with the IWBIF team</h1>
+    <p class="mt-5 max-w-3xl text-lg leading-8 text-slate-300">Partnerships, media inquiries, speaking opportunities, and registration assistance for IWBIF 2026 can be directed to the event operations desk.</p>
+
+    <div class="mt-10 grid gap-5 rounded-[2rem] border border-white/10 bg-white/5 p-8 md:grid-cols-3">
+      <article class="glass-card rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-[.2em] text-cyan-200">General</p>
+        <h2 class="mt-3 text-xl font-bold">General Inquiry</h2>
+        <p class="mt-3 text-sm text-slate-300">hello@iwbif-event.example</p>
+      </article>
+      <article class="glass-card rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-[.2em] text-cyan-200">Partnerships</p>
+        <h2 class="mt-3 text-xl font-bold">Partnership &amp; Sponsors</h2>
+        <p class="mt-3 text-sm text-slate-300">partners@iwbif-event.example</p>
+      </article>
+      <article class="glass-card rounded-2xl p-5">
+        <p class="text-xs uppercase tracking-[.2em] text-cyan-200">Media</p>
+        <h2 class="mt-3 text-xl font-bold">Press &amp; Media</h2>
+        <p class="mt-3 text-sm text-slate-300">media@iwbif-event.example</p>
+      </article>
+    </div>
+  </section>
+</template>
+
+<script setup lang="ts">
+useSeoMeta({
+  title: 'Contact | IWBIF 2026',
+  description: 'Contact IWBIF 2026 for media, partnership, and participant support.'
+})
+</script>

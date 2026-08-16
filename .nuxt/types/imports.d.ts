@@ -51,6 +51,7 @@ declare global {
   const markRaw: typeof import('vue').markRaw
   const navigateTo: typeof import('../../node_modules/nuxt/dist/app/composables/router').navigateTo
   const nextTick: typeof import('vue').nextTick
+  const normalizeInvoices: typeof import('../../app/composables/usePayment').normalizeInvoices
   const onActivated: typeof import('vue').onActivated
   const onBeforeMount: typeof import('vue').onBeforeMount
   const onBeforeRouteLeave: typeof import('../../node_modules/vue-router').onBeforeRouteLeave
@@ -107,6 +108,8 @@ declare global {
   const useAttrs: typeof import('vue').useAttrs
   const useAuth: typeof import('../../app/composables/useAuth').useAuth
   const useAuthStore: typeof import('../../app/stores/auth').useAuthStore
+  const useBusinessMatching: typeof import('../../app/composables/useBusinessMatching').useBusinessMatching
+  const useCommunication: typeof import('../../app/composables/useCommunication').useCommunication
   const useCookie: typeof import('../../node_modules/nuxt/dist/app/composables/cookie').useCookie
   const useCssModule: typeof import('vue').useCssModule
   const useCssVars: typeof import('vue').useCssVars
@@ -132,6 +135,7 @@ declare global {
   const usePinia: typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables').usePinia
   const usePreviewMode: typeof import('../../node_modules/nuxt/dist/app/composables/preview').usePreviewMode
   const useRegistration: typeof import('../../app/composables/useRegistration').useRegistration
+  const useRegistrationDocuments: typeof import('../../app/composables/useRegistrationDocuments').useRegistrationDocuments
   const useRequestEvent: typeof import('../../node_modules/nuxt/dist/app/composables/ssr').useRequestEvent
   const useRequestFetch: typeof import('../../node_modules/nuxt/dist/app/composables/ssr').useRequestFetch
   const useRequestHeader: typeof import('../../node_modules/nuxt/dist/app/composables/ssr').useRequestHeader
@@ -220,17 +224,26 @@ declare global {
   export type { ApiMeta, ApiResponse } from '../../app/composables/useApi'
   import('../../app/composables/useApi')
   // @ts-ignore
-  export type { EventItem, SpeakerItem, SessionItem, WorkshopTrackItem, TicketTypeItem } from '../../app/composables/useEvent'
+  export type { BusinessMatchingProfile, MeetingItem, MeetingCreatePayload } from '../../app/composables/useBusinessMatching'
+  import('../../app/composables/useBusinessMatching')
+  // @ts-ignore
+  export type { ConversationCreatePayload, ConversationItem, MessageItem, NotificationItem } from '../../app/composables/useCommunication'
+  import('../../app/composables/useCommunication')
+  // @ts-ignore
+  export type { EventItem, SpeakerItem, SessionItem, WorkshopTrackItem, TicketTypeItem, DelegatePackageItem, ActivityItem, ExhibitorItem } from '../../app/composables/useEvent'
   import('../../app/composables/useEvent')
   // @ts-ignore
   export type { ParticipantProfile, ParticipantPayload } from '../../app/composables/useParticipant'
   import('../../app/composables/useParticipant')
   // @ts-ignore
-  export type { MidtransTransaction, OrderItem, PaymentItem } from '../../app/composables/usePayment'
+  export type { DokuCheckoutData, OrderItem, PaymentItem, Invoice, InvoiceResponseData } from '../../app/composables/usePayment'
   import('../../app/composables/usePayment')
   // @ts-ignore
   export type { RegistrationPayload, RegistrationItem } from '../../app/composables/useRegistration'
   import('../../app/composables/useRegistration')
+  // @ts-ignore
+  export type { RegistrationDocument } from '../../app/composables/useRegistrationDocuments'
+  import('../../app/composables/useRegistrationDocuments')
   // @ts-ignore
   export type { TicketItem, TicketQr, TicketQrResponse } from '../../app/composables/useTicket'
   import('../../app/composables/useTicket')
@@ -289,6 +302,7 @@ declare module 'vue' {
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly navigateTo: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/router')['navigateTo']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
+    readonly normalizeInvoices: UnwrapRef<typeof import('../../app/composables/usePayment')['normalizeInvoices']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
     readonly onBeforeRouteLeave: UnwrapRef<typeof import('../../node_modules/vue-router')['onBeforeRouteLeave']>
@@ -345,6 +359,8 @@ declare module 'vue' {
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
     readonly useAuth: UnwrapRef<typeof import('../../app/composables/useAuth')['useAuth']>
     readonly useAuthStore: UnwrapRef<typeof import('../../app/stores/auth')['useAuthStore']>
+    readonly useBusinessMatching: UnwrapRef<typeof import('../../app/composables/useBusinessMatching')['useBusinessMatching']>
+    readonly useCommunication: UnwrapRef<typeof import('../../app/composables/useCommunication')['useCommunication']>
     readonly useCookie: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/cookie')['useCookie']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
@@ -370,6 +386,7 @@ declare module 'vue' {
     readonly usePinia: UnwrapRef<typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables')['usePinia']>
     readonly usePreviewMode: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/preview')['usePreviewMode']>
     readonly useRegistration: UnwrapRef<typeof import('../../app/composables/useRegistration')['useRegistration']>
+    readonly useRegistrationDocuments: UnwrapRef<typeof import('../../app/composables/useRegistrationDocuments')['useRegistrationDocuments']>
     readonly useRequestEvent: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/ssr')['useRequestEvent']>
     readonly useRequestFetch: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/ssr')['useRequestFetch']>
     readonly useRequestHeader: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/ssr')['useRequestHeader']>

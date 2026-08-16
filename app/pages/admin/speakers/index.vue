@@ -1,7 +1,6 @@
-<template>
-  <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-    <p class="text-sm uppercase tracking-[.35em] text-cyan-200">Admin</p>
-    <h1 class="mt-3 text-4xl font-black">Manage Speaker Photos</h1>
+﻿<template>
+  <section class="mx-auto max-w-4xl px-4 py-14 sm:px-6">
+    <h1 class="text-4xl font-black">Manage Speaker Photos</h1>
     <p class="mt-3 text-slate-300">Upload a JPG, PNG, or WebP profile photo (maximum 5 MB) for each speaker.</p>
 
     <div v-if="pending" class="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3"><div v-for="item in 6" :key="item" class="h-60 animate-pulse rounded-3xl bg-white/5" /></div>
@@ -27,7 +26,7 @@ import type { SpeakerItem } from '~/composables/useEvent';
 import type { ApiResponse } from '~/composables/useApi';
 
 definePageMeta({ middleware: 'auth' });
-useSeoMeta({ title: 'Manage Speaker Photos | ASEAN AI for Education' });
+useSeoMeta({ title: 'Manage Speaker Photos | IWBIF 2026' });
 
 const { getSpeakers, uploadSpeakerPhoto } = useSpeaker();
 const { mediaUrl } = useMediaUrl();

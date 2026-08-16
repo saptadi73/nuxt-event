@@ -16,10 +16,6 @@ import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRu
    siteUrl: string,
 
    appName: string,
-
-   midtransClientKey: string,
-
-   midtransSnapUrl: string,
   }
 declare module '@nuxt/schema' {
   interface RuntimeConfig extends UserRuntimeConfig {}

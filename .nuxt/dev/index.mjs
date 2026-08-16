@@ -654,7 +654,22 @@ const _inlineRuntimeConfig = {
       "/partners": {
         "prerender": true
       },
+      "/business-matching": {
+        "prerender": true
+      },
+      "/deal-room": {
+        "prerender": true
+      },
+      "/participants": {
+        "prerender": true
+      },
+      "/exhibition": {
+        "prerender": true
+      },
       "/faq": {
+        "prerender": true
+      },
+      "/contact": {
         "prerender": true
       },
       "/privacy": {
@@ -722,7 +737,27 @@ const _inlineRuntimeConfig = {
         "ssr": true,
         "prerender": true
       },
+      "/business-matching/_payload.json": {
+        "ssr": true,
+        "prerender": true
+      },
+      "/deal-room/_payload.json": {
+        "ssr": true,
+        "prerender": true
+      },
+      "/participants/_payload.json": {
+        "ssr": true,
+        "prerender": true
+      },
+      "/exhibition/_payload.json": {
+        "ssr": true,
+        "prerender": true
+      },
       "/faq/_payload.json": {
+        "ssr": true,
+        "prerender": true
+      },
+      "/contact/_payload.json": {
         "ssr": true,
         "prerender": true
       },
@@ -756,11 +791,9 @@ const _inlineRuntimeConfig = {
     }
   },
   "public": {
-    "apiBaseUrl": "http://localhost:8000/api/v1",
-    "siteUrl": "http://localhost:3000",
-    "appName": "ASEAN AI for Education Summit",
-    "midtransClientKey": "",
-    "midtransSnapUrl": "https://app.sandbox.midtrans.com/snap/snap.js"
+    "apiBaseUrl": "http://127.0.0.1:8000/api/v1",
+    "siteUrl": "https://event.gagakrimang.web.id",
+    "appName": "IWBIF 2026"
   }
 };
 const envOptions = {
@@ -2185,7 +2218,7 @@ const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
 	}
 });
 
-const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"},{"name":"description","content":"Portal pendaftaran acara ASEAN AI for Education."}],"link":[],"style":[],"script":[],"noscript":[],"title":"ASEAN AI Event Portal"};
+const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"},{"name":"description","content":"International Women Business & Investment Forum 2026."}],"link":[{"rel":"icon","type":"image/png","href":"/favicon.png"},{"rel":"apple-touch-icon","href":"/apple-touch-icon.png"}],"style":[],"script":[],"noscript":[],"title":"IWBIF 2026"};
 
 const appRootTag = "div";
 

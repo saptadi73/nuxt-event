@@ -88,13 +88,14 @@ const primaryNav = [
   { to: '/about', label: 'About' },
   { to: '/program', label: 'Program' },
   { to: '/speakers', label: 'Speakers' },
-  { to: '/business-matching', label: 'Business Matching' },
-  { to: '/exhibition', label: 'Exhibition' }
+  { to: '/business-matching', label: 'Business Matching' }
 ];
 const secondaryNav = [
+  { to: '/exhibition', label: 'Exhibition' },
   { to: '/deal-room', label: 'Deal Room' },
   { to: '/participants', label: 'Participants' },
   { to: '/tickets', label: 'Delegate Packages' },
+  { to: '/contact', label: 'Contact' },
   { to: '/partners', label: 'Partners' },
   { to: '/faq', label: 'FAQ' },
   { to: '/dashboard', label: 'Dashboard' },

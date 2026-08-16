@@ -1,0 +1,1 @@
+import{r as e}from"./Dn6eYzwe.js";var t=e(`/images/why-indonesia.png`);export{t};

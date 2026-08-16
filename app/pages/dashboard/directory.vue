@@ -1,8 +1,8 @@
 <template>
   <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
     <p class="text-sm uppercase tracking-[.35em] text-cyan-200">Participant Directory</p>
-    <h1 class="mt-3 text-4xl font-black">Connect With ASEAN AI Professionals</h1>
-    <p class="mt-3 max-w-3xl leading-7 text-slate-300">Find collaborators, mentors, technical experts, and members of your workshop community. Private contact information is never displayed.</p>
+    <h1 class="mt-3 text-4xl font-black">Connect With IWBIF Professionals</h1>
+    <p class="mt-3 max-w-3xl leading-7 text-slate-300">Find collaborators, investors, business partners, and delegates aligned with your growth goals. Private contact information is never displayed.</p>
 
     <div class="mt-8">
       <label><span class="sr-only">Search participants</span><input v-model="query" type="search" placeholder="Search name, organization, or biography" class="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none focus:border-cyan-300" /></label>
@@ -27,7 +27,7 @@ import { useParticipant, type ParticipantProfile } from '~/composables/usePartic
 import type { ApiResponse } from '~/composables/useApi';
 
 definePageMeta({ middleware: 'auth' });
-useSeoMeta({ title: 'Participant Directory | ASEAN AI for Education' });
+useSeoMeta({ title: 'Participant Directory | IWBIF 2026' });
 
 const { getParticipants } = useParticipant();
 const { mediaUrl } = useMediaUrl();
