@@ -1,4 +1,16 @@
+const localApiBaseUrl = 'http://127.0.0.1:8000/api/v1';
+const productionApiBaseUrl = 'https://api-event.gagakrimang.web.id/api/v1';
+const productionSiteUrl = 'https://event.gagakrimang.web.id';
+const isGenerate = process.env.npm_lifecycle_event === 'generate' || process.argv.some((argument) => argument === 'generate');
+const configuredApiBaseUrl = process.env.NUXT_PUBLIC_API_BASE_URL || localApiBaseUrl;
+const apiBaseUrl = isGenerate && /^http:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?(?:\/|$)/i.test(configuredApiBaseUrl)
+  ? productionApiBaseUrl
+  : configuredApiBaseUrl;
+
 export default defineNuxtConfig({
+  experimental: {
+    appManifest: !isGenerate
+  },
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
   nitro: {
     prerender: {
@@ -23,9 +35,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
     public: {
-      apiBaseUrl: 'http://127.0.0.1:8000/api/v1',
-      siteUrl: 'https://event.gagakrimang.web.id',
-      appName: 'IWBIF 2026'
+      apiBaseUrl,
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || (isGenerate ? productionSiteUrl : 'http://localhost:3000'),
+      appName: process.env.NUXT_PUBLIC_APP_NAME || 'IWBIF 2026'
     }
   },
   routeRules: {
@@ -45,8 +57,8 @@ export default defineNuxtConfig({
     '/code-of-conduct': { prerender: true },
     '/refund-policy': { prerender: true },
     '/directory-consent': { prerender: true },
-    '/speakers/**': { swr: 3600 },
-    '/program': { swr: 600 },
+    '/speakers/**': isGenerate ? { prerender: true } : { swr: 3600 },
+    '/program': isGenerate ? { prerender: true } : { swr: 600 },
     '/dashboard/**': { ssr: false },
     '/admin/**': { ssr: false }
   },
