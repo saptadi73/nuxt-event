@@ -1,7 +1,7 @@
 <template>
-  <section class="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+  <section class="mx-auto max-w-4xl px-3 py-10 sm:px-6">
     <p class="text-sm uppercase tracking-[.35em] text-cyan-200">Payment and Invoice</p>
-    <h1 class="mt-3 text-4xl font-black">Registration invoice</h1>
+    <h1 class="mt-3 text-3xl font-black sm:text-4xl">Registration invoice</h1>
 
     <div v-if="pending" class="glass-card mt-8 rounded-[2rem] p-7 text-slate-300">Loading invoice...</div>
     <div v-else-if="errorMessage" class="mt-8 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ errorMessage }}</div>
@@ -10,7 +10,7 @@
       <p class="mt-2 text-slate-400">Your invoice will appear after your payment has been confirmed.</p>
       <NuxtLink to="/dashboard/payment" class="mt-6 inline-flex rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950">Go to payment</NuxtLink>
     </div>
-    <article v-else id="invoice" ref="invoiceElement" class="glass-card mt-8 rounded-[2rem] p-7">
+    <article v-else id="invoice" ref="invoiceElement" class="glass-card mt-8 rounded-[2rem] p-5 sm:p-7">
       <div class="flex flex-wrap justify-between gap-5 border-b border-white/10 pb-6">
         <div><p class="text-sm text-slate-400">{{ invoice.registration.event_name }}</p><p class="mt-1 font-semibold">Invoice {{ invoice.order.order_number }}</p></div>
         <span class="h-fit rounded-full bg-emerald-300/10 px-4 py-2 text-xs font-semibold uppercase tracking-[.2em] text-emerald-200">Paid</span>
@@ -22,7 +22,7 @@
         <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Payment status</dt><dd class="mt-2 text-lg font-semibold text-emerald-300">Paid</dd><p class="text-sm text-slate-400">{{ formatDate(invoice.payment.paid_at) }}</p></div>
       </dl>
       <div class="mt-7 flex items-center justify-between border-t border-white/10 pt-6"><span class="text-slate-400">Total paid</span><strong class="text-2xl text-cyan-200">{{ formatCurrency(invoice.order.total_amount, invoice.order.currency) }}</strong></div>
-      <button class="mt-7 rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 print:hidden" :disabled="downloading" @click="downloadInvoice">{{ downloading ? 'Preparing PDF...' : 'Download invoice PDF' }}</button>
+      <button class="mt-7 w-full rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 print:hidden sm:w-auto" :disabled="downloading" @click="downloadInvoice">{{ downloading ? 'Preparing PDF...' : 'Download invoice PDF' }}</button>
     </article>
   </section>
 </template>

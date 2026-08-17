@@ -24,6 +24,7 @@ export function useApi() {
   return $fetch.create({
     baseURL: config.public.apiBaseUrl,
     onRequest({ options }) {
+      authStore.hydrateUserFromToken();
       if (authStore.accessToken) {
         options.headers = {
           ...(options.headers || {}),

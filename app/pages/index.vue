@@ -21,7 +21,7 @@
       <nav class="hero-action-dock" aria-label="Main event actions">
         <div class="hero-action-status"><span class="hero-live-dot" aria-hidden="true" />Registration is now open</div>
         <div class="hero-action-links">
-          <NuxtLink to="/register" class="hero-button hero-button-primary">Register Now <span aria-hidden="true">→</span></NuxtLink>
+          <NuxtLink to="/auth/register" class="hero-button hero-button-primary">Register Now <span aria-hidden="true">→</span></NuxtLink>
           <NuxtLink to="/program" class="hero-button hero-button-secondary">Explore Program</NuxtLink>
           <NuxtLink to="/business-matching" class="hero-button hero-button-ghost">Business Matching</NuxtLink>
         </div>
@@ -30,7 +30,7 @@
 
     <section class="home-section mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
       <div class="grid gap-px overflow-hidden rounded-[2rem] border border-white/10 bg-white/10 sm:grid-cols-3">
-        <article v-for="(stat, index) in featuredStats" :key="stat.label" class="bg-slate-950/85 p-6 sm:p-7">
+        <article v-for="(stat, index) in featuredStats" :key="stat.label" class="featured-stat-card p-6 sm:p-7">
           <strong class="text-3xl text-[#d8ac59] sm:text-4xl">{{ displayedStats[index] }}{{ stat.suffix }}</strong>
           <p class="mt-2 text-sm leading-6 text-slate-300">{{ stat.label }}</p>
         </article>
@@ -40,7 +40,7 @@
     <section class="home-section mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-16">
       <div class="glass-card rounded-[2rem] border border-white/10 bg-slate-950/35 p-8">
         <p class="text-xs uppercase tracking-[.35em] text-[#d8ac59]">International Presence</p>
-        <h2 class="mt-3 text-3xl font-black">Trusted global ecosystem of women-led business.</h2>
+        <h2 class="premium-title mt-3">Trusted global ecosystem of <span class="title-highlight">women-led business.</span></h2>
         <p class="mt-4 max-w-3xl text-lg leading-8 text-slate-300">IWBIF is positioned as a meeting ground for women entrepreneurs, investors, chambers, and ecosystem leaders to build credible, investable international partnerships.</p>
         <div class="mt-6 grid gap-3 sm:grid-cols-3">
           <p v-for="network in globalNetworks" :key="network" class="rounded-full border border-white/15 px-4 py-2 text-sm">{{ network }}</p>
@@ -52,7 +52,7 @@
       <div class="why-heading">
         <div>
           <p class="text-xs font-bold uppercase tracking-[.35em] text-[#d8ac59]">Why Indonesia</p>
-          <h2 class="mt-4 max-w-3xl text-3xl font-black leading-tight text-[#f8f6f1] sm:text-4xl lg:text-5xl">Where opportunity, connectivity, and culture converge.</h2>
+          <h2 class="premium-title mt-4 max-w-3xl leading-tight text-[#f8f6f1]">Where opportunity, connectivity, and <span class="title-highlight">culture converge.</span></h2>
         </div>
         <span class="why-coordinate" aria-hidden="true">06°12′S · 106°49′E</span>
       </div>
@@ -106,7 +106,7 @@
         <h2 class="mt-4 text-4xl font-black">Connect. Match. Make Deals.</h2>
         <p class="mx-auto mt-4 max-w-2xl text-slate-300">Explore new markets, investment opportunities, partnerships, and cross-border collaboration from one place.</p>
         <div class="mt-7 flex flex-wrap justify-center gap-3">
-          <NuxtLink to="/register" class="rounded-full bg-[#e6c477] px-6 py-3 font-semibold text-[#04152d]">Secure Your Seat</NuxtLink>
+          <NuxtLink to="/auth/register" class="rounded-full bg-[#e6c477] px-6 py-3 font-semibold text-[#04152d]">Secure Your Seat</NuxtLink>
           <NuxtLink to="/participants" class="rounded-full border border-white/20 px-6 py-3 font-semibold">Explore Participants</NuxtLink>
           <NuxtLink to="/deal-room" class="rounded-full border border-white/20 px-6 py-3 font-semibold">Open Deal Room</NuxtLink>
         </div>
@@ -217,6 +217,124 @@ onMounted(() => {
   .hero-button-primary { background: linear-gradient(135deg, #e6c477, #d8ac59); color: #04152d; box-shadow: 0 12px 35px rgba(216, 172, 89, .3); }
   .hero-button-secondary { border: 1px solid rgba(255, 255, 255, .25); background: rgba(11, 36, 71, .6); color: #f8f6f1; backdrop-filter: blur(12px); }
   .hero-button-ghost { border: 1px solid rgba(232, 198, 125, .45); background: rgba(4, 21, 45, .45); color: #d8ac59; }
+
+.premium-title {
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-size: clamp(2.3rem, 4vw, 4rem);
+  line-height: 0.96;
+  letter-spacing: -0.05em;
+  font-weight: 700;
+  text-wrap: balance;
+  text-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+}
+
+.title-highlight {
+  position: relative;
+  display: inline-block;
+  color: #e6c477;
+  text-shadow: 0 0 24px rgba(230, 196, 119, 0.18);
+}
+
+.title-highlight::after {
+  content: "";
+  position: absolute;
+  left: 0.05em;
+  right: 0.1em;
+  bottom: -0.08em;
+  height: 0.12em;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(230, 196, 119, 0.18), rgba(230, 196, 119, 0.54), rgba(230, 196, 119, 0.18));
+  filter: blur(0.08em);
+  opacity: 0.85;
+}
+
+.featured-stat-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(4, 21, 45, 0.9), rgba(5, 18, 36, 0.96));
+  border: 1px solid rgba(216, 172, 89, 0.12);
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.featured-stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(230, 196, 119, 0.7), transparent);
+  opacity: 0.8;
+}
+
+.featured-stat-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(230, 196, 119, 0.28);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.04), 0 18px 40px rgba(2, 10, 24, 0.34);
+}
+
+.featured-stat-card strong {
+  display: block;
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  letter-spacing: -0.05em;
+}
+
+.featured-stat-card p {
+  color: rgba(203, 210, 220, 0.95);
+}
+
+@media (max-width: 767px) {
+  .hero-stage {
+    padding-inline: 0.75rem;
+  }
+
+  .hero-action-dock {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+    padding: 1rem;
+    margin-inline: 0;
+  }
+
+  .hero-action-status {
+    justify-content: center;
+    white-space: normal;
+    letter-spacing: 0.09em;
+    text-align: center;
+  }
+
+  .hero-action-links {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .hero-button {
+    width: 100%;
+    padding-block: 0.95rem;
+  }
+
+  .why-heading {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .why-coordinate {
+    white-space: normal;
+    letter-spacing: 0.08em;
+  }
+
+  .why-content-card {
+    position: relative;
+    width: 100%;
+    right: auto;
+    bottom: auto;
+    margin-top: 1rem;
+  }
+
+  .why-proof-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .hero-halo { position: absolute; width: 22rem; height: 22rem; border-radius: 50%; filter: blur(90px); pointer-events: none; }
   .hero-halo-left { left: -10rem; top: 15%; background: rgba(7, 29, 58, .26); }
   .hero-halo-right { right: -10rem; bottom: 0; background: rgba(216, 172, 89, .20); }

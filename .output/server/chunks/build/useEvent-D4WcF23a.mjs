@@ -1,4 +1,4 @@
-globalThis.__timing__.logStart('Load chunks/build/useEvent-D4WcF23a');import { c as useNuxtApp } from '../virtual/entry.mjs';
+import { c as useNuxtApp } from '../virtual/entry.mjs';
 
 //#region app/composables/useEvent.ts
 function useEvent() {
@@ -25,5 +25,5 @@ function useEvent() {
 	};
 }
 
-export { useEvent as u };;globalThis.__timing__.logEnd('Load chunks/build/useEvent-D4WcF23a');
+export { useEvent as u };
 //# sourceMappingURL=useEvent-D4WcF23a.mjs.map

@@ -1,0 +1,1 @@
+import{i as e}from"./ByM6vW5J.js";function t(){let t=e().$api;return{createRegistration:e=>t(`/events/${e.event_id}/registrations`,{method:`POST`,body:Object.fromEntries(Object.entries(e).filter(([e])=>e!==`event_id`))}),getRegistration:e=>t(`/registrations/${e}`),getMyRegistrations:e=>t(`/registrations/me`,{query:e?{event_id:e}:void 0})}}export{t};

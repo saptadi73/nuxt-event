@@ -115,6 +115,7 @@ declare global {
   const useCssVars: typeof import('vue').useCssVars
   const useError: typeof import('../../node_modules/nuxt/dist/app/composables/error').useError
   const useEvent: typeof import('../../app/composables/useEvent').useEvent
+  const useExhibitor: typeof import('../../app/composables/useExhibitor').useExhibitor
   const useFetch: typeof import('../../node_modules/nuxt/dist/app/composables/fetch').useFetch
   const useHead: typeof import('../../node_modules/nuxt/dist/app/composables/head').useHead
   const useHeadSafe: typeof import('../../node_modules/nuxt/dist/app/composables/head').useHeadSafe
@@ -232,6 +233,9 @@ declare global {
   // @ts-ignore
   export type { EventItem, SpeakerItem, SessionItem, WorkshopTrackItem, TicketTypeItem, DelegatePackageItem, ActivityItem, ExhibitorItem } from '../../app/composables/useEvent'
   import('../../app/composables/useEvent')
+  // @ts-ignore
+  export type { ExhibitorCreatePayload, ExhibitorRecord } from '../../app/composables/useExhibitor'
+  import('../../app/composables/useExhibitor')
   // @ts-ignore
   export type { ParticipantProfile, ParticipantPayload } from '../../app/composables/useParticipant'
   import('../../app/composables/useParticipant')
@@ -366,6 +370,7 @@ declare module 'vue' {
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
     readonly useError: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/error')['useError']>
     readonly useEvent: UnwrapRef<typeof import('../../app/composables/useEvent')['useEvent']>
+    readonly useExhibitor: UnwrapRef<typeof import('../../app/composables/useExhibitor')['useExhibitor']>
     readonly useFetch: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/fetch')['useFetch']>
     readonly useHead: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/head')['useHead']>
     readonly useHeadSafe: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/head')['useHeadSafe']>

@@ -1,9 +1,9 @@
-globalThis.__timing__.logStart('Load chunks/virtual/entry');import { defineProdDiagnostics } from 'nostics';
+import { defineProdDiagnostics } from 'nostics';
 import { ansiFormatter } from 'nostics/formatters/ansi';
 import * as import_vue from 'vue';
-import { getCurrentScope, ref, watchEffect, getCurrentInstance, onBeforeUnmount, onDeactivated, onActivated, shallowReactive, reactive, effectScope, hasInjectionContext, inject, toRef, createApp, provide, onErrorCaptured, onServerPrefetch, unref, createVNode, resolveDynamicComponent, defineAsyncComponent, mergeProps, defineComponent, withCtx, createTextVNode, toDisplayString, h, shallowRef, resolveComponent, computed, isVNode, createCommentVNode, isReadonly, createElementBlock, cloneVNode, Suspense, Fragment, useSSRContext, isRef, isShallow, isReactive, toRaw, toValue, nextTick, customRef, queuePostFlushCb } from 'vue';
-import { i as createError, p as parseURL, e as encodePath, n as decodePath, w as withQuery, o as hasProtocol, q as isScriptProtocol, l as joinURL, v as sanitizeStatusCode, x as parseQuery, y as withTrailingSlash, z as withoutTrailingSlash, $ as $fetch, A as defu, B as klona, C as getRequestHeader, D as isEqual, E as setCookie, F as getCookie, G as deleteCookie } from '../_/nitro.mjs';
-import { START_LOCATION, RouterView, createMemoryHistory, createRouter } from 'vue-router';
+import { getCurrentScope, ref, watchEffect, getCurrentInstance, onBeforeUnmount, onDeactivated, onActivated, shallowReactive, reactive, effectScope, hasInjectionContext, inject, toRef, createApp, provide, onErrorCaptured, onServerPrefetch, unref, createVNode, resolveDynamicComponent, defineAsyncComponent, mergeProps, shallowRef, isReadonly, defineComponent, createElementBlock, cloneVNode, h, useSSRContext, isRef, isShallow, isReactive, toRaw, isVNode, createCommentVNode, computed, withCtx, createTextVNode, toDisplayString, Suspense, resolveComponent, Fragment, toValue, nextTick, queuePostFlushCb, customRef } from 'vue';
+import { i as createError, n as hasProtocol, l as joinURL, w as withQuery, o as sanitizeStatusCode, p as parseURL, e as encodePath, q as decodePath, v as isScriptProtocol, $ as $fetch, x as defu, y as parseQuery, z as withTrailingSlash, A as withoutTrailingSlash, B as klona, C as getRequestHeader, D as isEqual, E as setCookie, F as getCookie, G as deleteCookie } from '../_/nitro.mjs';
+import { START_LOCATION, createMemoryHistory, createRouter, RouterView } from 'vue-router';
 import { i as injectHead$1, V as VueResolver, b as baseURL, h as headSymbol } from '../routes/renderer.mjs';
 import { isPlainObject } from '@vue/shared';
 import { ssrRenderSuspense, ssrRenderComponent, ssrRenderVNode, ssrRenderAttrs, ssrRenderList, ssrInterpolate } from 'vue/server-renderer';
@@ -247,38 +247,6 @@ var Hookable = class {
 };
 function createHooks() {
 	return new Hookable();
-}
-const isBrowser = "undefined" !== "undefined";
-function createDebugger(hooks, _options = {}) {
-	const options = {
-		inspect: isBrowser,
-		group: isBrowser,
-		filter: () => true,
-		..._options
-	};
-	const _filter = options.filter;
-	const filter = typeof _filter === "string" ? (name) => name.startsWith(_filter) : _filter;
-	const _tag = options.tag ? `[${options.tag}] ` : "";
-	const logPrefix = (event) => _tag + event.name + "".padEnd(event._id, "\0");
-	const _idCtr = {};
-	const unsubscribeBefore = hooks.beforeEach((event) => {
-		if (filter !== void 0 && !filter(event.name)) return;
-		_idCtr[event.name] = _idCtr[event.name] || 0;
-		event._id = _idCtr[event.name]++;
-		console.time(logPrefix(event));
-	});
-	const unsubscribeAfter = hooks.afterEach((event) => {
-		if (filter !== void 0 && !filter(event.name)) return;
-		if (options.group) console.groupCollapsed(event.name);
-		if (options.inspect) console.timeLog(logPrefix(event), event.args);
-		else console.timeEnd(logPrefix(event));
-		if (options.group) console.groupEnd();
-		_idCtr[event.name]--;
-	});
-	return { close: () => {
-		unsubscribeBefore();
-		unsubscribeAfter();
-	} };
 }
 
 function _getAsyncLocalStorage() {
@@ -1054,7 +1022,7 @@ function freezeHead(head) {
 }
 //#endregion
 //#region node_modules/nuxt/dist/head/runtime/plugins/unhead.server.js
-var plugin$5 = defineNuxtPlugin({
+var plugin$4 = defineNuxtPlugin({
 	name: "nuxt:head",
 	enforce: "pre",
 	setup(nuxtApp) {
@@ -1299,181 +1267,205 @@ function getRouteRules(arg) {
 //#endregion
 //#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Fmiddleware.mjs
 var globalMiddleware = [middleware$1, /* @__PURE__ */ defineNuxtRouteMiddleware((to) => {})];
-var namedMiddleware = { auth: () => import('../build/auth-BBdXpWJV.mjs') };
+var namedMiddleware = {
+	admin: () => import('../build/admin-On0MQuMF.mjs'),
+	auth: () => import('../build/auth-Cl3fKvoP.mjs')
+};
 //#endregion
 //#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Froutes.mjs
 var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 	{
+		name: "admin-reports",
+		path: "/admin/reports",
+		meta: { "middleware": ["auth", "admin"] },
+		component: () => import('../build/reports-BQwqbVYN.mjs')
+	},
+	{
 		name: "admin-speakers",
 		path: "/admin/speakers",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/speakers-TnANDkX6.mjs')
+		component: () => import('../build/speakers-DXb2sFnB.mjs')
 	},
 	{
 		name: "auth-login",
 		path: "/auth/login",
-		component: () => import('../build/login-D11_O6f-.mjs')
+		component: () => import('../build/login-DYHgyg7t.mjs')
+	},
+	{
+		name: "auth-register",
+		path: "/auth/register",
+		component: () => import('../build/register-DIUVhfIG.mjs')
 	},
 	{
 		name: "dashboard-announcements",
 		path: "/dashboard/announcements",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/announcements-DIRWO0y-.mjs')
+		component: () => import('../build/announcements-CiY8YDW9.mjs')
 	},
 	{
 		name: "dashboard-certificate",
 		path: "/dashboard/certificate",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/certificate-DGhX1zDl.mjs')
+		component: () => import('../build/certificate-XSvqZmM8.mjs')
 	},
 	{
 		name: "dashboard-directory",
 		path: "/dashboard/directory",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/directory-BsY-OiNv.mjs')
+		component: () => import('../build/directory-CE8EKqwC.mjs')
 	},
 	{
 		name: "dashboard-invoice",
 		path: "/dashboard/invoice",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/invoice-CK2_o1Yq.mjs')
+		component: () => import('../build/invoice-CVg380zM.mjs')
 	},
 	{
 		name: "dashboard-payment",
 		path: "/dashboard/payment",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/payment-c62Y_uqA.mjs')
+		component: () => import('../build/payment-Dj5J8pb-.mjs')
 	},
 	{
 		name: "dashboard-payment-status",
 		path: "/dashboard/payment-status",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/payment-status-CuI9xrUF.mjs')
+		component: () => import('../build/payment-status-DAUjptIx.mjs')
 	},
 	{
 		name: "dashboard-profile",
 		path: "/dashboard/profile",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/profile-ex15SU5z.mjs')
+		component: () => import('../build/profile-lkURC3nI.mjs')
 	},
 	{
 		name: "dashboard-schedule",
 		path: "/dashboard/schedule",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/schedule-dGTlcGRC.mjs')
+		component: () => import('../build/schedule-eZrxKuA6.mjs')
 	},
 	{
 		name: "dashboard-ticket",
 		path: "/dashboard/ticket",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/ticket-DWz9AqJH.mjs')
+		component: () => import('../build/ticket-CwZz7tLl.mjs')
 	},
 	{
 		name: "about",
 		path: "/about",
-		component: () => import('../build/about-oa3JS5MO.mjs')
+		component: () => import('../build/about-BxNACQ0d.mjs')
 	},
 	{
 		name: "business-matching",
 		path: "/business-matching",
-		component: () => import('../build/business-matching-BWBLSADU.mjs')
+		component: () => import('../build/business-matching-Ght-N6hz.mjs')
 	},
 	{
 		name: "code-of-conduct",
 		path: "/code-of-conduct",
-		component: () => import('../build/code-of-conduct-DNcUm1XW.mjs')
+		component: () => import('../build/code-of-conduct-DQ_FJul0.mjs')
 	},
 	{
 		name: "contact",
 		path: "/contact",
-		component: () => import('../build/contact-C27Alcnc.mjs')
+		component: () => import('../build/contact-wEhqvBdu.mjs')
 	},
 	{
 		name: "dashboard",
 		path: "/dashboard",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/dashboard-CKAwhmqu.mjs')
+		component: () => import('../build/dashboard-DwGdGr3Z.mjs')
 	},
 	{
 		name: "deal-room",
 		path: "/deal-room",
-		component: () => import('../build/deal-room-T9m7TnDU.mjs')
+		component: () => import('../build/deal-room-BJSIif7r.mjs')
 	},
 	{
 		name: "directory-consent",
 		path: "/directory-consent",
-		component: () => import('../build/directory-consent-CPk1G7IR.mjs')
+		component: () => import('../build/directory-consent-Cp0TgUs0.mjs')
 	},
 	{
 		name: "exhibition",
 		path: "/exhibition",
-		component: () => import('../build/exhibition-ZWCm7GLj.mjs')
+		component: () => import('../build/exhibition-BhxM48bZ.mjs')
 	},
 	{
 		name: "faq",
 		path: "/faq",
-		component: () => import('../build/faq-7xupLVNC.mjs')
+		component: () => import('../build/faq-D6RCfBu4.mjs')
 	},
 	{
 		name: "participants",
 		path: "/participants",
-		component: () => import('../build/participants-CMeboIPB.mjs')
+		component: () => import('../build/participants-kaBnn5cc.mjs')
 	},
 	{
 		name: "partners",
 		path: "/partners",
-		component: () => import('../build/partners-BHwd5Qkc.mjs')
+		component: () => import('../build/partners-OQj5m2od.mjs')
 	},
 	{
 		name: "privacy",
 		path: "/privacy",
-		component: () => import('../build/privacy-BTemMEHC.mjs')
+		component: () => import('../build/privacy-CoQ7C27w.mjs')
 	},
 	{
 		name: "program",
 		path: "/program",
-		component: () => import('../build/program-yaMthDNh.mjs')
+		component: () => import('../build/program-DsCEam1W.mjs')
 	},
 	{
 		name: "refund-policy",
 		path: "/refund-policy",
-		component: () => import('../build/refund-policy-VvPHCdAD.mjs')
+		component: () => import('../build/refund-policy-B6lahenh.mjs')
 	},
 	{
 		name: "register",
 		path: "/register",
-		meta: { "middleware": "auth" },
-		component: () => import('../build/register-DM38LmoW.mjs')
+		component: () => import('../build/register-CvD8S6lg.mjs'),
+		children: [{
+			name: "register-delegate",
+			path: "delegate",
+			meta: { "middleware": "auth" },
+			component: () => import('../build/delegate-Bh9TjXZF.mjs')
+		}, {
+			name: "register-exhibitor",
+			path: "exhibitor",
+			meta: { "middleware": "auth" },
+			component: () => import('../build/exhibitor-BMQfkx0A.mjs')
+		}]
 	},
 	{
 		name: "speakers",
 		path: "/speakers",
-		component: () => import('../build/speakers-C09HEpKS.mjs')
+		component: () => import('../build/speakers-B_ou0AQI.mjs')
 	},
 	{
 		name: "terms",
 		path: "/terms",
-		component: () => import('../build/terms-Ft1YfRB_.mjs')
+		component: () => import('../build/terms-Dk3c2T6E.mjs')
 	},
 	{
 		name: "tickets",
 		path: "/tickets",
-		component: () => import('../build/tickets-BjtRfCfl.mjs')
+		component: () => import('../build/tickets-CE3myhya.mjs')
 	},
 	{
 		name: "workshops",
 		path: "/workshops",
-		component: () => import('../build/workshops-ltmuT-wW.mjs')
+		component: () => import('../build/workshops-CtOgq1Po.mjs')
 	},
 	{
 		name: "index",
 		path: "/",
-		component: () => import('../build/pages-CYF1pPJi.mjs')
+		component: () => import('../build/pages-C9fKZ0TZ.mjs')
 	}
 ];
 //#endregion
 //#region node_modules/nuxt/dist/pages/runtime/plugins/router.js
-var plugin$4 = defineNuxtPlugin({
+var plugin$3 = defineNuxtPlugin({
 	name: "nuxt:router",
 	enforce: "pre",
 	async setup(nuxtApp) {
@@ -1641,15 +1633,6 @@ var plugin$4 = defineNuxtPlugin({
 			}
 		});
 		return { provide: { router } };
-	}
-});
-//#endregion
-//#region node_modules/nuxt/dist/app/plugins/debug-hooks.js
-var plugin$3 = /* @__PURE__ */ defineNuxtPlugin({
-	name: "nuxt:debug:hooks",
-	enforce: "pre",
-	setup(nuxtApp) {
-		createDebugger(nuxtApp.hooks, { tag: "nuxt-app" });
 	}
 });
 //#endregion
@@ -3043,22 +3026,94 @@ var plugin$1 = defineNuxtPlugin({
 var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Fcomponents_plugin_default = defineNuxtPlugin({ name: "nuxt:global-components" });
 //#endregion
 //#region app/stores/auth.ts
+var normalizeRole = (value) => {
+	const first = (Array.isArray(value) ? value : value ? [value] : []).find((item) => typeof item === "string" && item.trim());
+	return first ? first.trim().toLowerCase() : void 0;
+};
 var useAuthStore = defineStore("auth", {
 	state: () => ({
 		accessToken: useCookie("access_token", { default: () => "" }).value,
 		refreshToken: useCookie("refresh_token", { default: () => "" }).value,
 		user: null
 	}),
-	getters: { isAuthenticated: (state) => Boolean(state.accessToken) },
+	getters: {
+		isAuthenticated: (state) => Boolean(state.accessToken),
+		userRole: (state) => {
+			const directRole = normalizeRole(state.user?.role);
+			if (directRole) return directRole;
+			const roleFromList = normalizeRole(state.user?.roles);
+			if (roleFromList) return roleFromList;
+			return "";
+		},
+		isAdminOrOrganizer: (state) => {
+			const role = state.userRole;
+			return role === "admin" || role === "organizer";
+		}
+	},
 	actions: {
+		decodeJwtPayload(token) {
+			try {
+				const payload = token.split(".")[1];
+				if (!payload) return null;
+				const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+				const padded = normalized.padEnd(normalized.length + (4 - normalized.length % 4) % 4, "=");
+				const binary = atob(padded);
+				const json = decodeURIComponent(Array.from(binary).map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`).join(""));
+				return JSON.parse(json);
+			} catch {
+				return null;
+			}
+		},
+		resolveRoleFromPayload(payload) {
+			const fromRole = normalizeRole(payload.role ?? void 0);
+			if (fromRole) return fromRole;
+			const nestedUser = payload.user;
+			const nestedRole = normalizeRole(nestedUser?.role ?? void 0);
+			if (nestedRole) return nestedRole;
+			const roles = payload.roles;
+			const roleList = normalizeRole(roles);
+			if (roleList) return roleList;
+			if (payload.is_admin === true) return "admin";
+			if (payload.is_organizer === true) return "organizer";
+			const scopes = payload.scopes;
+			if (Array.isArray(scopes)) {
+				const scopeRole = normalizeRole(scopes);
+				if (scopeRole) return scopeRole;
+			}
+			if (typeof scopes === "string") {
+				const scopeRole = normalizeRole(scopes);
+				if (scopeRole) return scopeRole;
+			}
+		},
+		hydrateUserFromToken() {
+			if (!this.accessToken) {
+				if (this.user) this.user = null;
+				return;
+			}
+			const payload = this.decodeJwtPayload(this.accessToken);
+			if (!payload) return;
+			const role = this.resolveRoleFromPayload(payload);
+			const email = typeof payload.email === "string" ? payload.email : void 0;
+			const fullName = typeof payload.full_name === "string" ? payload.full_name : typeof payload.name === "string" ? payload.name : void 0;
+			this.user = {
+				...this.user ?? {},
+				...email ? { email } : {},
+				...fullName ? { full_name: fullName } : {},
+				...role ? { role } : {}
+			};
+		},
 		setTokens({ accessToken, refreshToken }) {
 			this.accessToken = accessToken;
 			this.refreshToken = refreshToken;
 			useCookie("access_token").value = accessToken;
 			useCookie("refresh_token").value = refreshToken;
+			this.hydrateUserFromToken();
 		},
 		setUser(user) {
-			this.user = user;
+			this.user = user ? {
+				...user,
+				role: user.role ?? normalizeRole(user.roles)
+			} : null;
 		},
 		clearToken() {
 			this.accessToken = "";
@@ -3078,6 +3133,7 @@ function useApi() {
 	return $fetch$2.create({
 		baseURL: config.public.apiBaseUrl,
 		onRequest({ options }) {
+			authStore.hydrateUserFromToken();
 			if (authStore.accessToken) options.headers = {
 				...options.headers || {},
 				Authorization: `Bearer ${authStore.accessToken}`
@@ -3132,7 +3188,6 @@ var plugin = defineNuxtPlugin(async () => {
 //#endregion
 //#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Fplugins.server.mjs
 var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Fplugins_server_default = [
-	plugin$5,
 	plugin$4,
 	plugin$3,
 	plugin$2,
@@ -3246,6 +3301,7 @@ function useAuth() {
 				refreshToken: result.data.refresh_token
 			});
 			authStore.setUser(result.data.user);
+			authStore.hydrateUserFromToken();
 		}
 		return result;
 	};
@@ -3260,6 +3316,7 @@ function useAuth() {
 				refreshToken: result.data.refresh_token
 			});
 			authStore.setUser(result.data.user);
+			authStore.hydrateUserFromToken();
 		}
 		return result;
 	};
@@ -3283,7 +3340,8 @@ var app_vue_vue_type_script_setup_true_lang_default = /*@__PURE__*/ defineCompon
 	__name: "app",
 	__ssrInlineRender: true,
 	setup(__props) {
-		const { isAuthenticated } = storeToRefs(useAuthStore());
+		const authStore = useAuthStore();
+		const { isAuthenticated } = storeToRefs(authStore);
 		useAuth();
 		const primaryNav = [
 			{
@@ -3307,65 +3365,74 @@ var app_vue_vue_type_script_setup_true_lang_default = /*@__PURE__*/ defineCompon
 				label: "Business Matching"
 			}
 		];
-		const secondaryNav = [
-			{
-				to: "/exhibition",
-				label: "Exhibition"
-			},
-			{
-				to: "/deal-room",
-				label: "Deal Room"
-			},
-			{
-				to: "/participants",
-				label: "Participants"
-			},
-			{
-				to: "/tickets",
-				label: "Delegate Packages"
-			},
-			{
-				to: "/contact",
-				label: "Contact"
-			},
-			{
-				to: "/partners",
-				label: "Partners"
-			},
-			{
-				to: "/faq",
-				label: "FAQ"
-			},
-			{
-				to: "/dashboard",
-				label: "Dashboard"
-			},
-			{
-				to: "/admin/speakers",
-				label: "Admin"
+		const secondaryNav = computed(() => {
+			const items = [
+				{
+					to: "/exhibition",
+					label: "Exhibition"
+				},
+				{
+					to: "/deal-room",
+					label: "Deal Room"
+				},
+				{
+					to: "/participants",
+					label: "Participants"
+				},
+				{
+					to: "/tickets",
+					label: "Delegate Packages"
+				},
+				{
+					to: "/contact",
+					label: "Contact"
+				},
+				{
+					to: "/partners",
+					label: "Partners"
+				},
+				{
+					to: "/faq",
+					label: "FAQ"
+				},
+				{
+					to: "/dashboard",
+					label: "Dashboard"
+				}
+			];
+			if (authStore.isAdminOrOrganizer) {
+				items.push({
+					to: "/admin/reports",
+					label: "Sales Report"
+				});
+				items.push({
+					to: "/admin/speakers",
+					label: "Admin"
+				});
 			}
-		];
-		const allNav = [...primaryNav, ...secondaryNav];
+			return items;
+		});
+		const allNav = computed(() => [...primaryNav, ...secondaryNav.value]);
 		return (_ctx, _push, _parent, _attrs) => {
 			const _component_NuxtLink = NuxtLink;
 			const _component_NuxtPage = page_default;
-			_push(`<div${ssrRenderAttrs(mergeProps({ class: "site-shell min-h-screen text-white" }, _attrs))}><div class="ambient ambient-one"></div><div class="ambient ambient-two"></div><header class="sticky top-0 z-50 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl"><div class="mx-auto flex w-full max-w-[1440px] items-center gap-5 px-4 py-3 sm:px-6 lg:px-8">`);
+			_push(`<div${ssrRenderAttrs(mergeProps({ class: "site-shell min-h-screen text-white" }, _attrs))} data-v-07e55f1d><div class="ambient ambient-one" data-v-07e55f1d></div><div class="ambient ambient-two" data-v-07e55f1d></div><header class="sticky top-0 z-50 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl" data-v-07e55f1d><div class="mx-auto flex w-full max-w-[1440px] flex-wrap items-center gap-3 px-3 py-3 sm:gap-4 sm:px-6 lg:px-8" data-v-07e55f1d>`);
 			_push(ssrRenderComponent(_component_NuxtLink, {
 				to: "/",
-				class: "flex min-w-0 shrink-0 items-center gap-3"
+				class: "brand-block flex min-w-0 shrink-0 items-center gap-3"
 			}, {
 				default: withCtx((_, _push, _parent, _scopeId) => {
-					if (_push) _push(`<span class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-cyan-400/30 bg-white/10 p-1 shadow-lg shadow-cyan-950/20"${_scopeId}><span class="text-sm font-black text-amber-200"${_scopeId}>IW</span></span><span class="hidden sm:block"${_scopeId}><span class="block whitespace-nowrap text-[10px] uppercase tracking-[0.35em] text-amber-200/70"${_scopeId}>IWAPI presents</span><span class="block whitespace-nowrap text-base font-semibold text-white"${_scopeId}>IWBIF 2026</span></span>`);
-					else return [createVNode("span", { class: "flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-cyan-400/30 bg-white/10 p-1 shadow-lg shadow-cyan-950/20" }, [createVNode("span", { class: "text-sm font-black text-amber-200" }, "IW")]), createVNode("span", { class: "hidden sm:block" }, [createVNode("span", { class: "block whitespace-nowrap text-[10px] uppercase tracking-[0.35em] text-amber-200/70" }, "IWAPI presents"), createVNode("span", { class: "block whitespace-nowrap text-base font-semibold text-white" }, "IWBIF 2026")])];
+					if (_push) _push(`<span class="brand-mark flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-amber-300/40 bg-white/10 p-1 shadow-lg shadow-cyan-950/20 sm:h-11 sm:w-11" data-v-07e55f1d${_scopeId}><span class="text-sm font-black text-amber-200" data-v-07e55f1d${_scopeId}>IW</span></span><span class="hidden sm:block" data-v-07e55f1d${_scopeId}><span class="brand-kicker block whitespace-nowrap text-[10px] uppercase tracking-[0.35em] text-amber-200/75" data-v-07e55f1d${_scopeId}>IWAPI presents</span><span class="brand-name block whitespace-nowrap text-base font-semibold tracking-[0.08em] text-white" data-v-07e55f1d${_scopeId}>IWBIF 2026</span></span>`);
+					else return [createVNode("span", { class: "brand-mark flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-amber-300/40 bg-white/10 p-1 shadow-lg shadow-cyan-950/20 sm:h-11 sm:w-11" }, [createVNode("span", { class: "text-sm font-black text-amber-200" }, "IW")]), createVNode("span", { class: "hidden sm:block" }, [createVNode("span", { class: "brand-kicker block whitespace-nowrap text-[10px] uppercase tracking-[0.35em] text-amber-200/75" }, "IWAPI presents"), createVNode("span", { class: "brand-name block whitespace-nowrap text-base font-semibold tracking-[0.08em] text-white" }, "IWBIF 2026")])];
 				}),
 				_: 1
 			}, _parent));
-			_push(`<nav class="ml-auto hidden items-center gap-1 text-sm text-slate-300 xl:flex"><!--[-->`);
+			_push(`<nav class="hidden items-center gap-1 text-sm text-slate-300 xl:ml-auto xl:flex" data-v-07e55f1d><!--[-->`);
 			ssrRenderList(primaryNav, (item) => {
 				_push(ssrRenderComponent(_component_NuxtLink, {
 					key: item.to,
 					to: item.to,
-					class: "whitespace-nowrap rounded-full px-3 py-2 hover:bg-white/5 hover:text-white"
+					class: "nav-link whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] hover:bg-white/5 hover:text-white"
 				}, {
 					default: withCtx((_, _push, _parent, _scopeId) => {
 						if (_push) _push(`${ssrInterpolate(item.label)}`);
@@ -3374,12 +3441,12 @@ var app_vue_vue_type_script_setup_true_lang_default = /*@__PURE__*/ defineCompon
 					_: 2
 				}, _parent));
 			});
-			_push(`<!--]--><details class="group relative"><summary class="cursor-pointer list-none whitespace-nowrap rounded-full px-3 py-2 hover:bg-white/5 hover:text-white">More <span class="ml-1 text-[10px]">v</span></summary><div class="absolute right-0 top-12 grid w-48 gap-1 rounded-2xl border border-white/10 bg-slate-950 p-2 shadow-2xl"><!--[-->`);
-			ssrRenderList(secondaryNav, (item) => {
+			_push(`<!--]--><details class="group relative" data-v-07e55f1d><summary class="nav-link cursor-pointer list-none whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] text-slate-200 transition hover:bg-white/5 hover:text-white" data-v-07e55f1d>More <span class="ml-1 text-[10px] text-amber-200/80" data-v-07e55f1d>v</span></summary><div class="nav-menu-panel absolute right-0 top-12 grid w-48 gap-1 rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-slate-950/60 backdrop-blur-xl" data-v-07e55f1d><!--[-->`);
+			ssrRenderList(unref(secondaryNav), (item) => {
 				_push(ssrRenderComponent(_component_NuxtLink, {
 					key: item.to,
 					to: item.to,
-					class: "rounded-xl px-4 py-3 hover:bg-white/5 hover:text-white"
+					class: "rounded-xl px-4 py-3 text-sm text-slate-200 transition hover:bg-white/5 hover:text-white"
 				}, {
 					default: withCtx((_, _push, _parent, _scopeId) => {
 						if (_push) _push(`${ssrInterpolate(item.label)}`);
@@ -3388,10 +3455,10 @@ var app_vue_vue_type_script_setup_true_lang_default = /*@__PURE__*/ defineCompon
 					_: 2
 				}, _parent));
 			});
-			_push(`<!--]--></div></details></nav><div class="ml-auto flex shrink-0 items-center gap-2 xl:ml-2">`);
+			_push(`<!--]--></div></details></nav><div class="ml-auto flex shrink-0 items-center gap-2 xl:ml-2" data-v-07e55f1d>`);
 			if (!unref(isAuthenticated)) _push(ssrRenderComponent(_component_NuxtLink, {
-				to: "/register",
-				class: "hidden whitespace-nowrap rounded-full border border-cyan-300/30 px-4 py-2 text-sm font-semibold text-cyan-100 sm:inline-flex"
+				to: "/auth/register",
+				class: "header-cta hidden whitespace-nowrap rounded-full border border-amber-300/35 bg-gradient-to-r from-amber-300/15 via-amber-200/8 to-cyan-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100 shadow-[0_16px_40px_rgba(216,172,89,0.16)] transition hover:border-amber-200/70 hover:brightness-110 sm:inline-flex"
 			}, {
 				default: withCtx((_, _push, _parent, _scopeId) => {
 					if (_push) _push(` Register Now `);
@@ -3400,10 +3467,21 @@ var app_vue_vue_type_script_setup_true_lang_default = /*@__PURE__*/ defineCompon
 				_: 1
 			}, _parent));
 			else _push(`<!---->`);
-			if (unref(isAuthenticated)) _push(`<button type="button" class="whitespace-nowrap rounded-full bg-cyan-400 px-5 py-2 text-sm font-semibold text-slate-950"> Log Out </button>`);
+			if (!unref(isAuthenticated)) _push(ssrRenderComponent(_component_NuxtLink, {
+				to: "/auth/register",
+				class: "header-cta inline-flex whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:hidden"
+			}, {
+				default: withCtx((_, _push, _parent, _scopeId) => {
+					if (_push) _push(` Register `);
+					else return [createTextVNode(" Register ")];
+				}),
+				_: 1
+			}, _parent));
+			else _push(`<!---->`);
+			if (unref(isAuthenticated)) _push(`<button type="button" class="header-cta whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:px-5" data-v-07e55f1d> Log Out </button>`);
 			else _push(ssrRenderComponent(_component_NuxtLink, {
 				to: "/auth/login",
-				class: "whitespace-nowrap rounded-full bg-cyan-400 px-5 py-2 text-sm font-semibold text-slate-950"
+				class: "header-signin whitespace-nowrap rounded-full border border-cyan-300/30 bg-cyan-400/5 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-100 shadow-[0_12px_30px_rgba(34,211,238,0.12)] transition hover:border-cyan-200/60 hover:bg-cyan-300/10 sm:px-5"
 			}, {
 				default: withCtx((_, _push, _parent, _scopeId) => {
 					if (_push) _push(` Sign In `);
@@ -3411,12 +3489,12 @@ var app_vue_vue_type_script_setup_true_lang_default = /*@__PURE__*/ defineCompon
 				}),
 				_: 1
 			}, _parent));
-			_push(`<details class="relative xl:hidden"><summary aria-label="Open navigation menu" class="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-white/15 text-sm font-semibold">Menu</summary><nav class="absolute right-0 top-12 grid w-64 gap-1 rounded-2xl border border-white/10 bg-slate-950 p-3 shadow-2xl"><!--[-->`);
-			ssrRenderList(allNav, (item) => {
+			_push(`<details class="relative xl:hidden" data-v-07e55f1d><summary aria-label="Open navigation menu" class="menu-button flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-white/15 bg-white/5 text-xs font-bold uppercase tracking-[0.12em] text-slate-100 shadow-lg shadow-slate-950/50 transition hover:border-cyan-300/40 hover:bg-white/10" data-v-07e55f1d>Menu</summary><nav class="nav-menu-panel absolute right-0 top-12 grid w-[min(80vw,18rem)] gap-1 rounded-2xl border border-white/10 bg-slate-950/95 p-3 shadow-2xl shadow-slate-950/60 backdrop-blur-xl" data-v-07e55f1d><!--[-->`);
+			ssrRenderList(unref(allNav), (item) => {
 				_push(ssrRenderComponent(_component_NuxtLink, {
 					key: item.to,
 					to: item.to,
-					class: "rounded-xl px-4 py-3 text-sm text-slate-200 hover:bg-white/5 hover:text-white"
+					class: "rounded-xl px-4 py-3 text-sm text-slate-200 transition hover:bg-white/5 hover:text-white"
 				}, {
 					default: withCtx((_, _push, _parent, _scopeId) => {
 						if (_push) _push(`${ssrInterpolate(item.label)}`);
@@ -3425,9 +3503,9 @@ var app_vue_vue_type_script_setup_true_lang_default = /*@__PURE__*/ defineCompon
 					_: 2
 				}, _parent));
 			});
-			_push(`<!--]--></nav></details></div></div></header><main>`);
+			_push(`<!--]--></nav></details></div></div></header><main data-v-07e55f1d>`);
 			_push(ssrRenderComponent(_component_NuxtPage, null, null, _parent));
-			_push(`</main><footer class="relative z-10 border-t border-white/10 bg-slate-950/60"><div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-3 lg:px-8"><div><p class="text-xs uppercase tracking-[0.3em] text-amber-200">IWBIF 2026</p><p class="mt-3 max-w-sm text-sm leading-7 text-slate-400">Connecting women-led businesses with global markets, finance, and trusted partnerships.</p></div><div class="grid grid-cols-2 gap-3 text-sm text-slate-300">`);
+			_push(`</main><footer class="relative z-10 border-t border-white/10 bg-slate-950/60" data-v-07e55f1d><div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-3 lg:px-8" data-v-07e55f1d><div data-v-07e55f1d><p class="text-xs uppercase tracking-[0.3em] text-amber-200" data-v-07e55f1d>IWBIF 2026</p><p class="mt-3 max-w-sm text-sm leading-7 text-slate-400" data-v-07e55f1d>Connecting women-led businesses with global markets, finance, and trusted partnerships.</p></div><div class="grid grid-cols-2 gap-3 text-sm text-slate-300" data-v-07e55f1d>`);
 			_push(ssrRenderComponent(_component_NuxtLink, { to: "/about" }, {
 				default: withCtx((_, _push, _parent, _scopeId) => {
 					if (_push) _push(`About`);
@@ -3470,7 +3548,7 @@ var app_vue_vue_type_script_setup_true_lang_default = /*@__PURE__*/ defineCompon
 				}),
 				_: 1
 			}, _parent));
-			_push(`</div><div class="text-sm text-slate-400 md:text-right"><p>International Women Business &amp; Investment Forum</p><p class="mt-1">14–17 October 2026 · Jakarta</p><div class="mt-3 flex flex-wrap gap-4 md:justify-end">`);
+			_push(`</div><div class="text-sm text-slate-400 md:text-right" data-v-07e55f1d><p data-v-07e55f1d>International Women Business &amp; Investment Forum</p><p class="mt-1" data-v-07e55f1d>14–17 October 2026 · Jakarta</p><div class="mt-3 flex flex-wrap gap-4 md:justify-end" data-v-07e55f1d>`);
 			_push(ssrRenderComponent(_component_NuxtLink, { to: "/privacy" }, {
 				default: withCtx((_, _push, _parent, _scopeId) => {
 					if (_push) _push(`Privacy`);
@@ -3499,10 +3577,17 @@ var app_vue_vue_type_script_setup_true_lang_default = /*@__PURE__*/ defineCompon
 				}),
 				_: 1
 			}, _parent));
-			_push(`</div></div></div><p class="border-t border-white/10 px-4 py-5 text-center text-xs text-slate-500">© 2026 International Women Business &amp; Investment Forum. All rights reserved.</p></footer></div>`);
+			_push(`</div></div></div><p class="border-t border-white/10 px-4 py-5 text-center text-xs text-slate-500" data-v-07e55f1d>© 2026 International Women Business &amp; Investment Forum. All rights reserved.</p></footer></div>`);
 		};
 	}
 });
+//#endregion
+//#region \0plugin-vue:export-helper
+var _plugin_vue_export_helper_default = (sfc, props) => {
+	const target = sfc.__vccOpts || sfc;
+	for (const [key, val] of props) target[key] = val;
+	return target;
+};
 //#endregion
 //#region app/app.vue
 var _sfc_setup$2 = app_vue_vue_type_script_setup_true_lang_default.setup;
@@ -3511,7 +3596,7 @@ app_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 	(ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("app.vue");
 	return _sfc_setup$2 ? _sfc_setup$2(props, ctx) : void 0;
 };
-var app_default = app_vue_vue_type_script_setup_true_lang_default;
+var app_default = /*#__PURE__*/ _plugin_vue_export_helper_default(app_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-07e55f1d"]]);
 //#endregion
 //#region node_modules/nuxt/dist/app/components/nuxt-error-page.vue
 var _sfc_main$1 = {
@@ -3525,8 +3610,8 @@ var _sfc_main$1 = {
 		const statusText = _error.statusMessage ?? (is404 ? "Page Not Found" : "Internal Server Error");
 		const description = _error.message || _error.toString();
 		const stack = void 0;
-		const _Error404 = defineAsyncComponent(() => import('../build/error-404-CkIVruD0.mjs'));
-		const _Error = defineAsyncComponent(() => import('../build/error-500-BMZk3BS1.mjs'));
+		const _Error404 = defineAsyncComponent(() => import('../build/error-404-D3gSrypn.mjs'));
+		const _Error = defineAsyncComponent(() => import('../build/error-500-LbduvkCd.mjs'));
 		const ErrorTemplate = is404 ? _Error404 : _Error;
 		return (_ctx, _push, _parent, _attrs) => {
 			_push(ssrRenderComponent(unref(ErrorTemplate), mergeProps({
@@ -3626,5 +3711,5 @@ const entry = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   default: entry_default
 }, Symbol.toStringTag, { value: 'Module' }));
 
-export { NuxtLink as N, useSeoMeta$1 as a, useAsyncData as b, useNuxtApp as c, defineNuxtRouteMiddleware as d, useAuth as e, useRoute as f, useState as g, useRuntimeConfig as h, useHead$1 as i, entry as j, navigateTo as n, useAuthStore as u };;globalThis.__timing__.logEnd('Load chunks/virtual/entry');
+export { NuxtLink as N, _plugin_vue_export_helper_default as _, useSeoMeta$1 as a, useAsyncData as b, useNuxtApp as c, defineNuxtRouteMiddleware as d, useAuth as e, useRoute as f, useState as g, useRuntimeConfig as h, useHead$1 as i, entry as j, navigateTo as n, storeToRefs as s, useAuthStore as u };
 //# sourceMappingURL=entry.mjs.map

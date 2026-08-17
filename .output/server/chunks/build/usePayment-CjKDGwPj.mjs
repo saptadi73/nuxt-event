@@ -1,4 +1,4 @@
-globalThis.__timing__.logStart('Load chunks/build/usePayment-CjKDGwPj');import { c as useNuxtApp } from '../virtual/entry.mjs';
+import { c as useNuxtApp } from '../virtual/entry.mjs';
 
 //#region app/composables/usePayment.ts
 function usePayment() {
@@ -20,5 +20,5 @@ function usePayment() {
 	};
 }
 
-export { usePayment as u };;globalThis.__timing__.logEnd('Load chunks/build/usePayment-CjKDGwPj');
+export { usePayment as u };
 //# sourceMappingURL=usePayment-CjKDGwPj.mjs.map

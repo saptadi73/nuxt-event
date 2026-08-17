@@ -1,2 +1,32 @@
-<template><section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8"><p class="text-sm uppercase tracking-[.35em] text-amber-200">Delegate Activities</p><h1 class="mt-4 max-w-4xl text-5xl font-black">Build your IWBIF experience.</h1><p class="mt-5 max-w-3xl text-lg leading-8 text-slate-300">Select from the forum, business matching, exhibition, networking, and industrial visit activities published by the organizer.</p><div v-if="pending" class="mt-10 grid gap-5 md:grid-cols-2"><div v-for="n in 4" :key="n" class="h-40 animate-pulse rounded-[2rem] bg-white/5"/></div><div v-else-if="error" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ error.message }}</div><div v-else-if="!activities.length" class="mt-10 rounded-3xl border border-white/10 bg-white/5 p-6 text-slate-300">Activities will be published soon.</div><div v-else class="mt-10 grid gap-5 md:grid-cols-2"><article v-for="item in activities" :key="item.id" class="glass-card rounded-[2rem] p-7"><h2 class="text-2xl font-bold">{{ item.name }}</h2><p v-if="item.description" class="mt-3 leading-7 text-slate-300">{{ item.description }}</p></article></div></section></template>
-<script setup lang="ts">import {useEvent} from '~/composables/useEvent';useSeoMeta({title:'Activities | IWBIF 2026'});const {getEvents,getEventActivities}=useEvent();const {data:response,pending,error}=await useAsyncData('iwbif-activities',async()=>{const events=await getEvents(1,1);const event=events.data[0];if(!event)throw new Error('No IWBIF event is currently published.');return getEventActivities(event.id)});const activities=computed(()=>response.value?.data.filter(item=>item.is_active!==false)??[]);</script>
+<template>
+  <section class="mx-auto max-w-7xl px-3 py-10 sm:px-6 lg:px-8">
+    <p class="text-sm uppercase tracking-[.35em] text-amber-200">Delegate Activities</p>
+    <h1 class="mt-4 max-w-4xl text-3xl font-black sm:text-5xl">Build your IWBIF experience.</h1>
+    <p class="mt-5 max-w-3xl text-sm leading-7 text-slate-300 sm:text-lg sm:leading-8">Select from the forum, business matching, exhibition, networking, and industrial visit activities published by the organizer.</p>
+
+    <div v-if="pending" class="mt-10 grid gap-5 md:grid-cols-2">
+      <div v-for="n in 4" :key="n" class="h-40 animate-pulse rounded-[2rem] bg-white/5" />
+    </div>
+    <div v-else-if="error" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ error.message }}</div>
+    <div v-else-if="!activities.length" class="mt-10 rounded-3xl border border-white/10 bg-white/5 p-6 text-slate-300">Activities will be published soon.</div>
+    <div v-else class="mt-10 grid gap-5 md:grid-cols-2">
+      <article v-for="item in activities" :key="item.id" class="glass-card rounded-[2rem] p-5 sm:p-7">
+        <h2 class="text-xl font-bold sm:text-2xl">{{ item.name }}</h2>
+        <p v-if="item.description" class="mt-3 text-sm leading-7 text-slate-300 sm:text-base">{{ item.description }}</p>
+      </article>
+    </div>
+  </section>
+</template>
+<script setup lang="ts">
+import {useEvent} from '~/composables/useEvent';
+useSeoMeta({title:'Activities | IWBIF 2026'});
+const {getEvents,getEventActivities}=useEvent();
+const {data:response,pending,error}=await useAsyncData('iwbif-activities',async()=>{
+  const events=await getEvents(1,1);
+  const event=events.data[0];
+  if(!event) throw new Error('No IWBIF event is currently published.');
+  return getEventActivities(event.id);
+});
+const activities=computed(()=>response.value?.data.filter(item=>item.is_active!==false)??[]);
+</script>
+

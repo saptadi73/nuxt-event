@@ -27,6 +27,7 @@ export function useAuth() {
         refreshToken: result.data.refresh_token
       });
       authStore.setUser(result.data.user);
+      authStore.hydrateUserFromToken();
     }
     return result;
   };
@@ -43,6 +44,7 @@ export function useAuth() {
         refreshToken: result.data.refresh_token
       });
       authStore.setUser(result.data.user);
+      authStore.hydrateUserFromToken();
     }
     return result;
   };

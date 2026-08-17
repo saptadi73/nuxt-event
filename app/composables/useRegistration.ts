@@ -2,7 +2,6 @@ import { useApi, type ApiResponse } from '~/composables/useApi';
 
 export interface RegistrationPayload {
   event_id: string;
-  participant_id: string;
   delegate_package_id: string;
   full_name: string;
   job_title: string;

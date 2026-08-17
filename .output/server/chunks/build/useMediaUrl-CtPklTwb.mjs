@@ -1,4 +1,4 @@
-globalThis.__timing__.logStart('Load chunks/build/useMediaUrl-CtPklTwb');import { h as useRuntimeConfig } from '../virtual/entry.mjs';
+import { h as useRuntimeConfig } from '../virtual/entry.mjs';
 
 //#region app/composables/useMediaUrl.ts
 function useMediaUrl() {
@@ -11,5 +11,5 @@ function useMediaUrl() {
 	return { mediaUrl };
 }
 
-export { useMediaUrl as u };;globalThis.__timing__.logEnd('Load chunks/build/useMediaUrl-CtPklTwb');
+export { useMediaUrl as u };
 //# sourceMappingURL=useMediaUrl-CtPklTwb.mjs.map

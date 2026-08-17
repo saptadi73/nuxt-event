@@ -1,44 +1,44 @@
 ﻿<template>
   <main class="program-page overflow-hidden">
-  <section class="relative mx-auto max-w-7xl px-4 pb-20 pt-14 sm:px-6 sm:pt-20 lg:px-8">
-    <div class="program-glow" aria-hidden="true" />
-    <div class="relative max-w-5xl">
-      <p class="program-eyebrow">Live Event Program</p>
-      <h1 class="mt-5 text-4xl font-black leading-[1.08] text-[#f8f6f1] sm:text-5xl lg:text-6xl">Four days from meaningful insight to <span class="text-[#e6c477]">deal execution.</span></h1>
-      <div class="mt-8 flex flex-wrap gap-3">
-        <span class="program-meta">14–17 October 2026</span>
-        <span class="program-meta">Hotel Kempinski Indonesia</span>
-        <span class="program-meta">Jakarta, Indonesia</span>
+    <section class="relative mx-auto max-w-7xl px-3 pb-16 pt-10 sm:px-6 sm:pt-20 lg:px-8">
+      <div class="program-glow" aria-hidden="true" />
+      <div class="relative max-w-5xl">
+        <p class="program-eyebrow">Live Event Program</p>
+        <h1 class="mt-5 text-3xl font-black leading-[1.08] text-[#f8f6f1] sm:text-5xl lg:text-6xl">Four days from meaningful insight to <span class="text-[#e6c477]">deal execution.</span></h1>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <span class="program-meta">14–17 October 2026</span>
+          <span class="program-meta">Hotel Kempinski Indonesia</span>
+          <span class="program-meta">Jakarta, Indonesia</span>
+        </div>
+        <p class="mt-6 max-w-3xl text-sm leading-7 text-[#aeb9c8] sm:text-base">Sessions are delivered by forum leaders and updated from the official event operations source. Prepare your business materials early for every matching window.</p>
       </div>
-      <p class="mt-6 max-w-3xl text-sm leading-7 text-[#aeb9c8]">Sessions are delivered by forum leaders and updated from the official event operations source. Prepare your business materials early for every matching window.</p>
-    </div>
 
-    <div v-if="pending" class="mt-10 space-y-4">
-      <div v-for="n in 6" :key="n" class="h-28 animate-pulse rounded-3xl border border-white/10 bg-white/5" />
-    </div>
-    <div v-else-if="error" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">The event schedule could not be loaded.</div>
-    <div v-else class="mt-10 space-y-10">
-      <section v-for="(day, dayIndex) in groupedSessions" :key="day.date" class="day-block">
-        <div class="day-heading">
-          <span class="day-number">Day {{ String(dayIndex + 1).padStart(2, '0') }}</span>
-          <p>{{ day.date }}</p>
-        </div>
-        <div class="mt-5 space-y-4">
-          <article v-for="session in day.items" :key="session.id" class="session-card grid gap-5 rounded-3xl p-6 sm:grid-cols-[170px_1fr] sm:p-7">
-            <div class="session-time">
-              <p class="font-mono text-sm font-semibold text-[#e6c477]">{{ formatTime(session.start_at) }} – {{ formatTime(session.end_at) }}</p>
-              <p class="mt-2 text-xs uppercase tracking-[.18em] text-[#8f9eb1]">{{ session.room_name }}</p>
-            </div>
-            <div>
-              <p class="text-xs font-bold uppercase tracking-[.2em] text-[#d8ac59]">{{ label(session.session_type) }}</p>
-              <h2 class="mt-2 text-xl font-bold text-[#f8f6f1]">{{ session.title }}</h2>
-              <p class="mt-2 text-sm leading-7 text-[#cbd2dc]">{{ session.description }}</p>
-            </div>
-          </article>
-        </div>
-      </section>
-    </div>
-  </section>
+      <div v-if="pending" class="mt-10 space-y-4">
+        <div v-for="n in 6" :key="n" class="h-28 animate-pulse rounded-3xl border border-white/10 bg-white/5" />
+      </div>
+      <div v-else-if="error" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">The event schedule could not be loaded.</div>
+      <div v-else class="mt-10 space-y-10">
+        <section v-for="(day, dayIndex) in groupedSessions" :key="day.date" class="day-block">
+          <div class="day-heading">
+            <span class="day-number">Day {{ String(dayIndex + 1).padStart(2, '0') }}</span>
+            <p>{{ day.date }}</p>
+          </div>
+          <div class="mt-5 space-y-4">
+            <article v-for="session in day.items" :key="session.id" class="session-card grid gap-5 rounded-3xl p-4 sm:grid-cols-[170px_1fr] sm:p-7">
+              <div class="session-time">
+                <p class="font-mono text-sm font-semibold text-[#e6c477]">{{ formatTime(session.start_at) }} – {{ formatTime(session.end_at) }}</p>
+                <p class="mt-2 text-xs uppercase tracking-[.18em] text-[#8f9eb1]">{{ session.room_name }}</p>
+              </div>
+              <div>
+                <p class="text-xs font-bold uppercase tracking-[.2em] text-[#d8ac59]">{{ label(session.session_type) }}</p>
+                <h2 class="mt-2 text-xl font-bold text-[#f8f6f1]">{{ session.title }}</h2>
+                <p class="mt-2 text-sm leading-7 text-[#cbd2dc]">{{ session.description }}</p>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+    </section>
   </main>
 </template>
 
@@ -86,5 +86,12 @@ const label=(value?:string)=>(value??'session').replaceAll('_',' ');
 .session-card:hover { transform:translateY(-3px); border-color:rgba(216,172,89,.34); box-shadow:0 28px 68px rgba(0,0,0,.34),0 0 32px rgba(216,172,89,.055); }
 .session-time { border-bottom:1px solid rgba(255,255,255,.09); padding-bottom:1rem; }
 @media (min-width:640px) { .day-block { padding-left:2rem; } .session-time { border-right:1px solid rgba(255,255,255,.09); border-bottom:0; padding-right:1.5rem; padding-bottom:0; } }
+@media (max-width:639px) {
+  .day-block { padding-left: 0; }
+  .day-block::before { display: none; }
+  .day-heading { flex-direction: column; align-items: flex-start; gap: .35rem; letter-spacing: .12em; }
+  .session-card { border-radius: 1.25rem; }
+  .session-time { border-bottom: 1px solid rgba(255,255,255,.09); padding-bottom: .9rem; }
+}
 @media (prefers-reduced-motion:reduce) { .session-card { transition:none; } }
 </style>

@@ -38,6 +38,7 @@ export { useAuth } from '../app/composables/useAuth';
 export { useBusinessMatching, BusinessMatchingProfile, MeetingItem, MeetingCreatePayload } from '../app/composables/useBusinessMatching';
 export { useCommunication, ConversationCreatePayload, ConversationItem, MessageItem, NotificationItem } from '../app/composables/useCommunication';
 export { useEvent, EventItem, SpeakerItem, SessionItem, WorkshopTrackItem, TicketTypeItem, DelegatePackageItem, ActivityItem, ExhibitorItem } from '../app/composables/useEvent';
+export { useExhibitor, ExhibitorCreatePayload, ExhibitorRecord } from '../app/composables/useExhibitor';
 export { useMediaUrl } from '../app/composables/useMediaUrl';
 export { useParticipant, ParticipantProfile, ParticipantPayload } from '../app/composables/useParticipant';
 export { normalizeInvoices, usePayment, DokuCheckoutData, OrderItem, PaymentItem, Invoice, InvoiceResponseData } from '../app/composables/usePayment';

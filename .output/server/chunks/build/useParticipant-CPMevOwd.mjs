@@ -1,4 +1,4 @@
-globalThis.__timing__.logStart('Load chunks/build/useParticipant-CPMevOwd');import { c as useNuxtApp } from '../virtual/entry.mjs';
+import { c as useNuxtApp } from '../virtual/entry.mjs';
 
 //#region app/composables/useParticipant.ts
 function useParticipant() {
@@ -30,5 +30,5 @@ function useParticipant() {
 	};
 }
 
-export { useParticipant as u };;globalThis.__timing__.logEnd('Load chunks/build/useParticipant-CPMevOwd');
+export { useParticipant as u };
 //# sourceMappingURL=useParticipant-CPMevOwd.mjs.map

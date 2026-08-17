@@ -1,10 +1,11 @@
 <template>
-  <section class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
-    <h1 class="text-4xl font-black text-white">My Profile</h1>
-    <p class="mt-3 text-slate-300">Update the data used by the `PUT /participants/me` and `PATCH /participants/me` endpoints.</p>
+  <section class="mx-auto max-w-3xl px-3 py-10 sm:px-6 lg:px-8">
+    <p class="text-sm uppercase tracking-[.35em] text-cyan-200">My Profile</p>
+    <h1 class="mt-3 text-3xl font-black text-white sm:text-4xl">Update your participant profile</h1>
+    <p class="mt-3 text-sm text-slate-300 sm:text-base">Keep your business identity, biography, and profile photo easy to discover by relevant partners and delegates.</p>
 
-    <div class="mt-8 grid gap-4 rounded-[2rem] border border-white/10 bg-white/5 p-6">
-      <div class="flex flex-wrap items-center gap-4">
+    <div class="mt-8 grid gap-4 rounded-[2rem] border border-white/10 bg-white/5 p-4 sm:p-6">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
         <img v-if="profilePhotoUrl" :src="mediaUrl(profilePhotoUrl)" alt="Your profile photo" class="h-20 w-20 rounded-2xl object-cover" />
         <div v-else class="flex h-20 w-20 items-center justify-center rounded-2xl bg-cyan-300/10 text-2xl font-bold text-cyan-200">{{ initials }}</div>
         <label class="grid gap-2 text-sm text-slate-300">
@@ -14,20 +15,20 @@
       </div>
       <label class="grid gap-2">
         <span class="text-sm text-slate-300">Full Name</span>
-        <input v-model="form.full_name" class="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none" />
+        <input v-model="form.full_name" class="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none focus:border-cyan-300/60" />
       </label>
 
       <label class="grid gap-2">
         <span class="text-sm text-slate-300">Organization</span>
-        <input v-model="form.organization_name" class="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none" />
+        <input v-model="form.organization_name" class="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none focus:border-cyan-300/60" />
       </label>
 
       <label class="grid gap-2">
         <span class="text-sm text-slate-300">Biography</span>
-        <textarea v-model="form.biography" rows="5" class="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none"></textarea>
+        <textarea v-model="form.biography" rows="5" class="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-white outline-none focus:border-cyan-300/60"></textarea>
       </label>
 
-      <div class="flex flex-wrap gap-3">
+      <div class="flex flex-col gap-3 sm:flex-row">
         <button
           @click="save('put')"
           class="rounded-full bg-cyan-400 px-6 py-3 text-sm font-semibold text-slate-950"

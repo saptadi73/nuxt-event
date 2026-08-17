@@ -1,8 +1,8 @@
 <template>
-  <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+  <section class="mx-auto max-w-7xl px-3 py-10 sm:px-6 lg:px-8">
     <p class="text-sm uppercase tracking-[.35em] text-cyan-200">Participant Directory</p>
-    <h1 class="mt-3 text-4xl font-black">Connect With IWBIF Professionals</h1>
-    <p class="mt-3 max-w-3xl leading-7 text-slate-300">Find collaborators, investors, business partners, and delegates aligned with your growth goals. Private contact information is never displayed.</p>
+    <h1 class="mt-3 text-3xl font-black sm:text-4xl">Connect With IWBIF Professionals</h1>
+    <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">Find collaborators, investors, business partners, and delegates aligned with your growth goals. Private contact information is never displayed.</p>
 
     <div class="mt-8">
       <label><span class="sr-only">Search participants</span><input v-model="query" type="search" placeholder="Search name, organization, or biography" class="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 outline-none focus:border-cyan-300" /></label>
@@ -10,7 +10,7 @@
 
     <div v-if="pending" class="mt-7 grid gap-5 md:grid-cols-2 lg:grid-cols-3"><div v-for="item in 6" :key="item" class="h-64 animate-pulse rounded-3xl bg-white/5" /></div>
     <div v-else class="mt-7 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-      <article v-for="person in filtered" :key="person.id" class="glass-card rounded-3xl p-6">
+      <article v-for="person in filtered" :key="person.id" class="glass-card rounded-3xl p-4 sm:p-6">
         <img v-if="person.profile_photo_url" :src="mediaUrl(person.profile_photo_url)" :alt="person.full_name" class="h-14 w-14 rounded-2xl object-cover" />
         <div v-else class="flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-300/10 text-lg font-bold text-cyan-200">{{ initials(person.full_name) }}</div>
         <h2 class="mt-4 text-xl font-bold">{{ person.full_name }}</h2>

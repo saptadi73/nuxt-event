@@ -1,4 +1,4 @@
-globalThis.__timing__.logStart('Load chunks/routes//renderer');import { u as useRuntimeConfig, e as encodePath, j as joinRelativeURL, g as getResponseStatusText, c as getResponseStatus, f as defineRenderHandler, h as getQuery, i as createError, d as destr, k as getRouteRules, r as relative, l as joinURL, b as useNitroApp, m as appendResponseHeader } from '../_/nitro.mjs';
+import { u as useRuntimeConfig, e as encodePath, j as joinRelativeURL, g as getResponseStatusText, c as getResponseStatus, f as defineRenderHandler, h as getQuery, i as createError, d as destr, k as getRouteRules, r as relative, l as joinURL, b as useNitroApp, m as appendResponseHeader } from '../_/nitro.mjs';
 import { createHead as createHead$1, propsToString, renderSSRHead } from 'unhead/server';
 import { hasInjectionContext, inject, isRef, toValue } from 'vue';
 import { DeprecationsPlugin } from 'unhead/legacy';
@@ -283,9 +283,9 @@ function splitPayload(ssrContext) {
 
 const renderSSRHeadOptions = {"omitLineBreaks":true};
 
-const entryIds = [];
+const entryIds = ["../node_modules/nuxt/dist/app/entry.js"];
 
-const entryFileName = "BhIXu3Ic.js";
+const entryFileName = "nYN9csUE.js";
 
 //#region src/runtime/handlers/renderer.ts
 globalThis.__buildAssetsURL = buildAssetsURL;
@@ -478,5 +478,5 @@ const renderer = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
 	default: handler
 }, Symbol.toStringTag, { value: 'Module' }));
 
-export { VueResolver as V, baseURL as b, headSymbol as h, injectHead as i, publicAssetsURL as p, renderer as r };;globalThis.__timing__.logEnd('Load chunks/routes//renderer');
+export { VueResolver as V, baseURL as b, headSymbol as h, injectHead as i, publicAssetsURL as p, renderer as r };
 //# sourceMappingURL=renderer.mjs.map

@@ -1,0 +1,1 @@
+import{c as e,u as t}from"./BbbX97da.js";import{t as n}from"./DgcNFs68.js";var r=e(()=>{let e=n();if(e.hydrateUserFromToken(),!e.isAuthenticated)return t(`/auth/login`)});export{r as default};

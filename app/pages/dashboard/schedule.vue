@@ -1,20 +1,20 @@
 ﻿<template>
-  <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6">
+  <section class="mx-auto max-w-5xl px-3 py-10 sm:px-6">
     <p class="text-sm uppercase tracking-[.35em] text-cyan-200">My Schedule</p>
-    <h1 class="mt-3 text-4xl font-black">Your IWBIF agenda</h1>
+    <h1 class="mt-3 text-3xl font-black sm:text-4xl">Your IWBIF agenda</h1>
     <div class="mt-8 grid gap-6 md:grid-cols-2">
-      <article v-for="day in days" :key="day.date" class="glass-card rounded-[2rem] p-6">
+      <article v-for="day in days" :key="day.date" class="glass-card rounded-[2rem] p-4 sm:p-6">
         <p class="text-xs uppercase tracking-[.25em] text-orange-200">{{ day.date }}</p>
-        <h2 class="mt-3 text-2xl font-bold">{{ day.title }}</h2>
+        <h2 class="mt-3 text-xl font-bold sm:text-2xl">{{ day.title }}</h2>
         <div class="mt-5 space-y-4">
           <div v-for="item in day.items" :key="item.time" class="border-l-2 border-cyan-300/30 pl-4">
             <p class="font-mono text-xs text-cyan-200">{{ item.time }}</p>
-            <p class="mt-1 font-semibold">{{ item.title }}</p>
+            <p class="mt-1 text-sm font-semibold sm:text-base">{{ item.title }}</p>
           </div>
         </div>
       </article>
     </div>
-    <NuxtLink to="/program" class="mt-7 inline-flex rounded-full border border-white/15 px-5 py-3 font-semibold">View complete program</NuxtLink>
+    <NuxtLink to="/program" class="mt-7 inline-flex w-full justify-center rounded-full border border-white/15 px-5 py-3 font-semibold sm:w-auto">View complete program</NuxtLink>
   </section>
 </template>
 <script setup lang="ts">

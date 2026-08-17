@@ -6,7 +6,7 @@
         <div class="relative z-10">
           <p class="eyebrow">About IWBIF 2026</p>
           <h1 class="mt-5 max-w-2xl text-4xl font-black leading-[1.08] text-[#f8f6f1] sm:text-5xl lg:text-6xl">
-            Where women-led businesses build <span class="gold-text">global momentum.</span>
+            Where women-led businesses build <span class="hero-highlight">global momentum.</span>
           </h1>
           <p class="mt-6 max-w-xl text-base leading-8 text-[#cbd2dc] sm:text-lg">
             The International Women Business &amp; Investment Forum is a curated ecosystem where women entrepreneurs,
@@ -34,7 +34,7 @@
       <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-24">
         <div class="mb-9 max-w-3xl">
           <p class="eyebrow">Our vision</p>
-          <h2 class="mt-4 text-3xl font-black leading-tight text-[#f8f6f1] sm:text-4xl lg:text-5xl">More than a forum. <span class="text-[#d8ac59]">A pathway to opportunity.</span></h2>
+          <h2 class="mt-4 text-3xl font-black leading-tight text-[#f8f6f1] sm:text-4xl lg:text-5xl">More than a forum. <span class="vision-highlight">A pathway to opportunity.</span></h2>
         </div>
 
         <div class="vision-composition">
@@ -141,7 +141,28 @@ const why = [
 .about-page { background: radial-gradient(circle at 82% 7%, rgba(230,196,119,.12), transparent 25rem), radial-gradient(circle at 8% 42%, rgba(11,36,71,.74), transparent 34rem), linear-gradient(180deg,#031127 0%,#061a35 52%,#020e21 100%); }
 .about-glow { position:absolute; right:-8rem; top:-10rem; width:34rem; height:34rem; border-radius:999px; background:rgba(216,172,89,.1); filter:blur(86px); }
 .eyebrow { color:#e6c477; font-size:.75rem; font-weight:700; letter-spacing:.3em; text-transform:uppercase; }
-.gold-text { color:#e6c477; }
+.hero-highlight,
+.vision-highlight {
+  display:inline-block;
+  color:#e6c477;
+  font-family:'Playfair Display','Times New Roman',serif;
+  letter-spacing:-0.05em;
+  text-shadow:0 0 22px rgba(230,196,119,.18);
+}
+
+.hero-highlight {
+  font-size:clamp(2.55rem, 5vw, 5.12rem);
+  line-height:0.9;
+  font-weight:700;
+  margin-top:.08em;
+}
+
+.vision-highlight {
+  font-size:clamp(2.1rem, 4vw, 4.2rem);
+  line-height:0.94;
+  font-weight:700;
+}
+
 .focus-pill { border:1px solid rgba(216,172,89,.32); border-radius:999px; background:rgba(216,172,89,.07); padding:.65rem .9rem; color:#f8f6f1; font-size:.78rem; font-weight:600; }
 .image-stage { position:relative; min-width:0; padding:.75rem .75rem 2.5rem; }
 .image-stage::before { content:''; position:absolute; inset:0 3rem 1rem 0; border:1px solid rgba(230,196,119,.35); border-radius:2rem; }

@@ -1,4 +1,4 @@
-globalThis.__timing__.logStart('Load chunks/build/useRegistration-CYl8EOu6');import { c as useNuxtApp } from '../virtual/entry.mjs';
+import { c as useNuxtApp } from '../virtual/entry.mjs';
 
 //#region app/composables/useRegistration.ts
 function useRegistration() {
@@ -16,5 +16,5 @@ function useRegistration() {
 	};
 }
 
-export { useRegistration as u };;globalThis.__timing__.logEnd('Load chunks/build/useRegistration-CYl8EOu6');
+export { useRegistration as u };
 //# sourceMappingURL=useRegistration-CYl8EOu6.mjs.map

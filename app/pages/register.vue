@@ -1,30 +1,64 @@
 <template>
-  <section class="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-    <p class="text-sm uppercase tracking-[.35em] text-amber-200">Delegate Registration</p><h1 class="mt-4 text-5xl font-black">Register for IWBIF 2026</h1><p class="mt-4 text-slate-300">Complete every required section. Your registration is saved as a draft before payment.</p>
-    <div v-if="pending" class="mt-10 h-60 animate-pulse rounded-[2rem] bg-white/5"/><div v-else-if="optionsError" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ optionsError.message }}</div>
-    <form v-else class="mt-10 space-y-7" @submit.prevent="submit">
-      <fieldset class="card"><legend>1. Personal and company information</legend><div class="grid gap-4 md:grid-cols-2">
-        <label v-for="field in identityFields" :key="field.key" class="label"><span>{{ field.label }} *</span><input v-model.trim="form[field.key]" :type="field.type || 'text'" :autocomplete="field.autocomplete" required class="field"/></label>
-        <label class="label md:col-span-2"><span>Company address *</span><textarea v-model.trim="form.company_address" required class="field" rows="3"/></label>
-      </div></fieldset>
-      <fieldset class="card"><legend>2. Delegate package *</legend><div class="grid gap-4 md:grid-cols-2"><label v-for="item in packages" :key="item.id" class="choice" :class="form.delegate_package_id===item.id?'selected':''"><input v-model="form.delegate_package_id" class="sr-only" type="radio" :value="item.id" required/><span class="text-xs uppercase tracking-widest text-amber-200">{{ item.code }}</span><strong class="mt-2 block text-xl">{{ item.name }}</strong><span class="mt-2 block">{{ money(item.amount ?? item.price,item.currency) }}</span></label></div></fieldset>
-      <fieldset class="card"><legend>3. Participation and activities</legend><label class="label"><span>Participation categories * (comma separated)</span><input v-model.trim="form.participation_categories" required class="field" placeholder="Women Entrepreneur, Buyer"/></label><div class="mt-5 grid gap-3 md:grid-cols-2"><label v-for="item in activities" :key="item.id" class="choice flex gap-3"><input v-model="form.activity_ids" type="checkbox" :value="item.id" class="accent-amber-300"/><span>{{ item.name }}</span></label></div><p v-if="!activities.length" class="mt-3 text-sm text-slate-400">No active activities are currently published.</p></fieldset>
-      <fieldset class="card"><legend>4. Business matching</legend><div class="grid gap-4 md:grid-cols-2"><label class="label md:col-span-2"><span>Products / services *</span><textarea v-model.trim="form.products_services" required class="field" rows="3"/></label><label class="label"><span>Looking for * (comma separated)</span><input v-model.trim="form.looking_for" required class="field" placeholder="Buyers, Investors"/></label><label class="label"><span>Preferred countries * (comma separated)</span><input v-model.trim="form.preferred_countries" required class="field"/></label><label class="label md:col-span-2"><span>Business objectives *</span><textarea v-model.trim="form.business_objectives" required class="field" rows="3"/></label></div></fieldset>
-      <fieldset class="card"><legend>5. Travel and delegate requirements</legend><div class="grid gap-4 md:grid-cols-2"><label class="label"><span>Room preference *</span><select v-model="form.room_preference" required class="field"><option value="twin-sharing">Twin sharing</option><option value="single">Single room</option></select></label><label class="label"><span>Preferred roommate</span><input v-model.trim="form.preferred_roommate" class="field"/></label><label class="label"><span>Arrival date *</span><input v-model="form.arrival_date" type="date" required class="field"/></label><label class="label"><span>Departure date *</span><input v-model="form.departure_date" type="date" required class="field"/></label><label class="label"><span>Airport *</span><input v-model.trim="form.airport" required class="field"/></label><label class="label"><span>Flight number</span><input v-model.trim="form.flight_number" class="field"/></label><label class="check"><input v-model="form.need_airport_pickup" type="checkbox"/> Airport pickup required</label><label class="label"><span>Dietary restrictions</span><input v-model.trim="form.dietary_restrictions" class="field"/></label><label class="label"><span>Medical condition</span><input v-model.trim="form.medical_condition" class="field"/></label><label class="label"><span>Special assistance</span><input v-model.trim="form.special_assistance" class="field"/></label></div></fieldset>
-      <fieldset class="card"><legend>6. Payment and consent</legend><div class="grid gap-4 md:grid-cols-2"><label class="label"><span>Preferred payment method *</span><select v-model="form.preferred_payment_method" required class="field"><option value="doku">Online payment (DOKU)</option><option value="bank-transfer">Bank transfer</option></select></label><label class="label"><span>Tax ID</span><input v-model.trim="form.tax_id" class="field"/></label></div><div class="mt-5 space-y-3"><label class="check"><input v-model="form.need_official_invoice" type="checkbox"/> I need an official invoice</label><label class="check"><input v-model="form.information_accuracy_confirmed" required type="checkbox"/> I confirm that the information is accurate *</label><label class="check"><input v-model="form.terms_accepted" required type="checkbox"/> I accept the Terms and Conditions *</label><label class="check"><input v-model="form.business_matching_data_consent" required type="checkbox"/> I consent to business matching data processing *</label></div></fieldset>
-      <div v-if="feedback" class="rounded-2xl border p-5" :class="success?'border-emerald-300/30 bg-emerald-950/30':'border-red-300/30 bg-red-950/30'">{{ feedback }}</div><button class="rounded-full bg-amber-300 px-7 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="submitting||!form.delegate_package_id||!form.activity_ids.length">{{ submitting?'Submitting…':'Create Registration' }}</button>
-    </form>
+  <section class="register-choice-shell mx-auto max-w-5xl px-3 py-10 sm:px-6 lg:px-8">
+    <p class="text-sm uppercase tracking-[0.35em] text-amber-200">Registration</p>
+    <h1 class="mt-4 text-3xl font-black sm:text-5xl">Choose how you want to join IWBIF 2026</h1>
+    <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+      Create your account first, then continue with the registration type that matches your participation.
+    </p>
+
+    <div v-if="!isAuthenticated" class="mt-10 rounded-[2rem] border border-amber-200/20 bg-gradient-to-br from-amber-300/8 via-slate-950/60 to-slate-950/80 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.2)] sm:p-8">
+      <p class="text-base text-slate-200">You need an account before starting the registration process.</p>
+      <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+        <NuxtLink to="/auth/register" class="inline-flex items-center justify-center rounded-full bg-amber-300 px-6 py-3 font-semibold text-slate-950 shadow-[0_18px_35px_rgba(216,172,89,0.24)] transition hover:brightness-110">Create account</NuxtLink>
+        <NuxtLink to="/auth/login" class="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-6 py-3 font-semibold text-white transition hover:border-white/25 hover:bg-white/10">I already have an account</NuxtLink>
+      </div>
+    </div>
+
+    <div v-else class="mt-10 grid gap-5 md:grid-cols-2">
+      <NuxtLink to="/register/delegate" class="choice-card delegate-card rounded-[2rem] border border-amber-200/20 bg-amber-400/5 p-6 transition duration-200 hover:-translate-y-1 hover:border-amber-300/50 hover:bg-amber-300/10">
+        <p class="text-xs uppercase tracking-[0.35em] text-amber-200">Delegate</p>
+        <h2 class="mt-4 text-2xl font-black">Register as Delegate</h2>
+        <p class="mt-3 text-sm leading-7 text-slate-300">Join as a participant, complete your profile, choose a package, and access business matching features.</p>
+        <span class="mt-6 inline-flex rounded-full bg-amber-300 px-5 py-2.5 font-semibold text-slate-950 shadow-[0_12px_25px_rgba(216,172,89,0.20)]">Continue</span>
+      </NuxtLink>
+
+      <NuxtLink to="/register/exhibitor" class="choice-card exhibitor-card rounded-[2rem] border border-cyan-200/20 bg-cyan-400/5 p-6 transition duration-200 hover:-translate-y-1 hover:border-cyan-300/50 hover:bg-cyan-300/10">
+        <p class="text-xs uppercase tracking-[0.35em] text-cyan-200">Exhibitor</p>
+        <h2 class="mt-4 text-2xl font-black">Register as Exhibitor</h2>
+        <p class="mt-3 text-sm leading-7 text-slate-300">Submit your company profile, booth interest, and exhibition requirements for event participation.</p>
+        <span class="mt-6 inline-flex rounded-full bg-cyan-300 px-5 py-2.5 font-semibold text-slate-950 shadow-[0_12px_25px_rgba(34,211,238,0.20)]">Continue</span>
+      </NuxtLink>
+    </div>
   </section>
 </template>
+
 <script setup lang="ts">
-import {useEvent} from '~/composables/useEvent'; import {useParticipant} from '~/composables/useParticipant'; import {useRegistration} from '~/composables/useRegistration';
-definePageMeta({middleware:'auth'}); useSeoMeta({title:'Register | IWBIF 2026',description:'Complete the official IWBIF 2026 delegate registration.'});
-const route=useRoute(); const {getEvents,getEventDelegatePackages,getEventActivities}=useEvent(); const {upsertMyProfile}=useParticipant(); const {createRegistration}=useRegistration();
-type TextKey='full_name'|'job_title'|'company_organization'|'nationality'|'title'|'business_sector'|'country'|'email'|'mobile_whatsapp'|'company_website'|'linkedin';
-const identityFields:Array<{key:TextKey;label:string;type?:string;autocomplete?:string}>=[{key:'full_name',label:'Full name',autocomplete:'name'},{key:'title',label:'Title'},{key:'job_title',label:'Job title'},{key:'company_organization',label:'Company / organization',autocomplete:'organization'},{key:'nationality',label:'Nationality'},{key:'country',label:'Country'},{key:'business_sector',label:'Business sector'},{key:'email',label:'Email',type:'email',autocomplete:'email'},{key:'mobile_whatsapp',label:'Mobile / WhatsApp',type:'tel'},{key:'company_website',label:'Company website',type:'url'},{key:'linkedin',label:'LinkedIn',type:'url'}];
-const form=reactive({event_id:'',delegate_package_id:typeof route.query.package==='string'?route.query.package:'',full_name:'',job_title:'',company_organization:'',nationality:'',title:'',business_sector:'',country:'',email:'',mobile_whatsapp:'',company_website:'',linkedin:'',company_address:'',participation_categories:'',products_services:'',looking_for:'',preferred_countries:'',business_objectives:'',activity_ids:[] as string[],room_preference:'twin-sharing',preferred_roommate:'',arrival_date:'2026-10-14',departure_date:'2026-10-17',flight_number:'',airport:'',need_airport_pickup:false,dietary_restrictions:'',medical_condition:'',special_assistance:'',preferred_payment_method:'doku',need_official_invoice:false,tax_id:'',information_accuracy_confirmed:false,terms_accepted:false,business_matching_data_consent:false});
-const {data:options,pending,error:optionsError}=await useAsyncData('iwbif-registration-options',async()=>{const response=await getEvents(1,1); const event=response.data[0]; if(!event) throw new Error('No IWBIF event is currently published.'); const [packageResponse,activityResponse]=await Promise.all([getEventDelegatePackages(event.id),getEventActivities(event.id)]); return {event,packages:packageResponse.data.filter(item=>item.is_active),activities:activityResponse.data.filter(item=>item.is_active!==false)}});
-watchEffect(()=>{if(options.value?.event.id)form.event_id=options.value.event.id}); const packages=computed(()=>options.value?.packages??[]); const activities=computed(()=>options.value?.activities??[]); const submitting=ref(false); const feedback=ref(''); const success=ref(false); const list=(value:string)=>value.split(',').map(v=>v.trim()).filter(Boolean); const nullable=(value:string)=>value||null; const money=(amount:number,currency:string)=>new Intl.NumberFormat('en-US',{style:'currency',currency}).format(amount);
-const submit=async()=>{submitting.value=true;feedback.value='';success.value=false;try{const participant=await upsertMyProfile({full_name:form.full_name,organization_name:form.company_organization,biography:form.business_objectives}); const result=await createRegistration({...form,participant_id:participant.data.id,company_website:nullable(form.company_website),linkedin:nullable(form.linkedin),office_phone:null,participation_categories:list(form.participation_categories),presentation_topic:null,products_interested:null,investment_interest:null,preferred_roommate:nullable(form.preferred_roommate),flight_number:nullable(form.flight_number),looking_for:list(form.looking_for),preferred_countries:list(form.preferred_countries),dietary_restrictions:nullable(form.dietary_restrictions),medical_condition:nullable(form.medical_condition),special_assistance:nullable(form.special_assistance),tax_id:nullable(form.tax_id),terms_version:'2026-08-14',consent_version:'2026-08-14'});success.value=true;feedback.value=`Registration ${result.data.registration_number} created successfully.`}catch(error){feedback.value=error instanceof Error?error.message:'Registration could not be created.'}finally{submitting.value=false}};
+const authStore = useAuthStore();
+const { isAuthenticated } = storeToRefs(authStore);
+useSeoMeta({
+  title: 'Registration | IWBIF 2026',
+  description: 'Create your IWBIF 2026 account and choose whether you want to register as a delegate or exhibitor.'
+});
 </script>
-<style scoped>.card{@apply glass-card rounded-[2rem] p-6 sm:p-8}.card legend{@apply px-2 text-xl font-bold}.label{@apply grid gap-2 text-sm text-slate-300}.field{@apply rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:border-amber-300}.choice{@apply cursor-pointer rounded-2xl border border-white/10 bg-white/5 p-5}.choice.selected{@apply border-amber-300 bg-amber-300/10}.check{@apply flex items-center gap-3 text-sm text-slate-300}.check input{@apply accent-amber-300}</style>
+
+<style scoped>
+.register-choice-shell {
+  position: relative;
+}
+.choice-card {
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.04), 0 20px 45px rgba(0, 0, 0, 0.18);
+}
+.delegate-card {
+  background: linear-gradient(145deg, rgba(216, 172, 89, 0.08), rgba(255, 255, 255, 0.02));
+}
+.exhibitor-card {
+  background: linear-gradient(145deg, rgba(34, 211, 238, 0.08), rgba(255, 255, 255, 0.02));
+}
+@media (max-width: 639px) {
+  .choice-card {
+    border-radius: 1.5rem;
+    padding: 1.25rem;
+  }
+}
+</style>
+
