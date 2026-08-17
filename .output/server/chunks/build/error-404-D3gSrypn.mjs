@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, i as useHead$1, N as NuxtLink } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/error-404-D3gSrypn');import { _ as _plugin_vue_export_helper_default, j as useHead$1, N as NuxtLink } from '../virtual/entry.mjs';
 import { useSSRContext, mergeProps, withCtx, createTextVNode, toDisplayString } from 'vue';
 import { ssrRenderAttrs, ssrInterpolate, ssrRenderComponent } from 'vue/server-renderer';
 import 'nostics';
@@ -80,5 +80,5 @@ _sfc_main.setup = (props, ctx) => {
 };
 var error_404_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-70769455"]]);
 
-export { error_404_default as default };
+export { error_404_default as default };;globalThis.__timing__.logEnd('Load chunks/build/error-404-D3gSrypn');
 //# sourceMappingURL=error-404-D3gSrypn.mjs.map

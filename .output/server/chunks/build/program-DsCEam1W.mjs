@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, a as useSeoMeta$1, b as useAsyncData } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/program-DsCEam1W');import { _ as _plugin_vue_export_helper_default, c as useSeoMeta$1, f as useAsyncData } from '../virtual/entry.mjs';
 import { u as useEvent } from './useEvent-D4WcF23a.mjs';
 import { defineComponent, withAsyncContext, computed, mergeProps, unref, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderList, ssrInterpolate } from 'vue/server-renderer';
@@ -98,5 +98,5 @@ index_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var program_default = /*#__PURE__*/ _plugin_vue_export_helper_default(index_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-f34cc0c1"]]);
 
-export { program_default as default };
+export { program_default as default };;globalThis.__timing__.logEnd('Load chunks/build/program-DsCEam1W');
 //# sourceMappingURL=program-DsCEam1W.mjs.map

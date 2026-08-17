@@ -1,4 +1,4 @@
-import { a as useSeoMeta$1 } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/privacy-CoQ7C27w');import { c as useSeoMeta$1 } from '../virtual/entry.mjs';
 import { defineComponent, mergeProps, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderList, ssrInterpolate } from 'vue/server-renderer';
 import 'nostics';
@@ -65,5 +65,5 @@ privacy_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var privacy_default = privacy_vue_vue_type_script_setup_true_lang_default;
 
-export { privacy_default as default };
+export { privacy_default as default };;globalThis.__timing__.logEnd('Load chunks/build/privacy-CoQ7C27w');
 //# sourceMappingURL=privacy-CoQ7C27w.mjs.map

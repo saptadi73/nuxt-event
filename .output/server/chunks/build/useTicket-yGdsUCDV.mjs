@@ -1,4 +1,4 @@
-import { c as useNuxtApp } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/useTicket-yGdsUCDV');import { e as useNuxtApp } from '../virtual/entry.mjs';
 
 //#region app/composables/useTicket.ts
 function useTicket() {
@@ -13,5 +13,5 @@ function useTicket() {
 	};
 }
 
-export { useTicket as u };
+export { useTicket as u };;globalThis.__timing__.logEnd('Load chunks/build/useTicket-yGdsUCDV');
 //# sourceMappingURL=useTicket-yGdsUCDV.mjs.map

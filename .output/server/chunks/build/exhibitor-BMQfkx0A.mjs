@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, a as useSeoMeta$1, b as useAsyncData, c as useNuxtApp } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/exhibitor-BMQfkx0A');import { _ as _plugin_vue_export_helper_default, c as useSeoMeta$1, f as useAsyncData, e as useNuxtApp } from '../virtual/entry.mjs';
 import { u as useEvent } from './useEvent-D4WcF23a.mjs';
 import { defineComponent, reactive, ref, withAsyncContext, mergeProps, unref, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrInterpolate, ssrRenderAttr, ssrIncludeBooleanAttr, ssrLooseContain, ssrRenderClass } from 'vue/server-renderer';
@@ -99,5 +99,5 @@ exhibitor_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var exhibitor_default = /*#__PURE__*/ _plugin_vue_export_helper_default(exhibitor_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-89adfb28"]]);
 
-export { exhibitor_default as default };
+export { exhibitor_default as default };;globalThis.__timing__.logEnd('Load chunks/build/exhibitor-BMQfkx0A');
 //# sourceMappingURL=exhibitor-BMQfkx0A.mjs.map

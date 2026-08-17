@@ -1,4 +1,4 @@
-import { a as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/schedule-eZrxKuA6');import { c as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
 import { defineComponent, mergeProps, withCtx, createTextVNode, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderList, ssrInterpolate, ssrRenderComponent } from 'vue/server-renderer';
 import 'nostics';
@@ -123,5 +123,5 @@ schedule_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var schedule_default = schedule_vue_vue_type_script_setup_true_lang_default;
 
-export { schedule_default as default };
+export { schedule_default as default };;globalThis.__timing__.logEnd('Load chunks/build/schedule-eZrxKuA6');
 //# sourceMappingURL=schedule-eZrxKuA6.mjs.map

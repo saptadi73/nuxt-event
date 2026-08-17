@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, a as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/deal-room-BJSIif7r');import { _ as _plugin_vue_export_helper_default, c as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
 import { defineComponent, mergeProps, withCtx, createTextVNode, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderList, ssrInterpolate, ssrRenderComponent } from 'vue/server-renderer';
 import 'nostics';
@@ -94,5 +94,5 @@ deal_room_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var deal_room_default = /*#__PURE__*/ _plugin_vue_export_helper_default(deal_room_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-a27637b8"]]);
 
-export { deal_room_default as default };
+export { deal_room_default as default };;globalThis.__timing__.logEnd('Load chunks/build/deal-room-BJSIif7r');
 //# sourceMappingURL=deal-room-BJSIif7r.mjs.map

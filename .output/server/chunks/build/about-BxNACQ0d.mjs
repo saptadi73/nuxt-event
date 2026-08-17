@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, a as useSeoMeta$1 } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/about-BxNACQ0d');import { _ as _plugin_vue_export_helper_default, c as useSeoMeta$1 } from '../virtual/entry.mjs';
 import { _ as _virtual_public__2Fimages_2Fwhy_indonesia_default } from './_virtual_public-klSSHraZ.mjs';
 import { defineComponent, mergeProps, useSSRContext } from 'vue';
 import { p as publicAssetsURL } from '../routes/renderer.mjs';
@@ -117,5 +117,5 @@ about_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var about_default = /*#__PURE__*/ _plugin_vue_export_helper_default(about_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-24e60813"]]);
 
-export { about_default as default };
+export { about_default as default };;globalThis.__timing__.logEnd('Load chunks/build/about-BxNACQ0d');
 //# sourceMappingURL=about-BxNACQ0d.mjs.map

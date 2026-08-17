@@ -1,4 +1,4 @@
-import { a as useSeoMeta$1, b as useAsyncData } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/directory-CE8EKqwC');import { c as useSeoMeta$1, f as useAsyncData } from '../virtual/entry.mjs';
 import { u as useMediaUrl } from './useMediaUrl-CtPklTwb.mjs';
 import { u as useParticipant } from './useParticipant-CPMevOwd.mjs';
 import { defineComponent, ref, withAsyncContext, computed, mergeProps, unref, useSSRContext } from 'vue';
@@ -79,5 +79,5 @@ directory_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var directory_default = directory_vue_vue_type_script_setup_true_lang_default;
 
-export { directory_default as default };
+export { directory_default as default };;globalThis.__timing__.logEnd('Load chunks/build/directory-CE8EKqwC');
 //# sourceMappingURL=directory-CE8EKqwC.mjs.map

@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, a as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/business-matching-Ght-N6hz');import { _ as _plugin_vue_export_helper_default, c as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
 import { defineComponent, mergeProps, withCtx, createTextVNode, createVNode, useSSRContext } from 'vue';
 import { p as publicAssetsURL } from '../routes/renderer.mjs';
 import { ssrRenderAttrs, ssrRenderAttr, ssrRenderComponent, ssrRenderList, ssrInterpolate } from 'vue/server-renderer';
@@ -84,5 +84,5 @@ business_matching_vue_vue_type_script_setup_true_lang_default.setup = (props, ct
 };
 var business_matching_default = /*#__PURE__*/ _plugin_vue_export_helper_default(business_matching_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-e13253eb"]]);
 
-export { business_matching_default as default };
+export { business_matching_default as default };;globalThis.__timing__.logEnd('Load chunks/build/business-matching-Ght-N6hz');
 //# sourceMappingURL=business-matching-Ght-N6hz.mjs.map

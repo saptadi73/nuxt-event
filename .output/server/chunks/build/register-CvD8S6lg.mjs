@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, u as useAuthStore, s as storeToRefs, a as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/register-CvD8S6lg');import { _ as _plugin_vue_export_helper_default, u as useAuthStore, s as storeToRefs, c as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
 import { defineComponent, mergeProps, unref, withCtx, createTextVNode, createVNode, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderComponent } from 'vue/server-renderer';
 import 'nostics';
@@ -107,5 +107,5 @@ register_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var register_default = /*#__PURE__*/ _plugin_vue_export_helper_default(register_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-0dba90e4"]]);
 
-export { register_default as default };
+export { register_default as default };;globalThis.__timing__.logEnd('Load chunks/build/register-CvD8S6lg');
 //# sourceMappingURL=register-CvD8S6lg.mjs.map

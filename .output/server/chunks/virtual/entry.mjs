@@ -1,4 +1,4 @@
-import { defineProdDiagnostics } from 'nostics';
+globalThis.__timing__.logStart('Load chunks/virtual/entry');import { defineProdDiagnostics } from 'nostics';
 import { ansiFormatter } from 'nostics/formatters/ansi';
 import * as import_vue from 'vue';
 import { getCurrentScope, ref, watchEffect, getCurrentInstance, onBeforeUnmount, onDeactivated, onActivated, shallowReactive, reactive, effectScope, hasInjectionContext, inject, toRef, createApp, provide, onErrorCaptured, onServerPrefetch, unref, createVNode, resolveDynamicComponent, defineAsyncComponent, mergeProps, shallowRef, isReadonly, defineComponent, createElementBlock, cloneVNode, h, useSSRContext, isRef, isShallow, isReactive, toRaw, isVNode, createCommentVNode, computed, withCtx, createTextVNode, toDisplayString, Suspense, resolveComponent, Fragment, toValue, nextTick, queuePostFlushCb, customRef } from 'vue';
@@ -247,6 +247,38 @@ var Hookable = class {
 };
 function createHooks() {
 	return new Hookable();
+}
+const isBrowser = "undefined" !== "undefined";
+function createDebugger(hooks, _options = {}) {
+	const options = {
+		inspect: isBrowser,
+		group: isBrowser,
+		filter: () => true,
+		..._options
+	};
+	const _filter = options.filter;
+	const filter = typeof _filter === "string" ? (name) => name.startsWith(_filter) : _filter;
+	const _tag = options.tag ? `[${options.tag}] ` : "";
+	const logPrefix = (event) => _tag + event.name + "".padEnd(event._id, "\0");
+	const _idCtr = {};
+	const unsubscribeBefore = hooks.beforeEach((event) => {
+		if (filter !== void 0 && !filter(event.name)) return;
+		_idCtr[event.name] = _idCtr[event.name] || 0;
+		event._id = _idCtr[event.name]++;
+		console.time(logPrefix(event));
+	});
+	const unsubscribeAfter = hooks.afterEach((event) => {
+		if (filter !== void 0 && !filter(event.name)) return;
+		if (options.group) console.groupCollapsed(event.name);
+		if (options.inspect) console.timeLog(logPrefix(event), event.args);
+		else console.timeEnd(logPrefix(event));
+		if (options.group) console.groupEnd();
+		_idCtr[event.name]--;
+	});
+	return { close: () => {
+		unsubscribeBefore();
+		unsubscribeAfter();
+	} };
 }
 
 function _getAsyncLocalStorage() {
@@ -1022,7 +1054,7 @@ function freezeHead(head) {
 }
 //#endregion
 //#region node_modules/nuxt/dist/head/runtime/plugins/unhead.server.js
-var plugin$4 = defineNuxtPlugin({
+var plugin$5 = defineNuxtPlugin({
 	name: "nuxt:head",
 	enforce: "pre",
 	setup(nuxtApp) {
@@ -1278,7 +1310,7 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 		name: "admin-reports",
 		path: "/admin/reports",
 		meta: { "middleware": ["auth", "admin"] },
-		component: () => import('../build/reports-BQwqbVYN.mjs')
+		component: () => import('../build/reports-Ikkwp3U6.mjs')
 	},
 	{
 		name: "admin-speakers",
@@ -1318,19 +1350,19 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 		name: "dashboard-invoice",
 		path: "/dashboard/invoice",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/invoice-CVg380zM.mjs')
+		component: () => import('../build/invoice-BWg5-DaW.mjs')
 	},
 	{
 		name: "dashboard-payment",
 		path: "/dashboard/payment",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/payment-Dj5J8pb-.mjs')
+		component: () => import('../build/payment-DC6fTX3h.mjs')
 	},
 	{
 		name: "dashboard-payment-status",
 		path: "/dashboard/payment-status",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/payment-status-DAUjptIx.mjs')
+		component: () => import('../build/payment-status-coywYOBz.mjs')
 	},
 	{
 		name: "dashboard-profile",
@@ -1348,7 +1380,7 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 		name: "dashboard-ticket",
 		path: "/dashboard/ticket",
 		meta: { "middleware": "auth" },
-		component: () => import('../build/ticket-CwZz7tLl.mjs')
+		component: () => import('../build/ticket-CRqF5TEV.mjs')
 	},
 	{
 		name: "about",
@@ -1429,7 +1461,7 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 			name: "register-delegate",
 			path: "delegate",
 			meta: { "middleware": "auth" },
-			component: () => import('../build/delegate-Bh9TjXZF.mjs')
+			component: () => import('../build/delegate-Cn_XejH7.mjs')
 		}, {
 			name: "register-exhibitor",
 			path: "exhibitor",
@@ -1465,7 +1497,7 @@ var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [
 ];
 //#endregion
 //#region node_modules/nuxt/dist/pages/runtime/plugins/router.js
-var plugin$3 = defineNuxtPlugin({
+var plugin$4 = defineNuxtPlugin({
 	name: "nuxt:router",
 	enforce: "pre",
 	async setup(nuxtApp) {
@@ -1633,6 +1665,15 @@ var plugin$3 = defineNuxtPlugin({
 			}
 		});
 		return { provide: { router } };
+	}
+});
+//#endregion
+//#region node_modules/nuxt/dist/app/plugins/debug-hooks.js
+var plugin$3 = /* @__PURE__ */ defineNuxtPlugin({
+	name: "nuxt:debug:hooks",
+	enforce: "pre",
+	setup(nuxtApp) {
+		createDebugger(nuxtApp.hooks, { tag: "nuxt-app" });
 	}
 });
 //#endregion
@@ -3188,6 +3229,7 @@ var plugin = defineNuxtPlugin(async () => {
 //#endregion
 //#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Fplugins.server.mjs
 var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Fplugins_server_default = [
+	plugin$5,
 	plugin$4,
 	plugin$3,
 	plugin$2,
@@ -3711,5 +3753,5 @@ const entry = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   default: entry_default
 }, Symbol.toStringTag, { value: 'Module' }));
 
-export { NuxtLink as N, _plugin_vue_export_helper_default as _, useSeoMeta$1 as a, useAsyncData as b, useNuxtApp as c, defineNuxtRouteMiddleware as d, useAuth as e, useRoute as f, useState as g, useRuntimeConfig as h, useHead$1 as i, entry as j, navigateTo as n, storeToRefs as s, useAuthStore as u };
+export { NuxtLink as N, _plugin_vue_export_helper_default as _, useRoute as a, useRouter as b, useSeoMeta$1 as c, defineNuxtRouteMiddleware as d, useNuxtApp as e, useAsyncData as f, useAuth as g, useState as h, useRuntimeConfig as i, useHead$1 as j, entry as k, navigateTo as n, storeToRefs as s, useAuthStore as u };;globalThis.__timing__.logEnd('Load chunks/virtual/entry');
 //# sourceMappingURL=entry.mjs.map

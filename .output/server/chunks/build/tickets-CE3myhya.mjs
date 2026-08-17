@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, a as useSeoMeta$1, b as useAsyncData, N as NuxtLink } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/tickets-CE3myhya');import { _ as _plugin_vue_export_helper_default, c as useSeoMeta$1, f as useAsyncData, N as NuxtLink } from '../virtual/entry.mjs';
 import { u as useEvent } from './useEvent-D4WcF23a.mjs';
 import { defineComponent, withAsyncContext, computed, mergeProps, unref, withCtx, createTextVNode, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderList, ssrInterpolate, ssrRenderComponent } from 'vue/server-renderer';
@@ -84,5 +84,5 @@ tickets_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var tickets_default = /*#__PURE__*/ _plugin_vue_export_helper_default(tickets_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-58d9cea6"]]);
 
-export { tickets_default as default };
+export { tickets_default as default };;globalThis.__timing__.logEnd('Load chunks/build/tickets-CE3myhya');
 //# sourceMappingURL=tickets-CE3myhya.mjs.map

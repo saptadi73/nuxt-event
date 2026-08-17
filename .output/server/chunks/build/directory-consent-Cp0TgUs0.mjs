@@ -1,4 +1,4 @@
-import { a as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/directory-consent-Cp0TgUs0');import { c as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
 import { defineComponent, mergeProps, withCtx, createTextVNode, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderList, ssrInterpolate, ssrRenderComponent } from 'vue/server-renderer';
 import 'nostics';
@@ -77,5 +77,5 @@ directory_consent_vue_vue_type_script_setup_true_lang_default.setup = (props, ct
 };
 var directory_consent_default = directory_consent_vue_vue_type_script_setup_true_lang_default;
 
-export { directory_consent_default as default };
+export { directory_consent_default as default };;globalThis.__timing__.logEnd('Load chunks/build/directory-consent-Cp0TgUs0');
 //# sourceMappingURL=directory-consent-Cp0TgUs0.mjs.map

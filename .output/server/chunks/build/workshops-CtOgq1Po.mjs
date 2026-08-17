@@ -1,4 +1,4 @@
-import { a as useSeoMeta$1, b as useAsyncData } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/workshops-CtOgq1Po');import { c as useSeoMeta$1, f as useAsyncData } from '../virtual/entry.mjs';
 import { u as useEvent } from './useEvent-D4WcF23a.mjs';
 import { defineComponent, withAsyncContext, computed, mergeProps, unref, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderList, ssrInterpolate } from 'vue/server-renderer';
@@ -71,5 +71,5 @@ index_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var workshops_default = index_vue_vue_type_script_setup_true_lang_default;
 
-export { workshops_default as default };
+export { workshops_default as default };;globalThis.__timing__.logEnd('Load chunks/build/workshops-CtOgq1Po');
 //# sourceMappingURL=workshops-CtOgq1Po.mjs.map

@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, a as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/pages-C9fKZ0TZ');import { _ as _plugin_vue_export_helper_default, c as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
 import { _ as _virtual_public__2Fimages_2Fwhy_indonesia_default } from './_virtual_public-klSSHraZ.mjs';
 import { defineComponent, ref, withCtx, createTextVNode, createVNode, useSSRContext } from 'vue';
 import { p as publicAssetsURL } from '../routes/renderer.mjs';
@@ -217,5 +217,5 @@ index_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var pages_default = /*#__PURE__*/ _plugin_vue_export_helper_default(index_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-52c93f01"]]);
 
-export { pages_default as default };
+export { pages_default as default };;globalThis.__timing__.logEnd('Load chunks/build/pages-C9fKZ0TZ');
 //# sourceMappingURL=pages-C9fKZ0TZ.mjs.map

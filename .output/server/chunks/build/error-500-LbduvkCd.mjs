@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, i as useHead$1 } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/error-500-LbduvkCd');import { _ as _plugin_vue_export_helper_default, j as useHead$1 } from '../virtual/entry.mjs';
 import { useSSRContext, mergeProps } from 'vue';
 import { ssrRenderAttrs, ssrInterpolate } from 'vue/server-renderer';
 import 'nostics';
@@ -68,5 +68,5 @@ _sfc_main.setup = (props, ctx) => {
 };
 var error_500_default = /*#__PURE__*/ _plugin_vue_export_helper_default(_sfc_main, [["__scopeId", "data-v-e51fa8ac"]]);
 
-export { error_500_default as default };
+export { error_500_default as default };;globalThis.__timing__.logEnd('Load chunks/build/error-500-LbduvkCd');
 //# sourceMappingURL=error-500-LbduvkCd.mjs.map

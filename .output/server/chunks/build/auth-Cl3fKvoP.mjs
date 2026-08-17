@@ -1,4 +1,4 @@
-import { d as defineNuxtRouteMiddleware, u as useAuthStore, n as navigateTo } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/auth-Cl3fKvoP');import { d as defineNuxtRouteMiddleware, u as useAuthStore, n as navigateTo } from '../virtual/entry.mjs';
 import 'nostics';
 import 'nostics/formatters/ansi';
 import 'vue';
@@ -29,5 +29,5 @@ var auth_default = defineNuxtRouteMiddleware(() => {
 	if (!auth.isAuthenticated) return navigateTo("/auth/login");
 });
 
-export { auth_default as default };
+export { auth_default as default };;globalThis.__timing__.logEnd('Load chunks/build/auth-Cl3fKvoP');
 //# sourceMappingURL=auth-Cl3fKvoP.mjs.map

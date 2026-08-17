@@ -1,4 +1,4 @@
-import { a as useSeoMeta$1 } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/faq-D6RCfBu4');import { c as useSeoMeta$1 } from '../virtual/entry.mjs';
 import { defineComponent, mergeProps, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderList, ssrInterpolate } from 'vue/server-renderer';
 import 'nostics';
@@ -92,5 +92,5 @@ faq_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var faq_default = faq_vue_vue_type_script_setup_true_lang_default;
 
-export { faq_default as default };
+export { faq_default as default };;globalThis.__timing__.logEnd('Load chunks/build/faq-D6RCfBu4');
 //# sourceMappingURL=faq-D6RCfBu4.mjs.map

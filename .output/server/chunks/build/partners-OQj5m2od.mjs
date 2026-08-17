@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, a as useSeoMeta$1 } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/partners-OQj5m2od');import { _ as _plugin_vue_export_helper_default, c as useSeoMeta$1 } from '../virtual/entry.mjs';
 import { defineComponent, mergeProps, useSSRContext } from 'vue';
 import { p as publicAssetsURL } from '../routes/renderer.mjs';
 import { ssrRenderAttrs, ssrRenderList, ssrInterpolate, ssrRenderAttr } from 'vue/server-renderer';
@@ -79,5 +79,5 @@ partners_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var partners_default = /*#__PURE__*/ _plugin_vue_export_helper_default(partners_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-6fa5f67f"]]);
 
-export { partners_default as default };
+export { partners_default as default };;globalThis.__timing__.logEnd('Load chunks/build/partners-OQj5m2od');
 //# sourceMappingURL=partners-OQj5m2od.mjs.map

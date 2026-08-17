@@ -1,4 +1,4 @@
-import { c as useNuxtApp, b as useAsyncData } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/speakers-B_ou0AQI');import { e as useNuxtApp, f as useAsyncData } from '../virtual/entry.mjs';
 import { u as useMediaUrl } from './useMediaUrl-CtPklTwb.mjs';
 import { defineComponent, ref, withAsyncContext, computed, mergeProps, unref, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrInterpolate, ssrRenderList, ssrRenderAttr } from 'vue/server-renderer';
@@ -89,5 +89,5 @@ index_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var speakers_default = index_vue_vue_type_script_setup_true_lang_default;
 
-export { speakers_default as default };
+export { speakers_default as default };;globalThis.__timing__.logEnd('Load chunks/build/speakers-B_ou0AQI');
 //# sourceMappingURL=speakers-B_ou0AQI.mjs.map

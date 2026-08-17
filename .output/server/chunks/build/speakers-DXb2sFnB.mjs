@@ -1,4 +1,4 @@
-import { a as useSeoMeta$1, b as useAsyncData, c as useNuxtApp } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/speakers-DXb2sFnB');import { c as useSeoMeta$1, f as useAsyncData, e as useNuxtApp } from '../virtual/entry.mjs';
 import { u as useMediaUrl } from './useMediaUrl-CtPklTwb.mjs';
 import { defineComponent, ref, withAsyncContext, mergeProps, unref, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderList, ssrRenderAttr, ssrInterpolate, ssrIncludeBooleanAttr } from 'vue/server-renderer';
@@ -89,5 +89,5 @@ index_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var speakers_default = index_vue_vue_type_script_setup_true_lang_default;
 
-export { speakers_default as default };
+export { speakers_default as default };;globalThis.__timing__.logEnd('Load chunks/build/speakers-DXb2sFnB');
 //# sourceMappingURL=speakers-DXb2sFnB.mjs.map

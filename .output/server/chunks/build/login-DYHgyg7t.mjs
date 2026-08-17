@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, e as useAuth, N as NuxtLink } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/login-DYHgyg7t');import { _ as _plugin_vue_export_helper_default, g as useAuth, N as NuxtLink } from '../virtual/entry.mjs';
 import { defineComponent, reactive, ref, mergeProps, unref, withCtx, createTextVNode, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderAttr, ssrRenderClass, ssrInterpolate, ssrRenderComponent } from 'vue/server-renderer';
 import 'nostics';
@@ -64,5 +64,5 @@ login_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var login_default = /*#__PURE__*/ _plugin_vue_export_helper_default(login_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-2dede658"]]);
 
-export { login_default as default };
+export { login_default as default };;globalThis.__timing__.logEnd('Load chunks/build/login-DYHgyg7t');
 //# sourceMappingURL=login-DYHgyg7t.mjs.map

@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, a as useSeoMeta$1, u as useAuthStore, N as NuxtLink } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/dashboard-DwGdGr3Z');import { _ as _plugin_vue_export_helper_default, c as useSeoMeta$1, u as useAuthStore, N as NuxtLink } from '../virtual/entry.mjs';
 import { defineComponent, computed, mergeProps, unref, withCtx, createTextVNode, createVNode, toDisplayString, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrInterpolate, ssrRenderList, ssrRenderComponent } from 'vue/server-renderer';
 import 'nostics';
@@ -163,5 +163,5 @@ index_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var dashboard_default = /*#__PURE__*/ _plugin_vue_export_helper_default(index_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-5d9a2c8a"]]);
 
-export { dashboard_default as default };
+export { dashboard_default as default };;globalThis.__timing__.logEnd('Load chunks/build/dashboard-DwGdGr3Z');
 //# sourceMappingURL=dashboard-DwGdGr3Z.mjs.map

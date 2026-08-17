@@ -1,4 +1,4 @@
-import { d as defineNuxtRouteMiddleware, u as useAuthStore, n as navigateTo } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/admin-On0MQuMF');import { d as defineNuxtRouteMiddleware, u as useAuthStore, n as navigateTo } from '../virtual/entry.mjs';
 import 'nostics';
 import 'nostics/formatters/ansi';
 import 'vue';
@@ -30,5 +30,5 @@ var admin_default = defineNuxtRouteMiddleware(() => {
 	if (!auth.isAdminOrOrganizer) return navigateTo("/dashboard");
 });
 
-export { admin_default as default };
+export { admin_default as default };;globalThis.__timing__.logEnd('Load chunks/build/admin-On0MQuMF');
 //# sourceMappingURL=admin-On0MQuMF.mjs.map

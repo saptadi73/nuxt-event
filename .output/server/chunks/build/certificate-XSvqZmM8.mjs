@@ -1,4 +1,4 @@
-import { a as useSeoMeta$1 } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/certificate-XSvqZmM8');import { c as useSeoMeta$1 } from '../virtual/entry.mjs';
 import { defineComponent, mergeProps, useSSRContext } from 'vue';
 import { ssrRenderAttrs } from 'vue/server-renderer';
 import 'nostics';
@@ -43,5 +43,5 @@ certificate_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => 
 };
 var certificate_default = certificate_vue_vue_type_script_setup_true_lang_default;
 
-export { certificate_default as default };
+export { certificate_default as default };;globalThis.__timing__.logEnd('Load chunks/build/certificate-XSvqZmM8');
 //# sourceMappingURL=certificate-XSvqZmM8.mjs.map

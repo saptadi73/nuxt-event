@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, e as useAuth, N as NuxtLink } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/register-DIUVhfIG');import { _ as _plugin_vue_export_helper_default, g as useAuth, N as NuxtLink } from '../virtual/entry.mjs';
 import { defineComponent, reactive, ref, mergeProps, unref, withCtx, createTextVNode, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderAttr, ssrIncludeBooleanAttr, ssrInterpolate, ssrRenderClass, ssrRenderComponent } from 'vue/server-renderer';
 import 'nostics';
@@ -67,5 +67,5 @@ register_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var register_default = /*#__PURE__*/ _plugin_vue_export_helper_default(register_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-d0dd8a14"]]);
 
-export { register_default as default };
+export { register_default as default };;globalThis.__timing__.logEnd('Load chunks/build/register-DIUVhfIG');
 //# sourceMappingURL=register-DIUVhfIG.mjs.map

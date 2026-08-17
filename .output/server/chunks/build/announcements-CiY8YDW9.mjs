@@ -1,4 +1,4 @@
-import { a as useSeoMeta$1 } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/announcements-CiY8YDW9');import { c as useSeoMeta$1 } from '../virtual/entry.mjs';
 import { defineComponent, mergeProps, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderList, ssrInterpolate } from 'vue/server-renderer';
 import 'nostics';
@@ -67,5 +67,5 @@ announcements_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) =
 };
 var announcements_default = announcements_vue_vue_type_script_setup_true_lang_default;
 
-export { announcements_default as default };
+export { announcements_default as default };;globalThis.__timing__.logEnd('Load chunks/build/announcements-CiY8YDW9');
 //# sourceMappingURL=announcements-CiY8YDW9.mjs.map

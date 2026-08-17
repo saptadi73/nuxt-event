@@ -10,6 +10,14 @@ export interface DokuCheckoutData {
   requires_payment: boolean;
 }
 
+export type PaymentCategory = 'virtual_account' | 'qris' | 'e_wallet' | 'direct_debit' | string;
+export interface PaymentMethod { id: string; provider: string; code: string; category: PaymentCategory; display_name: string; logo_url: string | null; sort_order: number; }
+export interface DirectPaymentMethods { virtual_accounts: string[]; qris: boolean; }
+export interface DirectVaData { payment_id: string; order_id: string; order_number: string; status: string; bank_code: string; virtual_account_no: string; amount: number; currency: string; expires_at: string | null; instructions_url: string | null; }
+export interface DirectQrisData { payment_id: string; order_id: string; order_number: string; status: string; qr_content: string; amount: number; currency: string; expires_at: string | null; }
+export interface DirectDebitBindingData { binding_id: string; channel_code: string; status: string; redirect_url: string | null; }
+export interface DirectDebitPaymentData { payment_id: string; order_id: string; partner_reference_no: string; status: string; redirect_url: string | null; requires_otp?: boolean; }
+
 export interface OrderItem {
   id: string; registration_id: string; order_number: string; subtotal: number;
   discount_amount: number; tax_amount: number; service_fee: number;
@@ -48,10 +56,17 @@ export const normalizeInvoices = (data: InvoiceResponseData): Invoice[] => {
 
 export function usePayment() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
+  const getPaymentMethods = () => api<ApiResponse<PaymentMethod[]>>('/payments/methods');
+  const getDirectPaymentMethods = () => api<ApiResponse<DirectPaymentMethods>>('/payments/doku/direct/methods');
+  const createDirectVa = (registrationId: string, bankCode: string) => api<ApiResponse<DirectVaData>>('/payments/doku/direct/va', { method: 'POST', body: { registration_id: registrationId, bank_code: bankCode } });
+  const createDirectQris = (registrationId: string) => api<ApiResponse<DirectQrisData>>('/payments/doku/direct/qris', { method: 'POST', body: { registration_id: registrationId } });
+  const createDirectDebitBinding = (registrationId: string, channelCode: string, phoneNo: string, deviceId?: string) => api<ApiResponse<DirectDebitBindingData>>('/payments/doku/snap/direct-debit/bindings', { method: 'POST', body: { registration_id: registrationId, channel_code: channelCode, phone_no: phoneNo, ...(deviceId ? { device_id: deviceId } : {}) } });
+  const createDirectDebitPayment = (registrationId: string, bindingId: string) => api<ApiResponse<DirectDebitPaymentData>>('/payments/doku/snap/direct-debit/payment', { method: 'POST', body: { registration_id: registrationId, binding_id: bindingId } });
+  const submitDirectDebitOtp = (paymentId: string, bindingId: string, otp: string) => api<ApiResponse<DirectDebitPaymentData>>(`/payments/doku/snap/direct-debit/payment/${encodeURIComponent(paymentId)}/otp`, { method: 'POST', body: { binding_id: bindingId, otp } });
   const createDokuCheckout = (registrationId: string) => api<ApiResponse<DokuCheckoutData>>('/payments/doku/checkout', { method: 'POST', body: { registration_id: registrationId } });
   const getOrder = (orderId: string) => api<ApiResponse<OrderItem>>(`/orders/${orderId}`);
   const getPayment = (paymentId: string) => api<ApiResponse<PaymentItem>>(`/payments/${paymentId}`);
   const getMyInvoices = () => api<ApiResponse<InvoiceResponseData>>('/payments/me/invoices');
   const getInvoiceByRegistration = (registrationId: string) => api<ApiResponse<Invoice>>(`/payments/registrations/${encodeURIComponent(registrationId)}/invoice`);
-  return { createDokuCheckout, getOrder, getPayment, getMyInvoices, getInvoiceByRegistration };
+  return { getPaymentMethods, getDirectPaymentMethods, createDirectVa, createDirectQris, createDirectDebitBinding, createDirectDebitPayment, submitDirectDebitOtp, createDokuCheckout, getOrder, getPayment, getMyInvoices, getInvoiceByRegistration };
 }

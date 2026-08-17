@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, a as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/exhibition-BhxM48bZ');import { _ as _plugin_vue_export_helper_default, c as useSeoMeta$1, N as NuxtLink } from '../virtual/entry.mjs';
 import { defineComponent, mergeProps, withCtx, createTextVNode, createVNode, useSSRContext } from 'vue';
 import { p as publicAssetsURL } from '../routes/renderer.mjs';
 import { ssrRenderAttrs, ssrRenderAttr, ssrRenderComponent, ssrRenderList, ssrInterpolate } from 'vue/server-renderer';
@@ -84,5 +84,5 @@ exhibition_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var exhibition_default = /*#__PURE__*/ _plugin_vue_export_helper_default(exhibition_vue_vue_type_script_setup_true_lang_default, [["__scopeId", "data-v-1416c2e4"]]);
 
-export { exhibition_default as default };
+export { exhibition_default as default };;globalThis.__timing__.logEnd('Load chunks/build/exhibition-BhxM48bZ');
 //# sourceMappingURL=exhibition-BhxM48bZ.mjs.map

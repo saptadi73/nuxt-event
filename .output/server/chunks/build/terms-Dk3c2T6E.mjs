@@ -1,4 +1,4 @@
-import { a as useSeoMeta$1 } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/terms-Dk3c2T6E');import { c as useSeoMeta$1 } from '../virtual/entry.mjs';
 import { defineComponent, mergeProps, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderList, ssrInterpolate } from 'vue/server-renderer';
 import 'nostics';
@@ -65,5 +65,5 @@ terms_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var terms_default = terms_vue_vue_type_script_setup_true_lang_default;
 
-export { terms_default as default };
+export { terms_default as default };;globalThis.__timing__.logEnd('Load chunks/build/terms-Dk3c2T6E');
 //# sourceMappingURL=terms-Dk3c2T6E.mjs.map

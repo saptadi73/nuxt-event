@@ -1,5 +1,76 @@
 # Frontend Integration — DOKU Checkout
 
+> Integrasi utama IWBIF sekarang menggunakan **DOKU Direct API SNAP Virtual
+> Account**. DOKU Checkout dipertahankan hanya sebagai fallback.
+
+## Direct VA flow
+
+`GET /api/v1/payments/doku/direct/methods` mengembalikan bank yang tersedia.
+
+```http
+POST /api/v1/payments/doku/direct/va
+Authorization: Bearer <access-token>
+Content-Type: application/json
+
+{"registration_id":"<uuid>","bank_code":"BCA"}
+```
+
+Respons menyediakan `payment_id`, `order_id`, `order_number`, `status`,
+`bank_code`, `virtual_account_no`, `amount`, `currency`, `expires_at`, dan
+`instructions_url`. Frontend menampilkan nomor VA dan melakukan polling ke
+`GET /api/v1/payments/{payment_id}` hingga `transaction_status` menjadi
+`success`. Frontend tidak boleh mengirim nominal atau memanggil webhook.
+
+## Direct Debit SNAP
+
+Gunakan `channel_code` `CIMB`, `BRI`, `MANDIRI`, atau `ALLO`; credential dan
+token rekening selalu disimpan backend.
+
+1. `POST /api/v1/payments/doku/snap/direct-debit/bindings` dengan
+   `registration_id`, `channel_code`, `phone_no`, dan `device_id` opsional.
+2. Redirect browser ke `data.redirect_url` jika ada untuk otorisasi bank.
+3. `POST /api/v1/payments/doku/snap/direct-debit/payment` dengan
+   `registration_id` dan `binding_id`.
+4. Jika diminta kanal, kirim OTP ke
+   `POST /api/v1/payments/doku/snap/direct-debit/payment/{payment_id}/otp`
+   menggunakan `{ "binding_id": "uuid", "otp": "123456" }`.
+5. Poll `GET /api/v1/payments/{payment_id}` hingga `transaction_status` adalah
+   `success`; callback DOKU adalah sumber status final.
+
+Dashboard DOKU untuk semua kanal Direct Debit:
+
+```text
+Binding URL: https://api-event.gagakrimang.web.id/api/v1/payments/doku/snap/direct-debit/binding/return
+Payment Notification URL: https://api-event.gagakrimang.web.id/api/v1/webhooks/doku/snap/direct-debit/payment
+```
+
+## QRIS melalui DOKU Checkout
+
+Jika `GET /api/v1/payments/doku/direct/methods` mengembalikan `"qris": true`,
+frontend dapat membuat QR dinamis melalui:
+
+```http
+POST /api/v1/payments/doku/direct/qris
+Authorization: Bearer <access-token>
+Content-Type: application/json
+
+{"registration_id":"uuid"}
+```
+
+Render `data.qr_content` sebagai QR image dan poll
+`GET /api/v1/payments/{data.payment_id}`. Jangan kirim nominal dari frontend.
+
+Di dashboard DOKU **QR Payment**, atur Notify URL:
+
+```text
+https://api-event.gagakrimang.web.id/api/v1/webhooks/doku
+```
+
+Notifikasi ini menentukan status akhir dan laporan. Redirect browser tidak boleh
+menandai transaksi sukses.
+
+## DOKU Checkout lama (fallback)
+
 Dokumen ini adalah kontrak integrasi frontend untuk pembayaran IWBIF 2026.
 OpenAPI backend tersedia di `/openapi.json`, sedangkan seluruh endpoint aplikasi
 menggunakan prefix `/api/v1`.
@@ -13,6 +84,52 @@ bundle, environment, local storage, atau request frontend.
 ```env
 VITE_API_BASE_URL=http://127.0.0.1:8000/api/v1
 ```
+
+## Katalog metode pembayaran
+
+Jangan hard-code daftar bank, e-Wallet, QRIS, atau Direct Debit di frontend.
+Saat halaman pembayaran dibuka, panggil:
+
+```http
+GET /api/v1/payments/methods
+```
+
+Endpoint ini publik dan hanya mengembalikan channel yang diaktifkan operator.
+Tidak ada Consumer Secret, API key, private key, atau token bank pada respons.
+
+```json
+{
+  "success": true,
+  "message": "Metode pembayaran aktif",
+  "data": [
+    {
+      "id": "payment-channel-uuid",
+      "provider": "doku",
+      "code": "DANA",
+      "category": "e_wallet",
+      "display_name": "DANA",
+      "logo_url": "https://cdn.example.com/payment-logos/dana.svg",
+      "sort_order": 20
+    }
+  ]
+}
+```
+
+Urutkan berdasarkan `sort_order`, kemudian kelompokkan memakai `category`:
+
+| `category` | Tampilan dan langkah berikutnya |
+|---|---|
+| `virtual_account` | Tampilkan bank; buat VA dengan endpoint Direct VA. |
+| `qris` | Buat QR dinamis melalui `POST /payments/doku/direct/qris`; render `qr_content`. |
+| `e_wallet` | Tampilkan logo dan lanjutkan flow e-Wallet/redirect ketika kanal telah tersedia. |
+| `direct_debit` | Mulai binding, kemudian buat pembayaran Direct Debit. |
+
+Gunakan `logo_url` dengan fallback avatar/teks `display_name` apabila nilainya
+`null` atau gambar gagal dimuat. Metadata merchant dan konfigurasi kanal hanya
+tersedia bagi admin, bukan respons katalog publik.
+
+Jika respons `data` kosong, tampilkan pesan bahwa metode pembayaran belum
+tersedia dan jangan menawarkan channel fallback yang tidak dikembalikan backend.
 
 Backend saat ini menggunakan DOKU Checkout Non-SNAP sandbox. DOKU mensyaratkan
 `order.amount` dalam IDR tanpa desimal. Paket IWBIF masih memiliki harga sumber

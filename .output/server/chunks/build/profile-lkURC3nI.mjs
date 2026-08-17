@@ -1,4 +1,4 @@
-import { u as useMediaUrl } from './useMediaUrl-CtPklTwb.mjs';
+globalThis.__timing__.logStart('Load chunks/build/profile-lkURC3nI');import { u as useMediaUrl } from './useMediaUrl-CtPklTwb.mjs';
 import { u as useParticipant } from './useParticipant-CPMevOwd.mjs';
 import { defineComponent, reactive, ref, computed, withAsyncContext, mergeProps, unref, useSSRContext } from 'vue';
 import { ssrRenderAttrs, ssrRenderAttr, ssrInterpolate } from 'vue/server-renderer';
@@ -68,5 +68,5 @@ profile_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) => {
 };
 var profile_default = profile_vue_vue_type_script_setup_true_lang_default;
 
-export { profile_default as default };
+export { profile_default as default };;globalThis.__timing__.logEnd('Load chunks/build/profile-lkURC3nI');
 //# sourceMappingURL=profile-lkURC3nI.mjs.map

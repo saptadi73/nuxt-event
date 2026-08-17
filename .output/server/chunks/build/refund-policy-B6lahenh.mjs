@@ -1,4 +1,4 @@
-import { a as useSeoMeta$1, _ as _plugin_vue_export_helper_default } from '../virtual/entry.mjs';
+globalThis.__timing__.logStart('Load chunks/build/refund-policy-B6lahenh');import { c as useSeoMeta$1, _ as _plugin_vue_export_helper_default } from '../virtual/entry.mjs';
 import { defineComponent, mergeProps, useSSRContext } from 'vue';
 import { ssrRenderComponent, ssrRenderAttrs, ssrInterpolate, ssrRenderList } from 'vue/server-renderer';
 import 'nostics';
@@ -94,5 +94,5 @@ refund_policy_vue_vue_type_script_setup_true_lang_default.setup = (props, ctx) =
 };
 var refund_policy_default = refund_policy_vue_vue_type_script_setup_true_lang_default;
 
-export { refund_policy_default as default };
+export { refund_policy_default as default };;globalThis.__timing__.logEnd('Load chunks/build/refund-policy-B6lahenh');
 //# sourceMappingURL=refund-policy-B6lahenh.mjs.map
