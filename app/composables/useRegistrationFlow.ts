@@ -72,7 +72,9 @@ export function useRegistrationFlow() {
     if (selectedTypes.value.some(type => statusFor(type) === 'payment_pending')) return 'payment_pending';
     if (selectedTypes.value.some(type => statusFor(type) === 'selected')) return 'selected';
     if (selectedTypes.value.every(type => statusFor(type) === 'completed')) return 'completed';
-    return statusFor(primaryType.value || selectedTypes.value[0]);
+
+    const fallbackType = primaryType.value ?? selectedTypes.value[0];
+    return fallbackType ? statusFor(fallbackType) : 'not_selected';
   });
 
   const profilePendingType = computed<PurchaseType | null>(() => selectedTypes.value.find(type => statusFor(type) === 'paid_profile_incomplete') || null);

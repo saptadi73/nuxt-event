@@ -31,9 +31,9 @@ dibuka.
 ## State pembelian
 
 ```text
-catalog -> cart -> order_pending -> payment_pending -> paid
-                                      |              -> failed/expired
-                                      -> canceled
+catalog -> cart -> order(pending) -> payment(created/pending) -> order(paid)
+                                           |                 -> payment(failed/expired)
+                                           -> order(canceled)
 ```
 
 `order.status` adalah status bisnis order. `payment.transaction_status` adalah

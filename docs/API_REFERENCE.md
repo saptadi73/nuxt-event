@@ -809,7 +809,9 @@ khusus dipanggil DOKU, memverifikasi signature SNAP dengan credential kanal, dan
 memproses callback secara idempoten.
 
 Endpoint itu memakai acknowledgment/signature DOKU, bukan envelope biasa.
-`POST /api/v1/payments/doku/checkout` adalah fallback lama; flow utama Direct VA.
+`POST /api/v1/payments/doku/checkout` digunakan untuk flow store-first dengan
+`order_id`. Direct VA adalah flow utama untuk registration-first yang sudah
+memiliki `registration_id`.
 Setelah Checkout, DOKU dapat mengarahkan browser ke
 `GET /api/v1/payments/doku/return`. Endpoint ini hanya landing page dan tidak
 pernah mengubah status pembayaran; frontend tetap membaca order/invoice setelah
@@ -1000,12 +1002,15 @@ GET /api/v1/health/database
 GET /api/v1/health/readiness
 ```
 
-Alur utama:
+Alur store-first utama:
 
-Untuk Delegate yang membeli package lebih dulu, urutannya adalah event/store
-catalog, cart, checkout, DOKU payment, lalu Delegate registration draft. Alur
-registration-first tetap tersedia untuk kompatibilitas, tetapi checkout store
-tidak lagi mewajibkan registration.
+```text
+register/login → auth/me → event/store → cart → checkout → DOKU Checkout
+→ payment success → registration draft → upload passport → submit
+→ organizer verification/confirmation → ticket → matching profile
+```
+
+Alur registration-first kompatibilitas:
 
 ```text
 register/login → auth/me → participants/me → event/master → registration draft

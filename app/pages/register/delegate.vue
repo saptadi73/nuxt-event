@@ -180,12 +180,22 @@ watchEffect(() => {
 
 const packages = computed(() => options.value?.packages ?? []);
 const activities = computed(() => options.value?.activities ?? []);
+const purchasedPackageId = computed(() => {
+  const fromRoute = typeof route.query.package === 'string' ? route.query.package : '';
+  return fromRoute || sessionStorage.getItem('iwbif-last-delegate-package-id') || '';
+});
 const submitting = ref(false);
 const feedback = ref('');
 const success = ref(false);
 
 const nullable = (value: string) => value || null;
 const money = (amount: number, currency: string) => new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+
+onMounted(() => {
+  if (purchasedPackageId.value && !form.delegate_package_id) {
+    form.delegate_package_id = purchasedPackageId.value;
+  }
+});
 
 const submit = async () => {
   submitting.value = true;
@@ -198,6 +208,10 @@ const submit = async () => {
       organization_name: form.company_organization,
       biography: form.business_objectives
     });
+
+    if (purchasedPackageId.value && form.delegate_package_id !== purchasedPackageId.value) {
+      throw new Error('The selected package does not match the package paid for in your cart. Please return to checkout and complete the correct purchase.');
+    }
 
     if (!form.delegate_package_id) {
       throw new Error('Please choose and pay for a delegate package before completing registration.');

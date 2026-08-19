@@ -36,6 +36,7 @@ export interface SessionItem {
   description?: string;
   session_type?: string;
   room_name?: string;
+  status?: string;
 }
 
 export interface WorkshopTrackItem {
@@ -63,6 +64,7 @@ export interface TicketTypeItem {
 
 export interface DelegatePackageItem extends TicketTypeItem {
   amount: number;
+  payment_amount_idr?: number | null;
   inclusions?: string[];
   accommodation_nights?: number;
 }

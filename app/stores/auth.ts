@@ -28,7 +28,7 @@ export const useAuthStore = defineStore('auth', {
       return '';
     },
     isAdminOrOrganizer: (state) => {
-      const role = state.userRole;
+      const role = normalizeRole(state.user?.role) ?? normalizeRole(state.user?.roles);
       return role === 'admin' || role === 'organizer';
     }
   },

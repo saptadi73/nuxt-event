@@ -1,7 +1,8 @@
 # Frontend Integration — DOKU Checkout
 
-> Integrasi utama IWBIF sekarang menggunakan **DOKU Direct API SNAP Virtual
-> Account**. DOKU Checkout dipertahankan hanya sebagai fallback.
+> Alur store-first menggunakan **DOKU Checkout** dengan `order_id`. DOKU Direct
+> API SNAP Virtual Account digunakan oleh alur registration-first yang sudah
+> memiliki `registration_id`.
 
 ## Direct VA flow
 
@@ -252,11 +253,18 @@ POST /api/v1/webhooks/doku
 
 Frontend tidak boleh memanggil endpoint webhook tersebut.
 
-Pada halaman callback, frontend membaca `payment_id` atau `registration_id` yang
-disimpan sebelum redirect, lalu mengambil status:
+Pada halaman callback store-first, frontend membaca `payment_id` dan `order_id`
+yang disimpan sebelum redirect, lalu mengambil status:
 
 ```http
 GET /api/v1/payments/{payment_id}
+GET /api/v1/orders/{order_id}
+```
+
+Invoice berbasis registration baru tersedia setelah form Delegate dibuat dan
+order ditautkan:
+
+```http
 GET /api/v1/payments/registrations/{registration_id}/invoice
 ```
 
@@ -272,9 +280,10 @@ Status payment yang perlu ditampilkan:
 Gunakan polling 3–5 detik selama maksimal 1–2 menit setelah callback. Hentikan
 polling saat status terminal atau komponen di-unmount.
 
-Payment `success` mengubah registration menjadi `paid`. Registration baru
-menjadi `confirmed` setelah proses konfirmasi organizer; frontend tidak boleh
-menyamakan dua status tersebut.
+Payment `success` mengubah order menjadi `paid`. Jika registration sudah
+tertaut, status registration juga menjadi `paid`. Pada store-first, registration
+dibuat setelah pembayaran dan backend memverifikasi order paid sebelum organizer
+dapat mengubah registration menjadi `confirmed`.
 
 ## 5. Error Handling
 
@@ -308,9 +317,9 @@ response.
 ## 6. TypeScript Contract
 
 ```ts
-export interface CreateDokuCheckoutRequest {
-  registration_id: string;
-}
+export type CreateDokuCheckoutRequest =
+  | { order_id: string; registration_id?: never }
+  | { registration_id: string; order_id?: never };
 
 export interface DokuCheckoutData {
   payment_url: string;

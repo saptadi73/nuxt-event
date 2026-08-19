@@ -15,7 +15,7 @@
     <div v-else-if="error" class="mt-8 rounded-[1.75rem] border border-orange-300/20 bg-orange-300/10 p-4 text-sm text-orange-100">
       <p class="font-semibold">Unable to load speakers from backend.</p>
       <p class="mt-1 text-orange-100/80">Please check the API connection or try again.</p>
-      <button class="mt-3 rounded-full border border-orange-300/30 px-4 py-2 text-xs uppercase tracking-[.2em] text-orange-100" @click="refresh">Retry</button>
+      <button type="button" class="mt-3 rounded-full border border-orange-300/30 px-4 py-2 text-xs uppercase tracking-[.2em] text-orange-100" @click="() => refresh()">Retry</button>
     </div>
 
     <div v-else-if="!displayItems.length" class="mt-8 rounded-[1.75rem] border border-white/10 bg-white/5 p-4 text-sm text-slate-200">

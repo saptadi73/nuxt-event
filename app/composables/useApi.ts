@@ -21,16 +21,19 @@ export function useApi() {
   const config = useRuntimeConfig();
   const authStore = useAuthStore();
 
+  const buildAuthHeaders = (headers?: HeadersInit) => {
+    const nextHeaders = new Headers(headers);
+    if (authStore.accessToken) {
+      nextHeaders.set('Authorization', `Bearer ${authStore.accessToken}`);
+    }
+    return nextHeaders;
+  };
+
   return $fetch.create({
     baseURL: config.public.apiBaseUrl,
     onRequest({ options }) {
       authStore.hydrateUserFromToken();
-      if (authStore.accessToken) {
-        options.headers = {
-          ...(options.headers || {}),
-          Authorization: `Bearer ${authStore.accessToken}`
-        };
-      }
+      options.headers = buildAuthHeaders(options.headers as HeadersInit | undefined);
     },
     async onResponseError({ request, response, options }) {
       if (response.status === 401 && authStore.refreshToken && request !== '/auth/refresh') {
@@ -64,16 +67,14 @@ export function useApi() {
 
         const refreshed = await refreshPromise;
         if (refreshed) {
-          const retryHeaders = {
-            ...(options.headers || {}),
-            Authorization: `Bearer ${authStore.accessToken}`
-          };
-
-          return $fetch(request, {
+          const retryHeaders = buildAuthHeaders(options.headers as HeadersInit | undefined);
+          const retryOptions = {
             ...options,
             baseURL: config.public.apiBaseUrl,
             headers: retryHeaders
-          });
+          } as unknown as Parameters<typeof $fetch>[1];
+
+          return $fetch(request, retryOptions);
         }
       }
 

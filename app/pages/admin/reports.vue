@@ -291,15 +291,26 @@ const buildReportParams = () => {
 
 const readFiltersFromQuery = () => {
   const q = route.query;
-  eventFilter.value = typeof q.event_id === 'string' ? q.event_id : '';
-  dateFrom.value = typeof q.date_from === 'string' ? q.date_from.split('T')[0] : '';
-  dateTo.value = typeof q.date_to === 'string' ? q.date_to.split('T')[0] : '';
-  statusFilter.value = typeof q.status === 'string' ? q.status : '';
-  channelFilter.value = typeof q.channel_code === 'string' ? q.channel_code : '';
-  packageIdFilter.value = typeof q.package_id === 'string' ? q.package_id : '';
-  searchTerm.value = typeof q.q === 'string' ? q.q : '';
-  if (typeof q.per_page === 'string' && !Number.isNaN(Number(q.per_page))) {
-    const nextPerPage = Number(q.per_page);
+  const getQueryString = (value: unknown): string => {
+    if (Array.isArray(value)) return typeof value[0] === 'string' ? value[0] : '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    return '';
+  };
+  const nextDateFrom = getQueryString(q.date_from).split('T')[0] || '';
+  const nextDateTo = getQueryString(q.date_to).split('T')[0] || '';
+
+  eventFilter.value = getQueryString(q.event_id);
+  dateFrom.value = nextDateFrom;
+  dateTo.value = nextDateTo;
+  statusFilter.value = getQueryString(q.status);
+  channelFilter.value = getQueryString(q.channel_code);
+  packageIdFilter.value = getQueryString(q.package_id);
+  searchTerm.value = getQueryString(q.q);
+
+  const perPageValue = getQueryString(q.per_page);
+  if (perPageValue && !Number.isNaN(Number(perPageValue))) {
+    const nextPerPage = Number(perPageValue);
     if (nextPerPage > 0) itemsPerPage.value = nextPerPage;
   }
 };
@@ -433,8 +444,8 @@ const scheduleAutoReload = () => {
   }, 350);
 };
 
-const formatDateOnly = (value: string) => {
-  const date = new Date(value);
+const formatDateOnly = (value: string | Date) => {
+  const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return '';
   const year = date.getFullYear();
   const month = `${date.getMonth() + 1}`.padStart(2, '0');

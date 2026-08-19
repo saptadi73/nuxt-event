@@ -34,8 +34,10 @@ GET /api/v1/master/iwbif-options
 ```
 
 Ambil juga `GET /api/v1/auth/users/{user_id}` untuk membaca
-`delegate_status` dan `exhibitor_status`. Nilai yang mungkin:
-`belum_terdaftar`, `belum_lengkap`, dan `lengkap`.
+`delegate_status`, `exhibitor_status`, dan `purchase_tracking`. Nilai status
+profile yang mungkin adalah `belum_terdaftar`, `belum_lengkap`, dan `lengkap`.
+Gunakan `purchase_tracking.delegate.status=paid_profile_incomplete` untuk
+mengarahkan user yang sudah membayar ke form Delegate.
 
 Gunakan master API sebagai sumber dropdown dan checkbox. Jangan hard-code UUID,
 harga paket, aktivitas, atau slot. Participant profile boleh `null`; kondisi ini
@@ -72,11 +74,22 @@ Jangan sertakan `participant_id` dalam payload create/update. Semua declarations
 harus `true`, activity IDs harus berasal dari event, dan tanggal departure tidak
 boleh sebelum arrival.
 
-Status utama:
+Pada flow store-first, status order/payment diselesaikan sebelum registration
+dibuat. Registration tidak harus melewati status `paid`; saat organizer
+melakukan confirmation, backend memverifikasi bahwa order tertaut sudah `paid`.
+
+```text
+order(pending) -> payment(created/pending) -> order(paid)
+                      -> Delegate form
+
+registration(draft) -> submitted -> under_verification -> verified -> confirmed
+```
+
+Flow registration-first tetap didukung untuk kompatibilitas:
 
 ```text
 draft -> submitted -> under_verification -> verified
-      -> payment_pending/paid -> confirmed
+   -> payment_pending -> paid -> confirmed
 ```
 
 Business Matching Profile hanya dibuka saat status `confirmed`.
@@ -88,6 +101,18 @@ oleh product store di backend. Implementasi cart checkout dan polling status
 mengikuti `FRONTEND_STORE_PURCHASE_FLOW.md`; callback browser bukan bukti
 pembayaran. Endpoint registration tetap membutuhkan seluruh profil karena form
 dikirim setelah package dipilih/dibayar.
+
+Untuk store-first, buat pembayaran menggunakan order hasil checkout:
+
+```http
+POST /api/v1/payments/doku/checkout
+Content-Type: application/json
+
+{"order_id":"order-uuid"}
+```
+
+Direct VA, QRIS, dan Direct Debit yang menerima `registration_id` digunakan
+oleh flow registration-first.
 
 ## 5. Business Matching Profile
 
@@ -128,7 +153,8 @@ ulang.
 
 ## 7. Penanganan error
 
-- `401`: token tidak ada/kedaluwarsa; arahkan ke login atau refresh token.
+- `401`: token tidak ada/kedaluwarsa; coba refresh token satu kali, lalu arahkan
+   ke login jika refresh gagal.
 - `403`: ownership atau eligibility gagal.
 - `409`: konflik lifecycle/duplikasi; pertahankan input dan tampilkan pesan API.
 - `422`: field/option tidak valid; petakan detail validasi ke input terkait.
@@ -136,3 +162,5 @@ ulang.
 
 Frontend harus memakai `code` dan `message` dari error envelope backend serta
 tidak menyimpulkan status bisnis hanya dari keberhasilan navigasi browser.
+Untuk dashboard organizer, `409 REGISTRATION_PAYMENT_REQUIRED` berarti
+registration belum boleh dikonfirmasi karena order tertaut belum paid.
