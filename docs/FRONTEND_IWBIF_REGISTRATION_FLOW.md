@@ -41,7 +41,17 @@ Gunakan master API sebagai sumber dropdown dan checkbox. Jangan hard-code UUID,
 harga paket, aktivitas, atau slot. Participant profile boleh `null`; kondisi ini
 tidak menghalangi pembuatan draft registrasi.
 
-## 3. Registrasi delegasi
+## 3. Registrasi delegasi setelah pembelian package
+
+Alur pembelian Delegate dimulai dari katalog store, bukan dari form registrasi:
+
+```text
+GET products -> add cart item -> checkout -> DOKU payment -> Delegate form
+```
+
+Ambil `delegate_package_id` dari `metadata_json.delegate_package_id` pada
+product Delegate yang dibeli. Harga checkout ditentukan product store; jangan
+menghitung kurs atau mengirim harga dari form registrasi.
 
 1. Buat draft dengan `POST /api/v1/events/{event_id}/registrations`.
 2. Simpan `registration.id` dari response sebagai ID proses, bukan sebagai
@@ -53,6 +63,10 @@ tidak menghalangi pembuatan draft registrasi.
 5. Submit melalui
    `POST /api/v1/events/{event_id}/registrations/{id}/submit`.
 6. Setelah submit, jadikan form read-only dan tampilkan status dari response/API.
+
+Saat create registration, backend otomatis menautkan order Delegate pending atau
+paid yang cocok untuk user, event, dan package. Frontend tidak mengirim
+`order_id` dalam payload registration.
 
 Jangan sertakan `participant_id` dalam payload create/update. Semua declarations
 harus `true`, activity IDs harus berasal dari event, dan tanggal departure tidak
@@ -70,8 +84,10 @@ Business Matching Profile hanya dibuka saat status `confirmed`.
 ## 4. Pembayaran
 
 Frontend tidak mengirim nominal hasil konversi. Harga pembayaran IDR ditentukan
-oleh master package di backend. Implementasi Checkout dan polling status mengikuti
-`FRONTEND_DOKU_PAYMENT_INTEGRATION.md`. Callback browser bukan bukti pembayaran.
+oleh product store di backend. Implementasi cart checkout dan polling status
+mengikuti `FRONTEND_STORE_PURCHASE_FLOW.md`; callback browser bukan bukti
+pembayaran. Endpoint registration tetap membutuhkan seluruh profil karena form
+dikirim setelah package dipilih/dibayar.
 
 ## 5. Business Matching Profile
 
@@ -91,6 +107,11 @@ Perlakukan HTTP 403 sebagai “registration belum confirmed” atau ownership ti
 valid; jangan menampilkan form matching sebelum syarat tersebut terpenuhi.
 
 ## 6. Exhibitor
+
+Belum ada katalog atau checkout package Exhibitor. `GET
+/events/{event_id}/exhibitors` hanya menampilkan exhibitor yang sudah submitted,
+bukan pilihan package untuk dibeli. Gunakan alur pendaftaran exhibitor di bawah
+sampai organizer menyediakan master package dan harga Exhibitor.
 
 1. Buat draft melalui `POST /api/v1/events/{event_id}/exhibitors` tanpa
    `participant_id`.

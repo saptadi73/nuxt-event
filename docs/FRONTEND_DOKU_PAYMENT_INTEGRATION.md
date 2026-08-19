@@ -69,7 +69,11 @@ https://api-event.gagakrimang.web.id/api/v1/webhooks/doku
 Notifikasi ini menentukan status akhir dan laporan. Redirect browser tidak boleh
 menandai transaksi sukses.
 
-## DOKU Checkout lama (fallback)
+## DOKU Checkout untuk pembelian cart
+
+Untuk pembelian product baru berbasis cart, gunakan alur lengkap pada
+`FRONTEND_STORE_PURCHASE_FLOW.md` dan kirim `order_id`, bukan `registration_id`.
+Endpoint berbasis registration tetap tersedia untuk kompatibilitas alur lama.
 
 Dokumen ini adalah kontrak integrasi frontend untuk pembayaran IWBIF 2026.
 OpenAPI backend tersedia di `/openapi.json`, sedangkan seluruh endpoint aplikasi
@@ -137,7 +141,7 @@ USD, sehingga nominal charge IDR tetap untuk Package A/B/C harus disepakati dan
 disimpan oleh backend sebelum pengujian sandbox. Frontend tidak boleh menghitung
 kurs atau mengirim nominal pembayaran.
 
-## 2. Membuat Checkout
+## 2. Membuat Checkout dari order cart
 
 ```http
 POST /api/v1/payments/doku/checkout
@@ -145,13 +149,14 @@ Authorization: Bearer <access-token>
 Content-Type: application/json
 
 {
-  "registration_id": "<registration-uuid>"
+  "order_id": "<order-uuid>"
 }
 ```
 
-`registration_id` boleh `null`; penggunaan ID eksplisit direkomendasikan agar
-frontend tidak memilih registrasi yang salah ketika user memiliki lebih dari
-satu event.
+Gunakan `order_id` dari `POST /store/events/{event_id}/checkout`. Order cart
+Delegate dapat dibuat sebelum registration/profile ada. Backend memverifikasi
+ownership order dan memakai snapshot `order_items` sebagai line item DOKU.
+Jangan kirim `registration_id` untuk alur cart.
 
 Response berhasil:
 

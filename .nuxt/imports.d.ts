@@ -33,7 +33,7 @@ export { requestIdleCallback, cancelIdleCallback } from '#app/compat/idle-callba
 export { setInterval } from '#app/compat/interval';
 export { definePageMeta, PageMeta } from '#app/composables/pages';
 export { defineLazyHydrationComponent } from '#app/composables/lazy-hydration';
-export { useAdminContent, ProductMutationPayload, SessionMutationPayload } from '../app/composables/useAdminContent';
+export { useAdminContent, DelegatePackageMutationPayload, ProductMutationPayload, SessionMutationPayload } from '../app/composables/useAdminContent';
 export { useAdminReport, PaymentReportSummary, PaymentReportMetric, PaymentReportTransaction, PaymentReportResponse } from '../app/composables/useAdminReport';
 export { useApi, ApiMeta, ApiResponse } from '../app/composables/useApi';
 export { useAuth } from '../app/composables/useAuth';

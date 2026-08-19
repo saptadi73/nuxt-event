@@ -46,7 +46,7 @@ export default defineNuxtConfig({
     '/workshops': { prerender: true },
     '/tickets': { prerender: true },
     '/partners': { prerender: true },
-    '/business-matching': { prerender: true },
+    '/business-matching': { ssr: false },
     '/deal-room': { prerender: true },
     '/participants': { prerender: true },
     '/exhibition': { prerender: true },

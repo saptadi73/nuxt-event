@@ -3,7 +3,7 @@
     <p class="text-sm uppercase tracking-[0.35em] text-amber-200">Registration</p>
     <h1 class="mt-4 text-3xl font-black sm:text-5xl">Choose how you want to join IWBIF 2026</h1>
     <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-      Create your account first, then continue with the registration type that matches your participation.
+      Select the participation pathway that best reflects your role at IWBIF 2026: join as a Delegate to engage in curated business opportunities, or as an Exhibitor to showcase your organisation and offerings.
     </p>
 
     <div v-if="!isAuthenticated" class="mt-10 rounded-[2rem] border border-amber-200/20 bg-gradient-to-br from-amber-300/8 via-slate-950/60 to-slate-950/80 p-6 shadow-[0_18px_50px_rgba(0,0,0,0.2)] sm:p-8">
@@ -15,18 +15,18 @@
     </div>
 
     <div v-else class="mt-10 grid gap-5 md:grid-cols-2">
-      <NuxtLink to="/register/delegate" class="choice-card delegate-card rounded-[2rem] border border-amber-200/20 bg-amber-400/5 p-6 transition duration-200 hover:-translate-y-1 hover:border-amber-300/50 hover:bg-amber-300/10">
+      <NuxtLink to="/tickets?type=delegate" class="choice-card delegate-card rounded-[2rem] border border-amber-200/20 bg-amber-400/5 p-6 transition duration-200 hover:-translate-y-1 hover:border-amber-300/50 hover:bg-amber-300/10">
         <p class="text-xs uppercase tracking-[0.35em] text-amber-200">Delegate</p>
         <h2 class="mt-4 text-2xl font-black">Register as Delegate</h2>
-        <p class="mt-3 text-sm leading-7 text-slate-300">Join as a participant, complete your profile, choose a package, and access business matching features.</p>
-        <span class="mt-6 inline-flex rounded-full bg-amber-300 px-5 py-2.5 font-semibold text-slate-950 shadow-[0_12px_25px_rgba(216,172,89,0.20)]">Continue</span>
+        <p class="mt-3 text-sm leading-7 text-slate-300">Choose your delegate package first. You will complete your profile after payment.</p>
+        <span class="mt-6 inline-flex rounded-full bg-amber-300 px-5 py-2.5 font-semibold text-slate-950 shadow-[0_12px_25px_rgba(216,172,89,0.20)]">Choose package</span>
       </NuxtLink>
 
-      <NuxtLink to="/register/exhibitor" class="choice-card exhibitor-card rounded-[2rem] border border-cyan-200/20 bg-cyan-400/5 p-6 transition duration-200 hover:-translate-y-1 hover:border-cyan-300/50 hover:bg-cyan-300/10">
+      <NuxtLink to="/tickets?type=exhibitor" class="choice-card exhibitor-card rounded-[2rem] border border-cyan-200/20 bg-cyan-400/5 p-6 transition duration-200 hover:-translate-y-1 hover:border-cyan-300/50 hover:bg-cyan-300/10">
         <p class="text-xs uppercase tracking-[0.35em] text-cyan-200">Exhibitor</p>
         <h2 class="mt-4 text-2xl font-black">Register as Exhibitor</h2>
-        <p class="mt-3 text-sm leading-7 text-slate-300">Submit your company profile, booth interest, and exhibition requirements for event participation.</p>
-        <span class="mt-6 inline-flex rounded-full bg-cyan-300 px-5 py-2.5 font-semibold text-slate-950 shadow-[0_12px_25px_rgba(34,211,238,0.20)]">Continue</span>
+        <p class="mt-3 text-sm leading-7 text-slate-300">Choose your exhibitor package first. You will complete your company profile after payment.</p>
+        <span class="mt-6 inline-flex rounded-full bg-cyan-300 px-5 py-2.5 font-semibold text-slate-950 shadow-[0_12px_25px_rgba(34,211,238,0.20)]">Choose package</span>
       </NuxtLink>
     </div>
   </section>

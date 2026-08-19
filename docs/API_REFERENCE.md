@@ -243,6 +243,9 @@ Package response:
 
 `amount/currency` untuk display; `payment_amount_idr` untuk charge DOKU.
 
+Untuk pembelian awal Delegate, gunakan katalog store pada bagian 6. Endpoint
+`delegate-packages` adalah master form registration dan bukan endpoint cart.
+
 ## 4. Participant profile
 
 Participant profile bukan bagian dari registrasi akun awal. Resource ini dipakai
@@ -295,6 +298,12 @@ draft → submitted → under_verification → verified/payment_pending
 - `PASSPORT_COPY` wajib sebelum submit.
 - Satu participant hanya boleh punya satu registrasi aktif per event.
 - Business Matching IWBIF baru tersedia setelah `confirmed`.
+
+Untuk alur beli package lebih dulu, lakukan cart, checkout, dan pembayaran
+sebelum membuat draft registration. Setelah payment, frontend mengirim form
+Delegate lengkap dengan `delegate_package_id` dari metadata product yang dibeli.
+Backend otomatis menautkan order Delegate cocok milik user ke registration.
+Frontend tidak mengirim `order_id` pada payload registration.
 
 Create/update — **Auth**:
 
@@ -377,10 +386,24 @@ POST /api/v1/payments/doku/checkout
 {"order_id":"order-uuid"}
 ```
 
-User harus sudah memiliki registration untuk event sebelum checkout. Order cart
-selalu menyimpan `user_id` dan `registration_id`; ownership keduanya diverifikasi
-backend. Disable tombol selama request, simpan ID response, dan jangan membuat
-order baru saat halaman hasil di-refresh. Detail ada di
+Checkout cart tidak memerlukan registration. Order baru selalu menyimpan
+`user_id`; `registration_id` dapat kosong sampai form Delegate selesai dibuat.
+Untuk product `delegate`, metadata berisi:
+
+```json
+{
+  "delegate_package_id":"package-uuid",
+  "display_amount":"500",
+  "display_currency":"USD"
+}
+```
+
+`price/currency` product adalah nominal pembayaran yang dipakai checkout (saat
+ini IDR). `display_amount/display_currency` hanya untuk tampilan harga sumber.
+Setelah payment, gunakan `delegate_package_id` metadata saat membuat registration
+Delegate; backend akan menautkan order pending atau paid yang cocok. Disable
+tombol selama request, simpan ID response, dan jangan membuat order baru saat
+halaman hasil di-refresh. Detail ada di
 `docs/FRONTEND_STORE_PURCHASE_FLOW.md`.
 
 Admin mengelola product:
@@ -442,6 +465,11 @@ Create menghasilkan draft. Upload catalogue (`file`, max 10 MB) mengubah status
 menjadi submitted. List event hanya menampilkan submitted. Update/delete hanya
 draft milik user. Satu akun hanya dapat membuat satu exhibitor per event;
 ownership selalu berasal dari access token.
+
+Endpoint `GET /api/v1/events/{event_id}/exhibitors` adalah daftar exhibitor yang
+sudah submitted, bukan katalog paket Exhibitor. Backend belum menyediakan master
+package/harga atau checkout Exhibitor; jangan tampilkan endpoint ini sebagai
+pilihan pembelian sampai organizer mendefinisikan package tersebut.
 
 ## 9. Business Matching profile dan discovery
 
@@ -947,6 +975,11 @@ GET /api/v1/health/readiness
 ```
 
 Alur utama:
+
+Untuk Delegate yang membeli package lebih dulu, urutannya adalah event/store
+catalog, cart, checkout, DOKU payment, lalu Delegate registration draft. Alur
+registration-first tetap tersedia untuk kompatibilitas, tetapi checkout store
+tidak lagi mewajibkan registration.
 
 ```text
 register/login → auth/me → participants/me → event/master → registration draft

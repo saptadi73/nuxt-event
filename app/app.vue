@@ -61,7 +61,7 @@
     </main>
 
     <footer class="relative z-10 border-t border-white/10 bg-slate-950/60">
-      <div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-3 lg:px-8">
+      <div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1fr_1fr_1.35fr] lg:px-8">
         <div>
           <p class="text-xs uppercase tracking-[0.3em] text-amber-200">IWBIF 2026</p>
           <p class="mt-3 max-w-sm text-sm leading-7 text-slate-400">Connecting women-led businesses with global markets, finance, and trusted partnerships.</p>
@@ -72,7 +72,7 @@
           <NuxtLink to="/partners">Partners</NuxtLink><NuxtLink to="/faq">FAQ</NuxtLink>
         </div>
         <div class="text-sm text-slate-400 md:text-right">
-          <p>International Women Business &amp; Investment Forum</p>
+          <p class="md:whitespace-nowrap">International Women Business &amp; Investment Forum</p>
           <p class="mt-1">14–17 October 2026 · Jakarta</p>
           <div class="mt-3 flex flex-wrap gap-4 md:justify-end"><NuxtLink to="/privacy">Privacy</NuxtLink><NuxtLink to="/terms">Terms</NuxtLink><NuxtLink to="/code-of-conduct">Code of Conduct</NuxtLink><NuxtLink to="/refund-policy">Refunds</NuxtLink></div>
         </div>
@@ -126,6 +126,7 @@ const secondaryNav = computed(() => {
   ];
 
   if (authStore.isAdminOrOrganizer) {
+    items.push({ to: '/admin/packages', label: 'Manage Packages' });
     items.push({ to: '/admin/reports', label: 'Sales Report' });
     items.push({ to: '/admin/speakers', label: 'Admin' });
   }

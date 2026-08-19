@@ -18,12 +18,10 @@
         <div class="hero-vignette" />
       </div>
 
-      <nav class="hero-action-dock" aria-label="Main event actions">
+      <nav class="hero-action-dock" aria-label="Main event action">
         <div class="hero-action-status"><span class="hero-live-dot" aria-hidden="true" />Registration is now open</div>
         <div class="hero-action-links">
           <NuxtLink :to="homeCtaTo" class="hero-button hero-button-primary hero-button-primary-large">{{ homeCtaLabel }} <span aria-hidden="true">→</span></NuxtLink>
-          <NuxtLink to="/program" class="hero-button hero-button-secondary">Explore Program</NuxtLink>
-          <NuxtLink to="/business-matching" class="hero-button hero-button-ghost">Business Matching</NuxtLink>
         </div>
       </nav>
     </section>
@@ -121,7 +119,16 @@ const authStore = useAuthStore();
 const { isAuthenticated } = storeToRefs(authStore);
 const registrationFlow = useRegistrationFlow();
 const homeCtaTo = computed(() => (isAuthenticated.value ? registrationFlow.ctaTo.value : '/auth/register'));
-const homeCtaLabel = computed(() => (isAuthenticated.value ? registrationFlow.ctaLabel.value : 'Register Now!'));
+const homeCtaLabel = computed(() => {
+  if (!isAuthenticated.value) return 'Register Now!';
+  if (registrationFlow.primaryStatus.value === 'not_selected') return 'Secure Your Seats';
+
+  if (['selected', 'payment_pending'].includes(registrationFlow.primaryStatus.value)) {
+    return `Continue as ${registrationFlow.primaryType.value === 'exhibitor' ? 'Exhibitor' : 'Delegate'}`;
+  }
+
+  return registrationFlow.ctaLabel.value;
+});
 
 onMounted(() => {
   if (isAuthenticated.value) {
@@ -220,13 +227,13 @@ onMounted(() => {
 .hero-frame:hover .hero-image { transform: scale(1.012); }
 .hero-vignette { position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(2, 10, 24, .08), transparent 22%, transparent 78%, rgba(2, 10, 24, .08)); box-shadow: inset 0 0 55px rgba(1, 8, 20, .18); pointer-events: none; }
   .hero-live-dot { width: .5rem; height: .5rem; border-radius: 50%; background: var(--premium-gold); box-shadow: 0 0 0 4px rgba(232, 198, 125, .14), 0 0 18px var(--premium-gold); }
-.hero-action-dock { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin: clamp(.85rem, 1.5vw, 1.25rem) clamp(.5rem, 2.5vw, 2.5rem) 0; border: 1px solid rgba(216, 172, 89, .24); border-radius: 1.35rem; background: linear-gradient(135deg, rgba(7, 29, 58, .96), rgba(4, 21, 45, .98)); padding: .85rem .9rem .85rem 1.25rem; box-shadow: 0 22px 55px rgba(2, 10, 24, .42), inset 0 1px rgba(255, 255, 255, .04); }
-.hero-action-status { display:flex; align-items:center; gap:.7rem; color:#cbd2dc; font-size:.68rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; white-space:nowrap; }
-  .hero-action-links { display:flex; flex-wrap:wrap; justify-content:center; gap:.65rem; }
+.hero-action-dock { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .8rem; margin: clamp(.85rem, 1.5vw, 1.25rem) clamp(.5rem, 2.5vw, 2.5rem) 0; border: 1px solid rgba(216, 172, 89, .24); border-radius: 1.35rem; background: linear-gradient(135deg, rgba(7, 29, 58, .96), rgba(4, 21, 45, .98)); padding: 1rem; box-shadow: 0 22px 55px rgba(2, 10, 24, .42), inset 0 1px rgba(255, 255, 255, .04); }
+.hero-action-status { position:absolute; left:1.25rem; top:50%; display:flex; align-items:center; gap:.7rem; transform:translateY(-50%); color:#cbd2dc; font-size:.68rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; white-space:nowrap; }
+  .hero-action-links { display:flex; justify-content:center; }
 .hero-button { display: inline-flex; align-items: center; justify-content: center; gap: .7rem; border-radius: 999px; padding: .85rem 1.25rem; font-size: .82rem; font-weight: 700; white-space: nowrap; }
 .hero-button:hover { transform: translateY(-2px); }
   .hero-button-primary { background: linear-gradient(135deg, #e6c477, #d8ac59); color: #04152d; box-shadow: 0 12px 35px rgba(216, 172, 89, .3); }
-  .hero-button-primary-large { font-size: 1.02rem; min-height: 3.4rem; min-width: 16rem; }
+  .hero-button-primary-large { font-size: 1.12rem; min-height: 3.6rem; min-width: 18rem; }
   .hero-button-secondary { border: 1px solid rgba(255, 255, 255, .25); background: rgba(11, 36, 71, .6); color: #f8f6f1; backdrop-filter: blur(12px); }
   .hero-button-ghost { border: 1px solid rgba(232, 198, 125, .45); background: rgba(4, 21, 45, .45); color: #d8ac59; }
 
@@ -308,6 +315,8 @@ onMounted(() => {
   }
 
   .hero-action-status {
+    position: static;
+    transform: none;
     justify-content: center;
     white-space: normal;
     letter-spacing: 0.09em;

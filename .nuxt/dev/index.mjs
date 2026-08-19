@@ -655,7 +655,7 @@ const _inlineRuntimeConfig = {
         "prerender": true
       },
       "/business-matching": {
-        "prerender": true
+        "ssr": false
       },
       "/deal-room": {
         "prerender": true
@@ -734,10 +734,6 @@ const _inlineRuntimeConfig = {
         "prerender": true
       },
       "/partners/_payload.json": {
-        "ssr": true,
-        "prerender": true
-      },
-      "/business-matching/_payload.json": {
         "ssr": true,
         "prerender": true
       },

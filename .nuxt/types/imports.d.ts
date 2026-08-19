@@ -226,7 +226,7 @@ declare global {
   export type { PageMeta } from '../../node_modules/nuxt/dist/app/composables/pages'
   import('../../node_modules/nuxt/dist/app/composables/pages')
   // @ts-ignore
-  export type { ProductMutationPayload, SessionMutationPayload } from '../../app/composables/useAdminContent'
+  export type { DelegatePackageMutationPayload, ProductMutationPayload, SessionMutationPayload } from '../../app/composables/useAdminContent'
   import('../../app/composables/useAdminContent')
   // @ts-ignore
   export type { PaymentReportSummary, PaymentReportMetric, PaymentReportTransaction, PaymentReportResponse } from '../../app/composables/useAdminReport'

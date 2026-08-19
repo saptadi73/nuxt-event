@@ -97,17 +97,17 @@
           <div class="about-why-frame">
             <img src="/images/why-indonesia.png" alt="Indonesia's infrastructure, manufacturing, cultural heritage, tourism, renewable energy, and international trade" width="1672" height="941" loading="lazy">
             <div class="about-why-overlay" aria-hidden="true" />
-            <figcaption class="about-why-caption">
-              <span>Indonesia</span>
-              <strong>Gateway to ASEAN &amp; Asia</strong>
-            </figcaption>
-            <div class="about-why-grid">
-              <article v-for="(item, index) in why" :key="item.title" class="why-card">
-                <span class="why-index">{{ String(index + 1).padStart(2, '0') }}</span>
-                <h3>{{ item.title }}</h3>
-                <p>{{ item.text }}</p>
-              </article>
-            </div>
+          </div>
+          <figcaption class="about-why-caption">
+            <span>Indonesia</span>
+            <strong>Gateway to ASEAN &amp; Asia</strong>
+          </figcaption>
+          <div class="about-why-grid">
+            <article v-for="(item, index) in why" :key="item.title" class="why-card">
+              <span class="why-index">{{ String(index + 1).padStart(2, '0') }}</span>
+              <h3>{{ item.title }}</h3>
+              <p>{{ item.text }}</p>
+            </article>
           </div>
         </figure>
       </div>

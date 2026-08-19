@@ -49,6 +49,14 @@ GET /api/v1/store/events/{event_id}/products
 Product memiliki `product_type` `delegate`, `exhibitor`, atau `additional`.
 Jangan hard-code UUID, harga, currency, atau batas quantity.
 
+Untuk IWBIF Delegate, katalog menyediakan `DELEGATE_A`, `DELEGATE_B`, dan
+`DELEGATE_C`. Harga `price` dan `currency` adalah nominal yang ditagihkan
+(saat ini IDR). Tampilkan harga sumber dari `metadata_json.display_amount` dan
+`metadata_json.display_currency` bila UI perlu menampilkan harga package USD.
+`metadata_json.delegate_package_id` adalah ID package yang harus dipakai saat
+user mengisi form registrasi setelah pembelian. Jangan mengubah atau menebak
+nilai metadata tersebut.
+
 ## 2. Kelola cart
 
 ```http
@@ -81,11 +89,11 @@ campuran currency dalam satu order.
 POST /api/v1/store/events/{event_id}/checkout
 ```
 
-User harus sudah memiliki registration untuk event tersebut sebelum checkout.
-Backend mengikat order ke `user_id` dan `registration_id` sekaligus. Simpan
-`order_id` dan `order_number` dari response. Checkout menghapus item dari cart
-dan membuat snapshot di `order_items`, sehingga histori tidak berubah jika admin
-mengubah harga katalog.
+Checkout tidak memerlukan registration. Backend mengikat order ke `user_id` dan
+baru menautkan `registration_id` ketika user menyelesaikan form Delegate dengan
+package yang dibeli. Simpan `order_id` dan `order_number` dari response.
+Checkout menghapus item dari cart dan membuat snapshot di `order_items`,
+sehingga histori tidak berubah jika admin mengubah harga katalog.
 
 Frontend harus menonaktifkan tombol selama request berlangsung. Jika request
 gagal, ambil ulang cart dan jangan mengasumsikan order telah dibuat.
@@ -110,6 +118,20 @@ window.location.assign(data.payment_url);
 
 Jika `requires_payment` bernilai `false`, order sudah dibayar dan frontend tidak
 boleh membuat checkout kedua.
+
+## 4a. Lanjutkan profil Delegate setelah pembayaran
+
+Setelah status payment `success`, arahkan user ke form Delegate. Isi
+`delegate_package_id` dari `metadata_json.delegate_package_id` product yang
+dibeli, lalu kirim seluruh form ke:
+
+```http
+POST /api/v1/events/{event_id}/registrations
+```
+
+Backend mencocokkan user, event, dan produk `DELEGATE_{code}`, lalu menautkan
+order pending atau paid yang sesuai ke registration baru. Frontend tidak boleh
+mengirim `order_id` atau nominal pada payload registration.
 
 ## 5. Halaman hasil dan polling
 
@@ -155,3 +177,5 @@ untuk troubleshooting. Jangan menampilkan raw response atau secret DOKU.
 8. Payment cart dapat diambil melalui endpoint milik user tersebut.
 9. Webhook tidak pernah dipanggil dari browser.
 10. Secret DOKU tidak masuk bundle frontend.
+11. Delegate yang sudah paid diarahkan ke form profil dengan
+    `delegate_package_id` dari metadata product yang dibeli.

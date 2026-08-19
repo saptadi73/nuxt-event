@@ -113,7 +113,7 @@ export function useRegistrationFlow() {
 
   const ctaTo = computed(() => {
     if (!authStore.isAuthenticated) return '/auth/register';
-    if (primaryStatus.value === 'not_selected') return '/tickets';
+    if (primaryStatus.value === 'not_selected') return '/register';
     if (primaryStatus.value === 'selected') return '/dashboard/cart';
     if (primaryStatus.value === 'paid_profile_incomplete') return `/register/${profilePendingType.value || 'delegate'}`;
     if (primaryStatus.value === 'completed') return '/dashboard';

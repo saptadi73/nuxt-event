@@ -9,12 +9,12 @@
         <form @submit.prevent="onSubmit" class="mt-6 space-y-4">
           <label class="block">
             <span class="mb-2 block text-sm text-slate-300">Email</span>
-            <input v-model="form.email" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="you@example.com" required />
+            <input v-model.trim="form.email" type="email" autocomplete="email" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="you@example.com" minlength="6" required />
           </label>
 
           <label class="block">
             <span class="mb-2 block text-sm text-slate-300">Password</span>
-            <input v-model="form.password" type="password" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="Enter your password" required />
+            <input v-model="form.password" type="password" autocomplete="current-password" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="Enter your password" minlength="8" maxlength="128" required />
           </label>
 
           <button type="submit" class="w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3 text-sm font-bold uppercase tracking-[.18em] text-slate-950 shadow-[0_18px_35px_rgba(216,172,89,0.22)] transition duration-200 hover:brightness-110 active:scale-[0.99]">Log In</button>
@@ -37,7 +37,30 @@ const { login } = useAuth();
 const message = ref('');
 const messageTone = ref<'neutral' | 'success' | 'error'>('neutral');
 
+type ValidationError = { loc?: Array<string | number>; msg?: string };
+type ApiError = { data?: { detail?: ValidationError[]; message?: string }; response?: { _data?: { detail?: ValidationError[]; message?: string } } };
+
+const getLoginErrorMessage = (error: unknown) => {
+  const apiError = error as ApiError;
+  const payload = apiError.data ?? apiError.response?._data;
+  const details = payload?.detail;
+
+  if (Array.isArray(details) && details.length) {
+    return details
+      .map((detail) => `${detail.loc?.at(-1) ?? 'Input'}: ${detail.msg ?? 'Invalid value'}`)
+      .join('. ');
+  }
+
+  return payload?.message || (error instanceof Error ? error.message : 'Login could not be processed.');
+};
+
 const onSubmit = async () => {
+  if (form.password.length < 8) {
+    message.value = 'Password must be at least 8 characters long.';
+    messageTone.value = 'error';
+    return;
+  }
+
   message.value = 'Submitting login...';
   messageTone.value = 'neutral';
   const flow = useRegistrationFlow();
@@ -55,7 +78,7 @@ const onSubmit = async () => {
     message.value = `Failed: ${result.message}`;
     messageTone.value = 'error';
   } catch (error) {
-    message.value = `Failed: ${error instanceof Error ? error.message : 'Login could not be processed.'}`;
+    message.value = `Failed: ${getLoginErrorMessage(error)}`;
     messageTone.value = 'error';
   }
 };

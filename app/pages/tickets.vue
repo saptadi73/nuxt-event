@@ -1,9 +1,9 @@
 <template>
   <section class="tickets-shell mx-auto max-w-7xl px-3 py-10 sm:px-6 lg:px-8">
     <div class="tickets-hero rounded-[2rem] border border-amber-200/20 bg-gradient-to-br from-amber-300/8 via-slate-950/80 to-slate-950/90 p-5 sm:p-8">
-      <p class="text-sm uppercase tracking-[.35em] text-amber-200">Delegate Packages</p>
-      <h1 class="mt-4 max-w-4xl text-3xl font-black sm:text-5xl">Choose your IWBIF delegate experience.</h1>
-      <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">Select the participation tier that matches your objectives, from curated access to premium business matching and high-value networking.</p>
+      <p class="text-sm uppercase tracking-[.35em] text-amber-200">{{ selectedType === 'exhibitor' ? 'Exhibitor Packages' : 'Delegate Packages' }}</p>
+      <h1 class="mt-4 max-w-4xl text-3xl font-black sm:text-5xl">Choose your IWBIF {{ selectedType }} experience.</h1>
+      <p class="mt-4 max-w-4xl text-sm leading-7 text-slate-300 sm:text-base">Select the {{ selectedType }} package that matches your objectives. Your profile details can be completed after payment.</p>
     </div>
 
     <div v-if="isAuthenticated" class="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -44,6 +44,8 @@ const {getProducts,addCartItem}=useStore();
 const authStore=useAuthStore();
 const isAuthenticated=computed(()=>authStore.isAuthenticated);
 const registrationFlow=useRegistrationFlow();
+const route=useRoute();
+const selectedType=computed<'delegate'|'exhibitor'>(()=>route.query.type==='exhibitor'?'exhibitor':'delegate');
 const eventId=ref('');
 const addingId=ref('');
 const notice=ref('');
@@ -55,7 +57,7 @@ const {data:response,pending,error}=await useAsyncData('iwbif-packages',async()=
   eventId.value=event.id;
   return getProducts(event.id);
 });
-const packages=computed(()=>response.value?.data.filter(item=>item.is_active&&item.product_type!=='additional')??[]);
+const packages=computed(()=>response.value?.data.filter(item=>item.is_active&&item.product_type===selectedType.value)??[]);
 const addToCart=async(productId:string)=>{
   if(!isAuthenticated.value){await navigateTo('/auth/register');return;}
   await registrationFlow.loadFlow(true);
