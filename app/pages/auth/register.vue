@@ -4,7 +4,7 @@
       <div class="auth-card mx-auto max-w-md rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-950/80 via-slate-950/70 to-slate-900/70 p-5 shadow-[0_28px_60px_rgba(0,0,0,0.35)] sm:p-8">
         <div class="mb-4 inline-flex rounded-full border border-amber-200/20 bg-amber-300/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[.28em] text-amber-200">Create account</div>
         <h1 class="mt-3 text-3xl font-black text-white sm:text-4xl">Register your IWBIF account</h1>
-        <p class="mt-3 text-sm leading-7 text-slate-300">Create your user account first, then choose whether you want to register as a delegate or exhibitor.</p>
+        <p class="mt-3 text-sm leading-7 text-slate-300">Create your user account first, then choose your package and continue securely to checkout.</p>
 
         <form @submit.prevent="onSubmit" class="mt-6 space-y-4">
           <label class="block">
@@ -51,6 +51,7 @@ const form = reactive({
   confirmPassword: ''
 });
 const { register } = useAuth();
+const flow = useRegistrationFlow();
 const submitting = ref(false);
 const message = ref('');
 const messageTone = ref<'neutral' | 'success' | 'error'>('neutral');
@@ -80,9 +81,10 @@ const onSubmit = async () => {
     });
 
     if (result.success) {
-      message.value = 'Account created successfully. Redirecting to registration selection...';
+      await flow.loadFlow(true);
+      message.value = 'Account created successfully. Redirecting to package selection...';
       messageTone.value = 'success';
-      await navigateTo('/register');
+      await navigateTo(flow.ctaTo.value);
       return;
     }
 

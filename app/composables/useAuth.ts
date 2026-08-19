@@ -1,4 +1,5 @@
 import { useApi, type ApiResponse } from '~/composables/useApi';
+import { useRegistrationFlow } from '~/composables/useRegistrationFlow';
 
 interface LoginPayload {
   email: string;
@@ -13,6 +14,7 @@ interface RegisterPayload {
 
 export function useAuth() {
   const authStore = useAuthStore();
+  const registrationFlow = useRegistrationFlow();
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
 
   const login = async (payload: LoginPayload) => {
@@ -28,6 +30,9 @@ export function useAuth() {
       });
       authStore.setUser(result.data.user);
       authStore.hydrateUserFromToken();
+    }
+    if (result.success) {
+      await registrationFlow.loadFlow(true);
     }
     return result;
   };
@@ -45,6 +50,9 @@ export function useAuth() {
       });
       authStore.setUser(result.data.user);
       authStore.hydrateUserFromToken();
+    }
+    if (result.success) {
+      await registrationFlow.loadFlow(true);
     }
     return result;
   };

@@ -26,7 +26,11 @@
           <p class="text-xs uppercase tracking-[.25em] text-amber-200">Organizer view</p>
           <h2 class="mt-2 text-2xl font-bold">Ticket sales & revenue report</h2>
         </div>
-        <NuxtLink to="/admin/reports" class="inline-flex items-center justify-center rounded-full bg-amber-300 px-5 py-3 text-sm font-bold text-slate-950 transition hover:brightness-110">Open report</NuxtLink>
+        <div class="flex flex-wrap gap-3">
+          <NuxtLink to="/admin/packages" class="inline-flex items-center justify-center rounded-full bg-amber-300 px-5 py-3 text-sm font-bold text-slate-950 transition hover:brightness-110">Manage packages</NuxtLink>
+          <NuxtLink to="/admin/program" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-5 py-3 text-sm font-bold text-amber-100 transition hover:bg-amber-300/10">Program & agenda</NuxtLink>
+          <NuxtLink to="/admin/reports" class="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-white transition hover:border-white/40">Payment report</NuxtLink>
+        </div>
       </div>
     </div>
 
@@ -70,6 +74,7 @@ const statuses=[
 ];
 
 const menu=[
+  {to:'/dashboard/cart',label:'Purchase',title:'Shopping Cart',text:'Review selected packages and create your checkout order.'},
   {to:'/dashboard/ticket',label:'Access',title:'My Ticket & QR Code',text:'Open your event pass and check-in information.'},
   {to:'/dashboard/profile',label:'Identity',title:'My Profile',text:'Update professional details, expertise, and interests.'},
   {to:'/dashboard/directory',label:'Networking',title:'Participant Directory',text:'Discover potential collaborators across IWBIF.'},

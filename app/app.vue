@@ -15,10 +15,10 @@
           </span>
         </NuxtLink>
 
-        <nav class="hidden items-center gap-1 text-sm text-slate-300 xl:ml-auto xl:flex">
-          <NuxtLink v-for="item in primaryNav" :key="item.to" :to="item.to" class="nav-link whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] hover:bg-white/5 hover:text-white">
-            {{ item.label }}
-          </NuxtLink>
+      <nav class="hidden items-center gap-1 text-sm text-slate-300 xl:ml-auto xl:flex">
+        <NuxtLink v-for="item in primaryNav" :key="item.to" :to="item.to" class="nav-link whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] hover:bg-white/5 hover:text-white">
+          {{ item.label }}
+        </NuxtLink>
           <details class="group relative">
             <summary class="nav-link cursor-pointer list-none whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] text-slate-200 transition hover:bg-white/5 hover:text-white">More <span class="ml-1 text-[10px] text-amber-200/80">v</span></summary>
             <div class="nav-menu-panel absolute right-0 top-12 grid w-48 gap-1 rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-slate-950/60 backdrop-blur-xl">
@@ -28,12 +28,18 @@
         </nav>
 
         <div class="ml-auto flex shrink-0 items-center gap-2 xl:ml-2">
-          <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="header-cta hidden whitespace-nowrap rounded-full border border-amber-300/35 bg-gradient-to-r from-amber-300/15 via-amber-200/8 to-cyan-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100 shadow-[0_16px_40px_rgba(216,172,89,0.16)] transition hover:border-amber-200/70 hover:brightness-110 sm:inline-flex">
-            Register Now
+        <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="header-cta hidden whitespace-nowrap rounded-full border border-amber-300/35 bg-gradient-to-r from-amber-300/15 via-amber-200/8 to-cyan-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100 shadow-[0_16px_40px_rgba(216,172,89,0.16)] transition hover:border-amber-200/70 hover:brightness-110 sm:inline-flex">
+            Register Now!
           </NuxtLink>
           <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="header-cta inline-flex whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:hidden">
             Register
           </NuxtLink>
+          <NuxtLink v-if="isAuthenticated && !isRegistrationPaid" :to="paymentCtaTo" class="header-cta whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:px-5">
+            {{ ctaLabel }}
+          </NuxtLink>
+          <span v-if="isAuthenticated && isRegistrationPaid" class="header-cta whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 opacity-90">
+            {{ ctaLabel }}
+          </span>
           <button v-if="isAuthenticated" type="button" class="header-cta whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:px-5" @click="handleLogout">
             Log Out
           </button>
@@ -80,6 +86,20 @@
 const authStore = useAuthStore();
 const { isAuthenticated } = storeToRefs(authStore);
 const { logout } = useAuth();
+const registrationFlow = useRegistrationFlow();
+const { ctaLabel, ctaTo, isPaid: isRegistrationPaid } = registrationFlow;
+const paymentCtaTo = ctaTo;
+
+onMounted(() => {
+  if (isAuthenticated.value) {
+    registrationFlow.loadFlow();
+  }
+});
+
+watch(isAuthenticated, (value) => {
+  if (!value) return;
+  registrationFlow.loadFlow();
+});
 
 const handleLogout = async () => {
   await logout();

@@ -21,7 +21,7 @@
       <nav class="hero-action-dock" aria-label="Main event actions">
         <div class="hero-action-status"><span class="hero-live-dot" aria-hidden="true" />Registration is now open</div>
         <div class="hero-action-links">
-          <NuxtLink to="/auth/register" class="hero-button hero-button-primary">Register Now <span aria-hidden="true">→</span></NuxtLink>
+          <NuxtLink :to="homeCtaTo" class="hero-button hero-button-primary hero-button-primary-large">{{ homeCtaLabel }} <span aria-hidden="true">→</span></NuxtLink>
           <NuxtLink to="/program" class="hero-button hero-button-secondary">Explore Program</NuxtLink>
           <NuxtLink to="/business-matching" class="hero-button hero-button-ghost">Business Matching</NuxtLink>
         </div>
@@ -106,7 +106,7 @@
         <h2 class="mt-4 text-4xl font-black">Connect. Match. Make Deals.</h2>
         <p class="mx-auto mt-4 max-w-2xl text-slate-300">Explore new markets, investment opportunities, partnerships, and cross-border collaboration from one place.</p>
         <div class="mt-7 flex flex-wrap justify-center gap-3">
-          <NuxtLink to="/auth/register" class="rounded-full bg-[#e6c477] px-6 py-3 font-semibold text-[#04152d]">Secure Your Seat</NuxtLink>
+          <NuxtLink :to="homeCtaTo" class="rounded-full bg-[#e6c477] px-6 py-3 text-lg font-semibold text-[#04152d] sm:text-xl">{{ homeCtaLabel }}</NuxtLink>
           <NuxtLink to="/participants" class="rounded-full border border-white/20 px-6 py-3 font-semibold">Explore Participants</NuxtLink>
           <NuxtLink to="/deal-room" class="rounded-full border border-white/20 px-6 py-3 font-semibold">Open Deal Room</NuxtLink>
         </div>
@@ -117,6 +117,17 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+const authStore = useAuthStore();
+const { isAuthenticated } = storeToRefs(authStore);
+const registrationFlow = useRegistrationFlow();
+const homeCtaTo = computed(() => (isAuthenticated.value ? registrationFlow.ctaTo.value : '/auth/register'));
+const homeCtaLabel = computed(() => (isAuthenticated.value ? registrationFlow.ctaLabel.value : 'Register Now!'));
+
+onMounted(() => {
+  if (isAuthenticated.value) {
+    registrationFlow.loadFlow();
+  }
+});
 
 useSeoMeta({
   title: 'IWBIF 2026 | International Women Business & Investment Forum',
@@ -211,10 +222,11 @@ onMounted(() => {
   .hero-live-dot { width: .5rem; height: .5rem; border-radius: 50%; background: var(--premium-gold); box-shadow: 0 0 0 4px rgba(232, 198, 125, .14), 0 0 18px var(--premium-gold); }
 .hero-action-dock { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin: clamp(.85rem, 1.5vw, 1.25rem) clamp(.5rem, 2.5vw, 2.5rem) 0; border: 1px solid rgba(216, 172, 89, .24); border-radius: 1.35rem; background: linear-gradient(135deg, rgba(7, 29, 58, .96), rgba(4, 21, 45, .98)); padding: .85rem .9rem .85rem 1.25rem; box-shadow: 0 22px 55px rgba(2, 10, 24, .42), inset 0 1px rgba(255, 255, 255, .04); }
 .hero-action-status { display:flex; align-items:center; gap:.7rem; color:#cbd2dc; font-size:.68rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; white-space:nowrap; }
-.hero-action-links { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:.65rem; }
+  .hero-action-links { display:flex; flex-wrap:wrap; justify-content:center; gap:.65rem; }
 .hero-button { display: inline-flex; align-items: center; justify-content: center; gap: .7rem; border-radius: 999px; padding: .85rem 1.25rem; font-size: .82rem; font-weight: 700; white-space: nowrap; }
 .hero-button:hover { transform: translateY(-2px); }
   .hero-button-primary { background: linear-gradient(135deg, #e6c477, #d8ac59); color: #04152d; box-shadow: 0 12px 35px rgba(216, 172, 89, .3); }
+  .hero-button-primary-large { font-size: 1.02rem; min-height: 3.4rem; min-width: 16rem; }
   .hero-button-secondary { border: 1px solid rgba(255, 255, 255, .25); background: rgba(11, 36, 71, .6); color: #f8f6f1; backdrop-filter: blur(12px); }
   .hero-button-ghost { border: 1px solid rgba(232, 198, 125, .45); background: rgba(4, 21, 45, .45); color: #d8ac59; }
 
@@ -395,7 +407,7 @@ onMounted(() => {
   .why-proof-grid span { display:grid; grid-template-columns:4.25rem 1fr; align-items:center; }
 }
 
-@media (min-width: 768px) and (max-width: 1050px) { .hero-action-dock { align-items:flex-start; flex-direction:column; } .hero-action-links { justify-content:flex-start; } }
+@media (min-width: 768px) and (max-width: 1050px) { .hero-action-dock { align-items:flex-start; flex-direction:column; } .hero-action-links { justify-content:center; } }
 
 @media (prefers-reduced-motion: reduce) {
   .hero-image, .why-image, .home-section { transition: none; animation: none; transform: none; opacity: 1; }

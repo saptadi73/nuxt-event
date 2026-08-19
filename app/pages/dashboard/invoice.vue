@@ -46,6 +46,11 @@ const pending = ref(true);
 const downloading = ref(false);
 const errorMessage = ref('');
 const LAST_REGISTRATION_KEY = 'last-paid-registration-id';
+const getOrderIdFromQuery = () => {
+  const queryValue = route.query.order_id ?? route.query.orderId ?? '';
+  if (Array.isArray(queryValue)) return queryValue[0] || '';
+  return typeof queryValue === 'string' ? queryValue : '';
+};
 
 const getRegistrationIdFromQuery = () => {
   const queryValue = route.query.registration_id ?? route.query.registrationId ?? '';
@@ -84,6 +89,7 @@ const tryInvoiceByIdentifier = async (identifier: string) => {
 
 onMounted(async () => {
   const queryRegistrationId = getRegistrationIdFromQuery();
+  const queryOrderId = getOrderIdFromQuery() || sessionStorage.getItem('iwbif-store-order-id') || '';
   invoice.value = currentInvoice.value;
   if (!invoice.value) {
     try {
@@ -98,7 +104,7 @@ onMounted(async () => {
     try {
       const response = await getMyInvoices();
       const invoices = normalizeInvoices(response.data);
-      const fetchedInvoice = invoices.find((item) => item.order.status?.toLowerCase() === 'paid') || invoices[0] || null;
+      const fetchedInvoice = (queryOrderId ? invoices.find((item) => item.order.id === queryOrderId) : null) || invoices.find((item) => item.order.status?.toLowerCase() === 'paid') || invoices[0] || null;
       if (fetchedInvoice) invoice.value = fetchedInvoice;
     } catch {
       // Try the registration invoice endpoint using the user's ticket below.

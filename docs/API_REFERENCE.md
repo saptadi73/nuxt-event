@@ -66,8 +66,17 @@ POST /api/v1/auth/register
 ```
 
 ```json
-{"email":"delegate@example.com","full_name":"Delegate Name","password":"minimum-8-character"}
+{"email":"delegate@example.com","password":"minimum-8-character","country":"Indonesia","phone":"+628123456789"}
 ```
+
+Registrasi awal hanya membuat akun. `full_name` dan profile participant/delegate
+belum wajib pada tahap ini.
+
+Jika `EMAIL_ENABLED=true`, backend mengirim email konfirmasi registrasi dari
+`events@kupu-gsc.co.id` melalui Google Workspace SMTP. Email berisi konfirmasi
+registrasi IWBIF 2026 dan `FRONTEND_LOGIN_URL` untuk melanjutkan login. Pengiriman
+dilakukan sebagai background task; kegagalan SMTP dicatat di log dan tidak
+membatalkan akun yang sudah berhasil dibuat.
 
 ```http
 POST /api/v1/auth/login
@@ -81,7 +90,7 @@ Keduanya mengembalikan:
 
 ```json
 {
-  "user": {"id":"uuid","email":"delegate@example.com","full_name":"Delegate Name","status":"active","is_email_verified":false,"created_at":"2026-08-15T12:00:00Z"},
+  "user": {"id":"uuid","email":"delegate@example.com","full_name":null,"phone":"+628123456789","country":"Indonesia","status":"active","registration_status":"account_created","is_email_verified":false,"created_at":"2026-08-15T12:00:00Z"},
   "access_token": "jwt",
   "refresh_token": "jwt",
   "token_type": "bearer"
@@ -102,7 +111,8 @@ Respons berisi access dan refresh token baru.
 
 | Endpoint | Auth | Payload/hasil |
 |---|---:|---|
-| `GET /api/v1/auth/me` | Ya | `data.user` user aktif |
+| `GET /api/v1/auth/me` | Ya | `data.user` user aktif dan `registration_status` |
+| `GET /api/v1/auth/users/{user_id}` | Ya | Detail lengkap user, status registrasi, tipe, package, profile, order, dan payment |
 | `PUT /api/v1/auth/me` | Ya | `{ "full_name"?: string, "phone"?: string }` |
 | `PUT /api/v1/auth/password` | Ya | `{ "current_password", "new_password", "confirm_password" }` |
 | `POST /api/v1/auth/logout` | Tidak | `{ "revoked": true }`; hapus token frontend |
@@ -112,6 +122,71 @@ Respons berisi access dan refresh token baru.
 
 Development masih mengembalikan reset token di respons forgot-password. Jangan
 bergantung pada ini di production; production harus mengirim token lewat email.
+
+### Detail user dan progres registrasi
+
+```http
+GET /api/v1/auth/users/{user_id}
+Authorization: Bearer <access_token>
+```
+
+User hanya dapat membaca detail dirinya sendiri. Role `admin` dan `organizer`
+dapat membaca detail user lain. Response menggabungkan data akun, participant
+profile, registration delegate/exhibitor, package, order, item order, dan
+payment terbaru.
+
+```json
+{
+  "user": {
+    "id": "uuid",
+    "email": "delegate@example.com",
+    "country": "Indonesia",
+    "phone": "+628123456789",
+    "registration_status": "payment_pending"
+  },
+  "registration_status": "payment_pending",
+  "delegate_status": "lengkap",
+  "exhibitor_status": "belum_lengkap",
+  "purchase_tracking": {
+    "delegate": {"status":"paid_profile_incomplete","products":[],"profile_required":true},
+    "exhibitor": {"status":"not_selected","products":[],"profile_required":false}
+  },
+  "selected_types": ["delegate", "exhibitor"],
+  "profile": {},
+  "registrations": [],
+  "orders": []
+}
+```
+
+Status progres yang digunakan frontend:
+
+```text
+account_created -> package_selected -> payment_pending -> paid
+```
+
+Status pengisian profile/registration per tipe:
+
+| Status | Arti |
+|---|---|
+| `belum_terdaftar` | User belum membuat registration tipe tersebut |
+| `belum_lengkap` | Draft sudah dibuat tetapi pengisian belum selesai |
+| `lengkap` | Registration sudah dikirim atau telah melewati tahap submit |
+
+Field yang tersedia pada `GET /api/v1/auth/users/{user_id}` adalah
+`delegate_status` dan `exhibitor_status`. Frontend menggunakan field ini untuk
+mengarahkan user ke form yang masih belum lengkap. `purchase_tracking` melacak
+product yang berada di cart atau order, termasuk status pembayaran dan kebutuhan
+profile.
+
+Status `purchase_tracking`:
+
+```text
+not_selected -> selected -> payment_pending -> paid_profile_incomplete -> completed
+```
+
+`selected_types` dapat berisi `delegate`, `exhibitor`, atau keduanya. Jangan
+menentukan status dari redirect browser; gunakan response endpoint ini setelah
+payment notification diproses backend.
 
 ## 3. Event, agenda, speaker, dan master
 
@@ -169,6 +244,9 @@ Package response:
 `amount/currency` untuk display; `payment_amount_idr` untuk charge DOKU.
 
 ## 4. Participant profile
+
+Participant profile bukan bagian dari registrasi akun awal. Resource ini dipakai
+setelah user memilih tipe dan product/package; response boleh `null` sebelumnya.
 
 Semua **Auth**:
 
@@ -267,7 +345,52 @@ GET    /api/v1/registrations/me?event_id={optional_uuid}
 GET    /api/v1/registrations/{registration_id}
 ```
 
-## 6. Documents
+## 6. Product catalog, cart, dan checkout
+
+Product adalah katalog pembelian package utama dan additional. Jenis product:
+`delegate`, `exhibitor`, atau `additional`. Frontend tidak mengirim harga atau
+total.
+
+```http
+GET /api/v1/store/events/{event_id}/products
+GET /api/v1/store/events/{event_id}/cart
+POST /api/v1/store/events/{event_id}/cart/items
+DELETE /api/v1/store/events/{event_id}/cart/items/{product_id}
+POST /api/v1/store/events/{event_id}/checkout
+```
+
+Payload add item:
+
+```json
+{"product_id":"uuid","quantity":1}
+```
+
+Checkout memberi `order_id`, `order_number`, `total_amount`, `currency`, dan
+status order. Backend menyimpan snapshot product pada `order_items`. Gunakan
+order tersebut untuk payment:
+
+```http
+POST /api/v1/payments/doku/checkout
+```
+
+```json
+{"order_id":"order-uuid"}
+```
+
+User harus sudah memiliki registration untuk event sebelum checkout. Order cart
+selalu menyimpan `user_id` dan `registration_id`; ownership keduanya diverifikasi
+backend. Disable tombol selama request, simpan ID response, dan jangan membuat
+order baru saat halaman hasil di-refresh. Detail ada di
+`docs/FRONTEND_STORE_PURCHASE_FLOW.md`.
+
+Admin mengelola product:
+
+```http
+POST /api/v1/store/admin/events/{event_id}/products
+PUT /api/v1/store/admin/products/{product_id}
+```
+
+## 7. Documents
 
 Upload — **Auth**:
 
@@ -291,7 +414,7 @@ DELETE /api/v1/registrations/{registration_id}/documents/{document_id}
 List item: `id`, `document_type`, `filename`, `mime_type`, `file_size`,
 `uploaded_at`. Download adalah binary, bukan JSON envelope. Delete hanya draft.
 
-## 7. Exhibitor
+## 8. Exhibitor
 
 Payload create/update — **Auth**:
 
@@ -320,7 +443,7 @@ menjadi submitted. List event hanya menampilkan submitted. Update/delete hanya
 draft milik user. Satu akun hanya dapat membuat satu exhibitor per event;
 ownership selalu berasal dari access token.
 
-## 8. Business Matching profile dan discovery
+## 9. Business Matching profile dan discovery
 
 ### Profile detail IWBIF
 
@@ -375,7 +498,7 @@ Filter: `country`, `organization_type`, `sector`, `business_interest`,
 Recommendation menambah `match_score` dan `match_reasons`. Hanya confirmed,
 available, visible, dan tidak saling block yang ditampilkan.
 
-## 9. Web messaging
+## 10. Web messaging
 
 REST adalah jalur write/source of truth; WebSocket untuk delivery realtime.
 
@@ -447,7 +570,7 @@ Event: `connected`, `new_message`, `message_updated`, `message_deleted`,
 Saat reconnect, refresh REST history agar event yang terlewat masuk. Hub saat ini
 process-local; multi-worker memerlukan Redis pub/sub.
 
-## 10. Meetings dan moderation
+## 11. Meetings dan moderation
 
 ```http
 POST /api/v1/events/{event_id}/meetings
@@ -491,7 +614,7 @@ POST   /api/v1/events/{event_id}/business-matching/report
 
 Block menghilangkan discovery dan menonaktifkan message/meeting dua arah.
 
-## 11. Notification center
+## 12. Notification center
 
 ```http
 GET  /api/v1/notifications
@@ -504,7 +627,7 @@ Fields: `id`, `user_id`, `event_id`, `type`, `title`, `body`, `entity_type`,
 `entity_id`, `is_read`, `created_at`, `read_at`. Badge chat memakai
 `/messages/unread-count`; badge notification memakai `/notifications/unread-count`.
 
-## 12. DOKU Direct API SNAP
+## 13. DOKU Direct API SNAP
 
 ### Katalog payment method untuk frontend
 
@@ -724,7 +847,7 @@ sumber final tetap notification DOKU yang telah diverifikasi. CSV berisi detail
 payment, order, registrasi, event, peserta, paket, channel, reference DOKU,
 nominal, dan waktu pembayaran sesuai filter yang sama.
 
-## 13. Tickets dan check-in
+## 14. Tickets dan check-in
 
 ```http
 GET /api/v1/tickets/me
@@ -757,7 +880,7 @@ POST /api/v1/check-ins/manual
 `GET /api/v1/check-ins?event_id={optional_uuid}` mengembalikan check-in. Kontrol
 ini tidak boleh tampil di UI peserta.
 
-## 14. Organizer/admin
+## 15. Organizer/admin
 
 Role admin/organizer:
 
@@ -793,12 +916,12 @@ Master payload:
 {"slot_date":"2026-10-16","start_time":"09:00:00","end_time":"09:30:00","label":"Morning 1","capacity":20,"is_active":true}
 ```
 
-Speaker/session mutations membutuhkan Auth. Implementasi route saat ini belum
-memberi role dependency pada operasi berikut; frontend publik tidak boleh
-mengeksposnya sampai backend diperketat:
+Mutasi event, session, dan speaker membutuhkan Bearer token dengan role `admin`
+atau `organizer`. Endpoint GET tetap dapat digunakan frontend publik:
 
 ```text
-POST /events, PUT /events/{id}, POST /tickets, POST /tickets/{id}/reissue
+POST /events, PUT /events/{id}, POST /sessions, PUT /sessions/{id},
+POST /speakers, PUT /speakers/{id}, POST /speakers/{id}/photo
 ```
 
 Payload event create:
@@ -815,7 +938,7 @@ biography, links, expertise, featured/status; update menerima subsetnya. Foto
 speaker diunggah lewat `POST /api/v1/speakers/{speaker_id}/photo` multipart
 field `file`.
 
-## 15. Health dan alur frontend
+## 16. Health dan alur frontend
 
 ```http
 GET /api/v1/health
@@ -846,4 +969,5 @@ Dokumen tambahan:
 
 - `docs/FRONTEND_BUSINESS_MATCHING_MESSAGING.md`
 - `docs/FRONTEND_DOKU_PAYMENT_INTEGRATION.md`
+- `docs/FRONTEND_STORE_PURCHASE_FLOW.md`
 - `docs/DOKU_SNAP_SANDBOX_SETUP.md`

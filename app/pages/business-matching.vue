@@ -1,5 +1,17 @@
 <template>
-  <main class="business-page">
+  <section v-if="!canAccessMatching" class="mx-auto max-w-5xl px-3 py-16 sm:px-6 lg:px-8">
+    <div class="glass-card rounded-3xl border border-amber-300/25 bg-amber-300/10 p-6 sm:p-8">
+      <p class="text-xs uppercase tracking-[.35em] text-amber-200">Access control</p>
+      <h1 class="mt-3 text-3xl font-black">Business Matching is currently unavailable</h1>
+      <p class="mt-4 max-w-3xl text-sm leading-7 text-slate-200 sm:text-base">{{ accessMessage }}</p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <NuxtLink to="/dashboard/payment" class="inline-flex rounded-full bg-amber-300 px-5 py-3 text-sm font-bold text-slate-950">Go to payment</NuxtLink>
+        <NuxtLink to="/register/delegate" v-if="missingProfileType === 'delegate'" class="inline-flex rounded-full border border-white/20 px-5 py-3 text-sm">Complete delegate profile</NuxtLink>
+        <NuxtLink to="/register/exhibitor" v-if="missingProfileType === 'exhibitor'" class="inline-flex rounded-full border border-white/20 px-5 py-3 text-sm">Complete exhibitor profile</NuxtLink>
+      </div>
+    </div>
+  </section>
+  <main v-else class="business-page">
     <section class="mx-auto max-w-7xl px-3 pb-14 pt-6 sm:px-6 sm:pt-12 lg:px-8">
       <div class="business-hero">
         <img src="/images/business-matching.png" alt="Women business leaders meeting and building international partnerships" class="business-hero__image">
@@ -38,7 +50,38 @@
 </template>
 
 <script setup lang="ts">
+import { useRegistrationFlow } from '~/composables/useRegistrationFlow';
+
+definePageMeta({ middleware: 'auth' });
 useSeoMeta({ title: 'Business Matching | IWBIF 2026', description: 'Curated cross-border business matching for IWBIF 2026 delegates.' })
+
+const registrationFlow = useRegistrationFlow();
+const accessMessage = ref('Checking your registration progress...');
+
+const canAccessMatching = computed(() => {
+  return registrationFlow.canEnterBusinessMatching.value;
+});
+const missingProfileType = computed(() => registrationFlow.profilePendingType.value);
+
+try {
+  if (!registrationFlow.state.value) {
+    await registrationFlow.loadFlow();
+  }
+} catch {
+  accessMessage.value = 'Unable to validate your registration status right now. Please try again from the dashboard.';
+}
+if (!canAccessMatching.value) {
+  const profile = registrationFlow.profilePendingType.value;
+  if (profile) {
+    accessMessage.value = profile === 'delegate'
+      ? 'Complete your delegate profile first. Business matching is unlocked after delegate profile is complete.'
+      : 'Complete your exhibitor profile first. Business matching is unlocked after exhibitor profile is complete.';
+  } else if (registrationFlow.state.value?.selected_types?.length) {
+    accessMessage.value = 'You need to complete payment before Business Matching is available.';
+  } else {
+    accessMessage.value = 'Please complete your registration and payment before accessing business matching.';
+  }
+}
 const sectors = ['Creative Economy', 'Healthcare & Wellness', 'Food & Beverage', 'Fashion & Style', 'Industrial Estate', 'Cross-sector Opportunities']
 </script>
 

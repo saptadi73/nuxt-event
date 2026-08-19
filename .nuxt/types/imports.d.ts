@@ -101,6 +101,8 @@ declare global {
   const tryUseNuxtApp: typeof import('../../node_modules/nuxt/dist/app/nuxt').tryUseNuxtApp
   const unref: typeof import('vue').unref
   const updateAppConfig: typeof import('../../node_modules/nuxt/dist/app/config').updateAppConfig
+  const useAdminContent: typeof import('../../app/composables/useAdminContent').useAdminContent
+  const useAdminReport: typeof import('../../app/composables/useAdminReport').useAdminReport
   const useAnnouncer: typeof import('../../node_modules/nuxt/dist/app/composables/announcer').useAnnouncer
   const useApi: typeof import('../../app/composables/useApi').useApi
   const useAppConfig: typeof import('../../node_modules/nuxt/dist/app/config').useAppConfig
@@ -137,6 +139,7 @@ declare global {
   const usePreviewMode: typeof import('../../node_modules/nuxt/dist/app/composables/preview').usePreviewMode
   const useRegistration: typeof import('../../app/composables/useRegistration').useRegistration
   const useRegistrationDocuments: typeof import('../../app/composables/useRegistrationDocuments').useRegistrationDocuments
+  const useRegistrationFlow: typeof import('../../app/composables/useRegistrationFlow').useRegistrationFlow
   const useRequestEvent: typeof import('../../node_modules/nuxt/dist/app/composables/ssr').useRequestEvent
   const useRequestFetch: typeof import('../../node_modules/nuxt/dist/app/composables/ssr').useRequestFetch
   const useRequestHeader: typeof import('../../node_modules/nuxt/dist/app/composables/ssr').useRequestHeader
@@ -199,6 +202,7 @@ declare global {
   const useSlots: typeof import('vue').useSlots
   const useSpeaker: typeof import('../../app/composables/useSpeaker').useSpeaker
   const useState: typeof import('../../node_modules/nuxt/dist/app/composables/state').useState
+  const useStore: typeof import('../../app/composables/useStore').useStore
   const useTemplateRef: typeof import('vue').useTemplateRef
   const useTicket: typeof import('../../app/composables/useTicket').useTicket
   const useTransitionState: typeof import('vue').useTransitionState
@@ -222,6 +226,12 @@ declare global {
   export type { PageMeta } from '../../node_modules/nuxt/dist/app/composables/pages'
   import('../../node_modules/nuxt/dist/app/composables/pages')
   // @ts-ignore
+  export type { ProductMutationPayload, SessionMutationPayload } from '../../app/composables/useAdminContent'
+  import('../../app/composables/useAdminContent')
+  // @ts-ignore
+  export type { PaymentReportSummary, PaymentReportMetric, PaymentReportTransaction, PaymentReportResponse } from '../../app/composables/useAdminReport'
+  import('../../app/composables/useAdminReport')
+  // @ts-ignore
   export type { ApiMeta, ApiResponse } from '../../app/composables/useApi'
   import('../../app/composables/useApi')
   // @ts-ignore
@@ -240,7 +250,7 @@ declare global {
   export type { ParticipantProfile, ParticipantPayload } from '../../app/composables/useParticipant'
   import('../../app/composables/useParticipant')
   // @ts-ignore
-  export type { DokuCheckoutData, OrderItem, PaymentItem, Invoice, InvoiceResponseData } from '../../app/composables/usePayment'
+  export type { DokuCheckoutData, PaymentCategory, PaymentMethod, DirectPaymentMethods, DirectVaData, DirectQrisData, DirectDebitBindingData, DirectDebitPaymentData, OrderItem, PaymentItem, Invoice, InvoiceResponseData } from '../../app/composables/usePayment'
   import('../../app/composables/usePayment')
   // @ts-ignore
   export type { RegistrationPayload, RegistrationItem } from '../../app/composables/useRegistration'
@@ -248,6 +258,12 @@ declare global {
   // @ts-ignore
   export type { RegistrationDocument } from '../../app/composables/useRegistrationDocuments'
   import('../../app/composables/useRegistrationDocuments')
+  // @ts-ignore
+  export type { PurchaseType, PurchaseStatus, RegistrationFlowState } from '../../app/composables/useRegistrationFlow'
+  import('../../app/composables/useRegistrationFlow')
+  // @ts-ignore
+  export type { StoreProduct, StoreCartItem, StoreCart, StoreOrder } from '../../app/composables/useStore'
+  import('../../app/composables/useStore')
   // @ts-ignore
   export type { TicketItem, TicketQr, TicketQrResponse } from '../../app/composables/useTicket'
   import('../../app/composables/useTicket')
@@ -356,6 +372,8 @@ declare module 'vue' {
     readonly tryUseNuxtApp: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/nuxt')['tryUseNuxtApp']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly updateAppConfig: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/config')['updateAppConfig']>
+    readonly useAdminContent: UnwrapRef<typeof import('../../app/composables/useAdminContent')['useAdminContent']>
+    readonly useAdminReport: UnwrapRef<typeof import('../../app/composables/useAdminReport')['useAdminReport']>
     readonly useAnnouncer: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/announcer')['useAnnouncer']>
     readonly useApi: UnwrapRef<typeof import('../../app/composables/useApi')['useApi']>
     readonly useAppConfig: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/config')['useAppConfig']>
@@ -392,6 +410,7 @@ declare module 'vue' {
     readonly usePreviewMode: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/preview')['usePreviewMode']>
     readonly useRegistration: UnwrapRef<typeof import('../../app/composables/useRegistration')['useRegistration']>
     readonly useRegistrationDocuments: UnwrapRef<typeof import('../../app/composables/useRegistrationDocuments')['useRegistrationDocuments']>
+    readonly useRegistrationFlow: UnwrapRef<typeof import('../../app/composables/useRegistrationFlow')['useRegistrationFlow']>
     readonly useRequestEvent: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/ssr')['useRequestEvent']>
     readonly useRequestFetch: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/ssr')['useRequestFetch']>
     readonly useRequestHeader: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/ssr')['useRequestHeader']>
@@ -454,6 +473,7 @@ declare module 'vue' {
     readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
     readonly useSpeaker: UnwrapRef<typeof import('../../app/composables/useSpeaker')['useSpeaker']>
     readonly useState: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/state')['useState']>
+    readonly useStore: UnwrapRef<typeof import('../../app/composables/useStore')['useStore']>
     readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
     readonly useTicket: UnwrapRef<typeof import('../../app/composables/useTicket')['useTicket']>
     readonly useTransitionState: UnwrapRef<typeof import('vue')['useTransitionState']>

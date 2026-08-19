@@ -10,7 +10,15 @@
     <form v-else class="mt-10 space-y-7" @submit.prevent="submit">
       <fieldset class="card"><legend>1. Personal and company information</legend>
         <div class="grid gap-4 md:grid-cols-2">
-          <label v-for="field in identityFields" :key="field.key" class="label"><span>{{ field.label }} *</span><input v-model.trim="form[field.key]" :type="field.type || 'text'" :autocomplete="field.autocomplete" required class="field" /></label>
+          <label v-for="field in identityFields" :key="field.key" class="label">
+            <span>{{ field.label }}{{ field.required === false ? '' : ' *' }}</span>
+            <select v-if="field.options" v-model="form[field.key]" required class="field">
+              <option value="" disabled>Select {{ field.label.toLowerCase() }}</option>
+              <option v-for="option in field.options" :key="option" :value="option">{{ option }}</option>
+            </select>
+            <input v-else v-model.trim="form[field.key]" :type="field.type || 'text'" :autocomplete="field.autocomplete" :required="field.required !== false" class="field" />
+          </label>
+          <label class="label"><span>Office phone</span><input v-model.trim="form.office_phone" type="tel" class="field" /></label>
           <label class="label md:col-span-2"><span>Company address *</span><textarea v-model.trim="form.company_address" required class="field" rows="3" /></label>
         </div>
       </fieldset>
@@ -20,28 +28,39 @@
       </fieldset>
 
       <fieldset class="card"><legend>3. Participation and activities</legend>
-        <label class="label"><span>Participation categories * (comma separated)</span><input v-model.trim="form.participation_categories" required class="field" placeholder="Women Entrepreneur, Buyer" /></label>
+        <span class="label">Participation categories *</span>
+        <div class="mt-3 grid gap-3 md:grid-cols-2"><label v-for="option in participationCategoryOptions" :key="option" class="choice flex gap-3"><input v-model="form.participation_categories" type="checkbox" :value="option" class="accent-amber-300" /><span>{{ option }}</span></label></div>
+        <div class="mt-5 grid gap-4 md:grid-cols-2">
+          <label v-if="form.participation_categories.includes('Speaker')" class="label md:col-span-2"><span>Presentation topic</span><textarea v-model.trim="form.presentation_topic" class="field" rows="3" /></label>
+          <label v-if="form.participation_categories.includes('Buyer')" class="label md:col-span-2"><span>Products interested</span><textarea v-model.trim="form.products_interested" class="field" rows="3" /></label>
+          <label v-if="form.participation_categories.includes('Investor')" class="label md:col-span-2"><span>Investment interest</span><textarea v-model.trim="form.investment_interest" class="field" rows="3" /></label>
+        </div>
         <div class="mt-5 grid gap-3 md:grid-cols-2"><label v-for="item in activities" :key="item.id" class="choice flex gap-3"><input v-model="form.activity_ids" type="checkbox" :value="item.id" class="accent-amber-300" /><span>{{ item.name }}</span></label></div>
         <p v-if="!activities.length" class="mt-3 text-sm text-slate-400">No active activities are currently published.</p>
       </fieldset>
 
       <fieldset class="card"><legend>4. Business matching</legend>
-        <div class="grid gap-4 md:grid-cols-2"><label class="label md:col-span-2"><span>Products / services *</span><textarea v-model.trim="form.products_services" required class="field" rows="3" /></label><label class="label"><span>Looking for * (comma separated)</span><input v-model.trim="form.looking_for" required class="field" placeholder="Buyers, Investors" /></label><label class="label"><span>Preferred countries * (comma separated)</span><input v-model.trim="form.preferred_countries" required class="field" /></label><label class="label md:col-span-2"><span>Business objectives *</span><textarea v-model.trim="form.business_objectives" required class="field" rows="3" /></label></div>
+        <label class="label"><span>Products / services *</span><textarea v-model.trim="form.products_services" required class="field" rows="3" /></label>
+        <span class="label mt-5">Looking for *</span>
+        <div class="mt-3 grid gap-3 md:grid-cols-2"><label v-for="option in lookingForOptions" :key="option" class="choice flex gap-3"><input v-model="form.looking_for" type="checkbox" :value="option" class="accent-amber-300" /><span>{{ option }}</span></label></div>
+        <span class="label mt-5">Preferred countries *</span>
+        <div class="mt-3 grid gap-3 md:grid-cols-2"><label v-for="option in preferredCountryOptions" :key="option" class="choice flex gap-3"><input v-model="form.preferred_countries" type="checkbox" :value="option" class="accent-amber-300" /><span>{{ option }}</span></label></div>
+        <label class="label mt-5"><span>Business objectives *</span><textarea v-model.trim="form.business_objectives" required class="field" rows="3" /></label>
       </fieldset>
 
       <fieldset class="card"><legend>5. Travel and delegate requirements</legend>
-        <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>Room preference *</span><select v-model="form.room_preference" required class="field"><option value="twin-sharing">Twin sharing</option><option value="single">Single room</option></select></label><label class="label"><span>Preferred roommate</span><input v-model.trim="form.preferred_roommate" class="field" /></label><label class="label"><span>Arrival date *</span><input v-model="form.arrival_date" type="date" required class="field" /></label><label class="label"><span>Departure date *</span><input v-model="form.departure_date" type="date" required class="field" /></label><label class="label"><span>Airport *</span><input v-model.trim="form.airport" required class="field" /></label><label class="label"><span>Flight number</span><input v-model.trim="form.flight_number" class="field" /></label><label class="check"><input v-model="form.need_airport_pickup" type="checkbox" /> Airport pickup required</label><label class="label"><span>Dietary restrictions</span><input v-model.trim="form.dietary_restrictions" class="field" /></label><label class="label"><span>Medical condition</span><input v-model.trim="form.medical_condition" class="field" /></label><label class="label"><span>Special assistance</span><input v-model.trim="form.special_assistance" class="field" /></label></div>
+        <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>Room preference *</span><select v-model="form.room_preference" required class="field"><option value="Twin Sharing">Twin Sharing</option><option value="Single Room (+Supplement)">Single Room (+Supplement)</option></select></label><label class="label"><span>Preferred roommate</span><input v-model.trim="form.preferred_roommate" class="field" /></label><label class="label"><span>Arrival date *</span><input v-model="form.arrival_date" type="date" required class="field" /></label><label class="label"><span>Departure date *</span><input v-model="form.departure_date" type="date" :min="form.arrival_date" required class="field" /></label><label class="label"><span>Airport *</span><select v-model="form.airport" required class="field"><option value="" disabled>Select airport</option><option v-for="option in airportOptions" :key="option" :value="option">{{ option }}</option></select></label><label class="label"><span>Flight number</span><input v-model.trim="form.flight_number" class="field" /></label><div class="label"><span>Need airport pickup? *</span><div class="flex gap-5"><label class="check"><input v-model="form.need_airport_pickup" type="radio" :value="true" /> Yes</label><label class="check"><input v-model="form.need_airport_pickup" type="radio" :value="false" /> No</label></div></div><label class="label"><span>Dietary restrictions</span><input v-model.trim="form.dietary_restrictions" class="field" /></label><label class="label"><span>Medical condition</span><input v-model.trim="form.medical_condition" class="field" /></label><label class="label"><span>Special assistance</span><input v-model.trim="form.special_assistance" class="field" /></label></div>
       </fieldset>
 
       <fieldset class="card"><legend>6. Payment and consent</legend>
-        <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>Preferred payment method *</span><select v-model="form.preferred_payment_method" required class="field"><option value="doku">Online payment (DOKU)</option><option value="bank-transfer">Bank transfer</option></select></label><label class="label"><span>Tax ID</span><input v-model.trim="form.tax_id" class="field" /></label></div>
-        <div class="mt-5 space-y-3"><label class="check"><input v-model="form.need_official_invoice" type="checkbox" /> I need an official invoice</label><label class="check"><input v-model="form.information_accuracy_confirmed" required type="checkbox" /> I confirm that the information is accurate *</label><label class="check"><input v-model="form.terms_accepted" required type="checkbox" /> I accept the Terms and Conditions *</label><label class="check"><input v-model="form.business_matching_data_consent" required type="checkbox" /> I consent to business matching data processing *</label></div>
+        <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>Preferred payment method *</span><select v-model="form.preferred_payment_method" required class="field"><option value="" disabled>Select payment method</option><option v-for="option in paymentMethodOptions" :key="option" :value="option">{{ option }}</option></select></label><label class="label"><span>Tax ID</span><input v-model.trim="form.tax_id" class="field" /></label></div>
+        <div class="mt-5 label"><span>Need official invoice? *</span><div class="flex gap-5"><label class="check"><input v-model="form.need_official_invoice" type="radio" :value="true" /> Yes</label><label class="check"><input v-model="form.need_official_invoice" type="radio" :value="false" /> No</label></div></div><div class="mt-5 space-y-3"><label class="check"><input v-model="form.information_accuracy_confirmed" required type="checkbox" /> I confirm that the information is accurate *</label><label class="check"><input v-model="form.terms_accepted" required type="checkbox" /> I accept the Terms and Conditions *</label><label class="check"><input v-model="form.business_matching_data_consent" required type="checkbox" /> I consent to business matching data processing *</label></div>
       </fieldset>
 
       <div v-if="feedback" class="rounded-2xl border p-5" :class="success?'border-emerald-300/30 bg-emerald-950/30':'border-red-300/30 bg-red-950/30'">{{ feedback }}</div>
 
       <div class="submit-row">
-        <button class="rounded-full bg-amber-300 px-7 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="submitting||!form.delegate_package_id||!form.activity_ids.length">{{ submitting?'Submitting…':'Create Registration' }}</button>
+        <button class="rounded-full bg-amber-300 px-7 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="submitting||!form.delegate_package_id||!form.activity_ids.length||!form.participation_categories.length||!form.looking_for.length||!form.preferred_countries.length||form.need_airport_pickup===null||form.need_official_invoice===null">{{ submitting?'Submitting…':'Create Registration' }}</button>
       </div>
     </form>
   </section>
@@ -60,18 +79,44 @@ const { upsertMyProfile } = useParticipant();
 const { createRegistration } = useRegistration();
 
 type TextKey = 'full_name' | 'job_title' | 'company_organization' | 'nationality' | 'title' | 'business_sector' | 'country' | 'email' | 'mobile_whatsapp' | 'company_website' | 'linkedin';
-const identityFields: Array<{ key: TextKey; label: string; type?: string; autocomplete?: string }> = [
+type IdentityField = { key: TextKey; label: string; type?: string; autocomplete?: string; options?: readonly string[]; required?: boolean };
+
+const titleOptions = ['Mrs.', 'Ms.', 'Dr.', 'Prof.', 'Mr.', 'Others'] as const;
+const businessSectorOptions = [
+  'Agriculture',
+  'Food & Beverage',
+  'Fashion & Textile',
+  'Beauty',
+  'Healthcare',
+  'Tourism',
+  'Education',
+  'Technology',
+  'Manufacturing',
+  'Creative Industry',
+  'Trading',
+  'Finance',
+  'Professional Services',
+  'Others'
+] as const;
+const countryOptions = ['Malaysia', 'China', 'Indonesia', 'Singapore', 'Thailand', 'Cambodia', 'Vietnam', 'Philippines', 'Brunei', 'Laos', 'Myanmar', 'Other'] as const;
+const participationCategoryOptions = ['Delegate', 'Speaker', 'Buyer', 'Investor', 'Government', 'Association', 'Media', 'Exhibitor', 'Sponsor', 'Other'] as const;
+const lookingForOptions = ['Buyer', 'Distributor', 'Importer', 'Retailer', 'Investor', 'Technology Partner', 'Joint Venture', 'Government', 'Others'] as const;
+const preferredCountryOptions = ['Indonesia', 'Malaysia', 'China', 'Singapore', 'Thailand', 'Vietnam', 'Cambodia', 'Philippines', 'Others'] as const;
+const airportOptions = ['CGK', 'HLP', 'Other'] as const;
+const paymentMethodOptions = ['Bank Transfer', 'Credit Card', 'Invoice', 'Pay Later'] as const;
+
+const identityFields: IdentityField[] = [
   { key: 'full_name', label: 'Full name', autocomplete: 'name' },
-  { key: 'title', label: 'Title' },
+  { key: 'title', label: 'Title', options: titleOptions },
   { key: 'job_title', label: 'Job title' },
   { key: 'company_organization', label: 'Company / organization', autocomplete: 'organization' },
   { key: 'nationality', label: 'Nationality' },
-  { key: 'country', label: 'Country' },
-  { key: 'business_sector', label: 'Business sector' },
+  { key: 'country', label: 'Country', options: countryOptions },
+  { key: 'business_sector', label: 'Business sector', options: businessSectorOptions },
   { key: 'email', label: 'Email', type: 'email', autocomplete: 'email' },
   { key: 'mobile_whatsapp', label: 'Mobile / WhatsApp', type: 'tel' },
-  { key: 'company_website', label: 'Company website', type: 'url' },
-  { key: 'linkedin', label: 'LinkedIn', type: 'url' }
+  { key: 'company_website', label: 'Company website', type: 'url', required: false },
+  { key: 'linkedin', label: 'LinkedIn', type: 'url', required: false }
 ];
 
 const form = reactive({
@@ -86,27 +131,31 @@ const form = reactive({
   country: '',
   email: '',
   mobile_whatsapp: '',
+  office_phone: '',
   company_website: '',
   linkedin: '',
   company_address: '',
-  participation_categories: '',
+  participation_categories: [] as string[],
+  presentation_topic: '',
+  products_interested: '',
+  investment_interest: '',
   products_services: '',
-  looking_for: '',
-  preferred_countries: '',
+  looking_for: [] as string[],
+  preferred_countries: [] as string[],
   business_objectives: '',
   activity_ids: [] as string[],
-  room_preference: 'twin-sharing',
+  room_preference: 'Twin Sharing',
   preferred_roommate: '',
   arrival_date: '2026-10-14',
   departure_date: '2026-10-17',
   flight_number: '',
   airport: '',
-  need_airport_pickup: false,
+  need_airport_pickup: null as boolean | null,
   dietary_restrictions: '',
   medical_condition: '',
   special_assistance: '',
-  preferred_payment_method: 'doku',
-  need_official_invoice: false,
+  preferred_payment_method: '',
+  need_official_invoice: null as boolean | null,
   tax_id: '',
   information_accuracy_confirmed: false,
   terms_accepted: false,
@@ -138,7 +187,6 @@ const submitting = ref(false);
 const feedback = ref('');
 const success = ref(false);
 
-const list = (value: string) => value.split(',').map(v => v.trim()).filter(Boolean);
 const nullable = (value: string) => value || null;
 const money = (amount: number, currency: string) => new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
 
@@ -158,15 +206,12 @@ const submit = async () => {
       ...form,
       company_website: nullable(form.company_website),
       linkedin: nullable(form.linkedin),
-      office_phone: null,
-      participation_categories: list(form.participation_categories),
-      presentation_topic: null,
-      products_interested: null,
-      investment_interest: null,
+      office_phone: nullable(form.office_phone),
+      presentation_topic: nullable(form.presentation_topic),
+      products_interested: nullable(form.products_interested),
+      investment_interest: nullable(form.investment_interest),
       preferred_roommate: nullable(form.preferred_roommate),
       flight_number: nullable(form.flight_number),
-      looking_for: list(form.looking_for),
-      preferred_countries: list(form.preferred_countries),
       dietary_restrictions: nullable(form.dietary_restrictions),
       medical_condition: nullable(form.medical_condition),
       special_assistance: nullable(form.special_assistance),
@@ -202,6 +247,13 @@ const submit = async () => {
 .card legend { @apply px-2 text-lg font-bold sm:text-xl; }
 .label { @apply grid gap-2 text-sm text-slate-300; }
 .field { @apply rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:border-amber-300; }
+.field option {
+  background-color: #0b2447;
+  color: #f8fafc;
+}
+.field option:disabled {
+  color: #94a3b8;
+}
 .choice { @apply cursor-pointer rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5; }
 .choice.selected { @apply border-amber-300 bg-amber-300/10; }
 .check { @apply flex items-center gap-3 text-sm text-slate-300; }

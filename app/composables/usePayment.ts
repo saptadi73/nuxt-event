@@ -63,7 +63,7 @@ export function usePayment() {
   const createDirectDebitBinding = (registrationId: string, channelCode: string, phoneNo: string, deviceId?: string) => api<ApiResponse<DirectDebitBindingData>>('/payments/doku/snap/direct-debit/bindings', { method: 'POST', body: { registration_id: registrationId, channel_code: channelCode, phone_no: phoneNo, ...(deviceId ? { device_id: deviceId } : {}) } });
   const createDirectDebitPayment = (registrationId: string, bindingId: string) => api<ApiResponse<DirectDebitPaymentData>>('/payments/doku/snap/direct-debit/payment', { method: 'POST', body: { registration_id: registrationId, binding_id: bindingId } });
   const submitDirectDebitOtp = (paymentId: string, bindingId: string, otp: string) => api<ApiResponse<DirectDebitPaymentData>>(`/payments/doku/snap/direct-debit/payment/${encodeURIComponent(paymentId)}/otp`, { method: 'POST', body: { binding_id: bindingId, otp } });
-  const createDokuCheckout = (registrationId: string) => api<ApiResponse<DokuCheckoutData>>('/payments/doku/checkout', { method: 'POST', body: { registration_id: registrationId } });
+  const createDokuCheckout = (orderId: string) => api<ApiResponse<DokuCheckoutData>>('/payments/doku/checkout', { method: 'POST', body: { order_id: orderId } });
   const getOrder = (orderId: string) => api<ApiResponse<OrderItem>>(`/orders/${orderId}`);
   const getPayment = (paymentId: string) => api<ApiResponse<PaymentItem>>(`/payments/${paymentId}`);
   const getMyInvoices = () => api<ApiResponse<InvoiceResponseData>>('/payments/me/invoices');

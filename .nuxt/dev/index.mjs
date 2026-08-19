@@ -792,7 +792,7 @@ const _inlineRuntimeConfig = {
   },
   "public": {
     "apiBaseUrl": "http://127.0.0.1:8000/api/v1",
-    "siteUrl": "https://event.gagakrimang.web.id",
+    "siteUrl": "http://localhost:3000",
     "appName": "IWBIF 2026"
   }
 };

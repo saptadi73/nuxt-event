@@ -33,6 +33,10 @@ GET /api/v1/events/{event_id}/business-matching-slots
 GET /api/v1/master/iwbif-options
 ```
 
+Ambil juga `GET /api/v1/auth/users/{user_id}` untuk membaca
+`delegate_status` dan `exhibitor_status`. Nilai yang mungkin:
+`belum_terdaftar`, `belum_lengkap`, dan `lengkap`.
+
 Gunakan master API sebagai sumber dropdown dan checkbox. Jangan hard-code UUID,
 harga paket, aktivitas, atau slot. Participant profile boleh `null`; kondisi ini
 tidak menghalangi pembuatan draft registrasi.

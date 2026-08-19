@@ -40,12 +40,15 @@ const messageTone = ref<'neutral' | 'success' | 'error'>('neutral');
 const onSubmit = async () => {
   message.value = 'Submitting login...';
   messageTone.value = 'neutral';
+  const flow = useRegistrationFlow();
+
   try {
     const result = await login(form);
     if (result.success) {
-      message.value = 'Login successful. Redirecting to the dashboard...';
+      await flow.loadFlow(true);
+      message.value = `Login successful. ${flow.ctaLabel.value}`;
       messageTone.value = 'success';
-      await navigateTo('/dashboard');
+      await navigateTo(flow.ctaTo.value);
       return;
     }
 
