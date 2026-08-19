@@ -37,6 +37,13 @@ export interface PaymentReportResponse {
   transactions: PaymentReportTransaction[];
 }
 
+export interface ManualPaymentConfirmPayload {
+  payment_method: 'manual_transfer' | 'manual_qr_code';
+  transfer_reference: string;
+  notes?: string | null;
+  paid_at?: string | null;
+}
+
 export function useAdminReport() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
 
@@ -52,5 +59,11 @@ export function useAdminReport() {
     return api<ApiResponse<PaymentReportResponse>>(`/admin/reports/payments${suffix}`);
   };
 
-  return { getReport };
+  const confirmManualPayment = (orderId: string, payload: ManualPaymentConfirmPayload) =>
+    api<ApiResponse<Record<string, unknown>>>(`/admin/orders/${encodeURIComponent(orderId)}/confirm-manual-payment`, {
+      method: 'POST',
+      body: payload
+    });
+
+  return { getReport, confirmManualPayment };
 }

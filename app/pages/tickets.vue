@@ -68,6 +68,11 @@ const addToCart=async(productId:string)=>{
     return;
   }
   if(!eventId.value||addingId.value)return;
+  const selectedProduct = response.value?.data.find(item => item.id === productId);
+  const delegatePackageId = typeof selectedProduct?.metadata_json?.delegate_package_id === 'string' ? selectedProduct.metadata_json.delegate_package_id : '';
+  if (delegatePackageId) {
+    sessionStorage.setItem('iwbif-last-delegate-package-id', delegatePackageId);
+  }
   addingId.value=productId;notice.value='';
   try{await addCartItem(eventId.value,productId,1);noticeTone.value='success';notice.value='Package added to your cart.';}
   catch(error){const value=error as {data?:{message?:string}};noticeTone.value='error';notice.value=value.data?.message||(error instanceof Error?error.message:'Package could not be added.');}

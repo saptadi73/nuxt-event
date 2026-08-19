@@ -127,6 +127,7 @@ const secondaryNav = computed(() => {
 
   if (authStore.isAdminOrOrganizer) {
     items.push({ to: '/admin/packages', label: 'Manage Packages' });
+    items.push({ to: '/admin/manual-payments', label: 'Manual Payments' });
     items.push({ to: '/admin/reports', label: 'Sales Report' });
     items.push({ to: '/admin/speakers', label: 'Admin' });
   }

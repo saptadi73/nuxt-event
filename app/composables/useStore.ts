@@ -13,6 +13,7 @@ export interface StoreProduct {
   is_active: boolean;
   max_quantity?: number | null;
   inclusions?: string[];
+  metadata_json?: Record<string, unknown> | null;
 }
 
 export interface StoreCartItem {

@@ -34,7 +34,7 @@ export { setInterval } from '#app/compat/interval';
 export { definePageMeta, PageMeta } from '#app/composables/pages';
 export { defineLazyHydrationComponent } from '#app/composables/lazy-hydration';
 export { useAdminContent, DelegatePackageMutationPayload, ProductMutationPayload, SessionMutationPayload } from '../app/composables/useAdminContent';
-export { useAdminReport, PaymentReportSummary, PaymentReportMetric, PaymentReportTransaction, PaymentReportResponse } from '../app/composables/useAdminReport';
+export { useAdminReport, PaymentReportSummary, PaymentReportMetric, PaymentReportTransaction, PaymentReportResponse, ManualPaymentConfirmPayload } from '../app/composables/useAdminReport';
 export { useApi, ApiMeta, ApiResponse } from '../app/composables/useApi';
 export { useAuth } from '../app/composables/useAuth';
 export { useBusinessMatching, BusinessMatchingProfile, MeetingItem, MeetingCreatePayload } from '../app/composables/useBusinessMatching';
@@ -52,4 +52,3 @@ export { useStore, StoreProduct, StoreCartItem, StoreCart, StoreOrder } from '..
 export { useTicket, TicketItem, TicketQr, TicketQrResponse } from '../app/composables/useTicket';
 export { useAuthStore } from '../app/stores/auth';
 export { defineStore, acceptHMRUpdate, usePinia, storeToRefs } from '../node_modules/@pinia/nuxt/dist/runtime/composables';
-export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';

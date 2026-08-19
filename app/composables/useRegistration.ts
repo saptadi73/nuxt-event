@@ -35,7 +35,6 @@ export interface RegistrationPayload {
   dietary_restrictions?: string | null;
   medical_condition?: string | null;
   special_assistance?: string | null;
-  preferred_payment_method: string;
   need_official_invoice: boolean;
   tax_id?: string | null;
   information_accuracy_confirmed: boolean;

@@ -2,7 +2,7 @@
   <section class="register-shell mx-auto max-w-5xl px-3 py-10 sm:px-6 lg:px-8">
     <p class="text-sm uppercase tracking-[.35em] text-amber-200">Delegate Registration</p>
     <h1 class="mt-4 text-4xl font-black sm:text-5xl">Register for IWBIF 2026</h1>
-    <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">Complete every required section. Your registration is saved as a draft before payment.</p>
+    <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">Complete every required section after your package purchase is confirmed. The backend links the paid delegate order to your registration automatically.</p>
 
     <div v-if="pending" class="mt-10 h-60 animate-pulse rounded-[2rem] bg-white/5" />
     <div v-else-if="optionsError" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ optionsError.message }}</div>
@@ -52,9 +52,9 @@
         <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>Room preference *</span><select v-model="form.room_preference" required class="field"><option value="Twin Sharing">Twin Sharing</option><option value="Single Room (+Supplement)">Single Room (+Supplement)</option></select></label><label class="label"><span>Preferred roommate</span><input v-model.trim="form.preferred_roommate" class="field" /></label><label class="label"><span>Arrival date *</span><input v-model="form.arrival_date" type="date" required class="field" /></label><label class="label"><span>Departure date *</span><input v-model="form.departure_date" type="date" :min="form.arrival_date" required class="field" /></label><label class="label"><span>Airport *</span><select v-model="form.airport" required class="field"><option value="" disabled>Select airport</option><option v-for="option in airportOptions" :key="option" :value="option">{{ option }}</option></select></label><label class="label"><span>Flight number</span><input v-model.trim="form.flight_number" class="field" /></label><div class="label"><span>Need airport pickup? *</span><div class="flex gap-5"><label class="check"><input v-model="form.need_airport_pickup" type="radio" :value="true" /> Yes</label><label class="check"><input v-model="form.need_airport_pickup" type="radio" :value="false" /> No</label></div></div><label class="label"><span>Dietary restrictions</span><input v-model.trim="form.dietary_restrictions" class="field" /></label><label class="label"><span>Medical condition</span><input v-model.trim="form.medical_condition" class="field" /></label><label class="label"><span>Special assistance</span><input v-model.trim="form.special_assistance" class="field" /></label></div>
       </fieldset>
 
-      <fieldset class="card"><legend>6. Payment and consent</legend>
-        <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>Preferred payment method *</span><select v-model="form.preferred_payment_method" required class="field"><option value="" disabled>Select payment method</option><option v-for="option in paymentMethodOptions" :key="option" :value="option">{{ option }}</option></select></label><label class="label"><span>Tax ID</span><input v-model.trim="form.tax_id" class="field" /></label></div>
-        <div class="mt-5 label"><span>Need official invoice? *</span><div class="flex gap-5"><label class="check"><input v-model="form.need_official_invoice" type="radio" :value="true" /> Yes</label><label class="check"><input v-model="form.need_official_invoice" type="radio" :value="false" /> No</label></div></div><div class="mt-5 space-y-3"><label class="check"><input v-model="form.information_accuracy_confirmed" required type="checkbox" /> I confirm that the information is accurate *</label><label class="check"><input v-model="form.terms_accepted" required type="checkbox" /> I accept the Terms and Conditions *</label><label class="check"><input v-model="form.business_matching_data_consent" required type="checkbox" /> I consent to business matching data processing *</label></div>
+      <fieldset class="card"><legend>6. Invoice and consent</legend>
+        <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>Tax ID</span><input v-model.trim="form.tax_id" class="field" /></label><div class="label"><span>Need official invoice? *</span><div class="flex gap-5"><label class="check"><input v-model="form.need_official_invoice" type="radio" :value="true" /> Yes</label><label class="check"><input v-model="form.need_official_invoice" type="radio" :value="false" /> No</label></div></div></div>
+        <div class="mt-5 space-y-3"><label class="check"><input v-model="form.information_accuracy_confirmed" required type="checkbox" /> I confirm that the information is accurate *</label><label class="check"><input v-model="form.terms_accepted" required type="checkbox" /> I accept the Terms and Conditions *</label><label class="check"><input v-model="form.business_matching_data_consent" required type="checkbox" /> I consent to business matching data processing *</label></div>
       </fieldset>
 
       <div v-if="feedback" class="rounded-2xl border p-5" :class="success?'border-emerald-300/30 bg-emerald-950/30':'border-red-300/30 bg-red-950/30'">{{ feedback }}</div>
@@ -103,8 +103,6 @@ const participationCategoryOptions = ['Delegate', 'Speaker', 'Buyer', 'Investor'
 const lookingForOptions = ['Buyer', 'Distributor', 'Importer', 'Retailer', 'Investor', 'Technology Partner', 'Joint Venture', 'Government', 'Others'] as const;
 const preferredCountryOptions = ['Indonesia', 'Malaysia', 'China', 'Singapore', 'Thailand', 'Vietnam', 'Cambodia', 'Philippines', 'Others'] as const;
 const airportOptions = ['CGK', 'HLP', 'Other'] as const;
-const paymentMethodOptions = ['Bank Transfer', 'Credit Card', 'Invoice', 'Pay Later'] as const;
-
 const identityFields: IdentityField[] = [
   { key: 'full_name', label: 'Full name', autocomplete: 'name' },
   { key: 'title', label: 'Title', options: titleOptions },
@@ -154,7 +152,6 @@ const form = reactive({
   dietary_restrictions: '',
   medical_condition: '',
   special_assistance: '',
-  preferred_payment_method: '',
   need_official_invoice: null as boolean | null,
   tax_id: '',
   information_accuracy_confirmed: false,
@@ -201,6 +198,10 @@ const submit = async () => {
       organization_name: form.company_organization,
       biography: form.business_objectives
     });
+
+    if (!form.delegate_package_id) {
+      throw new Error('Please choose and pay for a delegate package before completing registration.');
+    }
 
     const payload = {
       ...form,

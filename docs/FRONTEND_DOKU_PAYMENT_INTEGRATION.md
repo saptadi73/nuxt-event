@@ -79,6 +79,32 @@ Dokumen ini adalah kontrak integrasi frontend untuk pembayaran IWBIF 2026.
 OpenAPI backend tersedia di `/openapi.json`, sedangkan seluruh endpoint aplikasi
 menggunakan prefix `/api/v1`.
 
+## Konfirmasi transfer manual oleh admin
+
+Untuk transfer bank manual, frontend peserta hanya menampilkan status order
+`pending`. Setelah bukti transfer diverifikasi, frontend admin/organizer dapat
+memanggil endpoint berikut dengan token role admin atau organizer:
+
+```http
+POST /api/v1/admin/orders/{order_id}/confirm-manual-payment
+Authorization: Bearer <admin_access_token>
+Content-Type: application/json
+
+{"payment_method":"manual_transfer","transfer_reference":"BCA-20260819-001","notes":"Mutasi bank terverifikasi"}
+```
+
+Backend mengambil nominal dari order, membuat catatan payment
+`manual_transfer`, dan mengubah order menjadi `paid`. Untuk QR code direct
+yang tidak melalui DOKU, gunakan payload berikut setelah admin memverifikasi
+transaksi QR:
+
+```json
+{"payment_method":"manual_qr_code","transfer_reference":"QR-TRANSACTION-REFERENCE"}
+```
+
+Peserta tidak boleh memanggil endpoint ini atau mengubah status pembayaran dari
+browser. QR direct hanya dianggap paid setelah konfirmasi admin berhasil.
+
 ## 1. Prasyarat
 
 Frontend hanya menyimpan base URL backend. `DOKU_CLIENT_ID` dan
