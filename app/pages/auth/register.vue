@@ -14,17 +14,29 @@
 
           <label class="block">
             <span class="mb-2 block text-sm text-slate-300">Email</span>
-            <input v-model="form.email" type="email" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="you@example.com" required />
+            <input v-model.trim="form.email" type="email" autocomplete="email" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="you@example.com" required />
           </label>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="block">
+              <span class="mb-2 block text-sm text-slate-300">Country</span>
+              <input v-model.trim="form.country" autocomplete="country-name" minlength="2" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="Indonesia" required />
+            </label>
+
+            <label class="block">
+              <span class="mb-2 block text-sm text-slate-300">Mobile phone</span>
+              <input v-model.trim="form.phone" type="tel" autocomplete="tel" minlength="5" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="+62 812 3456 7890" required />
+            </label>
+          </div>
 
           <label class="block">
             <span class="mb-2 block text-sm text-slate-300">Password</span>
-            <input v-model="form.password" type="password" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="Minimum 8 characters" required />
+            <input v-model="form.password" type="password" autocomplete="new-password" minlength="8" maxlength="128" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="Minimum 8 characters" required />
           </label>
 
           <label class="block">
             <span class="mb-2 block text-sm text-slate-300">Confirm password</span>
-            <input v-model="form.confirmPassword" type="password" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="Re-enter your password" required />
+            <input v-model="form.confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="Re-enter your password" required />
           </label>
 
           <button type="submit" class="w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3 text-sm font-bold uppercase tracking-[.18em] text-slate-950 shadow-[0_18px_35px_rgba(216,172,89,0.22)] transition duration-200 hover:brightness-110 active:scale-[0.99]" :disabled="submitting">
@@ -47,6 +59,8 @@
 const form = reactive({
   full_name: '',
   email: '',
+  country: '',
+  phone: '',
   password: '',
   confirmPassword: ''
 });
@@ -77,6 +91,8 @@ const onSubmit = async () => {
     const result = await register({
       email: form.email,
       full_name: form.full_name,
+      country: form.country,
+      phone: form.phone,
       password: form.password
     });
 
