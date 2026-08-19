@@ -16,13 +16,13 @@
         </NuxtLink>
 
       <nav class="hidden items-center gap-1 text-sm text-slate-300 xl:ml-auto xl:flex">
-        <NuxtLink v-for="item in primaryNav" :key="item.to" :to="item.to" class="nav-link whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] hover:bg-white/5 hover:text-white">
+        <NuxtLink v-for="item in primaryNav" :key="item.to" :to="item.to" :class="item.disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'hover:bg-white/5 hover:text-white'" class="nav-link inline-flex items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none" @click="item.disabled ? $event.preventDefault() : closeMenus()">
           {{ item.label }}
         </NuxtLink>
-          <details class="group relative">
-            <summary class="nav-link cursor-pointer list-none whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] text-slate-200 transition hover:bg-white/5 hover:text-white">More <span class="ml-1 text-[10px] text-amber-200/80">v</span></summary>
+          <details ref="desktopMenuRef" class="group relative" :open="desktopMenuOpen" @toggle="desktopMenuOpen = ($event.target as HTMLDetailsElement).open">
+            <summary class="nav-link inline-flex cursor-pointer list-none items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none text-slate-200 transition hover:bg-white/5 hover:text-white">More <span class="ml-1 text-[10px] text-amber-200/80">v</span></summary>
             <div class="nav-menu-panel absolute right-0 top-12 grid w-48 gap-1 rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-slate-950/60 backdrop-blur-xl">
-              <NuxtLink v-for="item in secondaryNav" :key="item.to" :to="item.to" class="rounded-xl px-4 py-3 text-sm text-slate-200 transition hover:bg-white/5 hover:text-white">{{ item.label }}</NuxtLink>
+              <NuxtLink v-for="item in secondaryNav" :key="item.to" :to="item.to" class="rounded-xl px-4 py-3 text-sm text-slate-200 transition hover:bg-white/5 hover:text-white" @click="closeMenus">{{ item.label }}</NuxtLink>
             </div>
           </details>
         </nav>
@@ -46,10 +46,10 @@
           <NuxtLink v-else to="/auth/login" class="header-signin whitespace-nowrap rounded-full border border-cyan-300/30 bg-cyan-400/5 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-100 shadow-[0_12px_30px_rgba(34,211,238,0.12)] transition hover:border-cyan-200/60 hover:bg-cyan-300/10 sm:px-5">
             Sign In
           </NuxtLink>
-          <details class="relative xl:hidden">
+          <details ref="mobileMenuRef" class="relative xl:hidden" :open="mobileMenuOpen" @toggle="mobileMenuOpen = ($event.target as HTMLDetailsElement).open">
             <summary aria-label="Open navigation menu" class="menu-button flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-white/15 bg-white/5 text-xs font-bold uppercase tracking-[0.12em] text-slate-100 shadow-lg shadow-slate-950/50 transition hover:border-cyan-300/40 hover:bg-white/10">Menu</summary>
             <nav class="nav-menu-panel absolute right-0 top-12 grid w-[min(80vw,18rem)] gap-1 rounded-2xl border border-white/10 bg-slate-950/95 p-3 shadow-2xl shadow-slate-950/60 backdrop-blur-xl">
-              <NuxtLink v-for="item in allNav" :key="item.to" :to="item.to" class="rounded-xl px-4 py-3 text-sm text-slate-200 transition hover:bg-white/5 hover:text-white">{{ item.label }}</NuxtLink>
+              <NuxtLink v-for="item in allNav" :key="item.to" :to="item.to" :class="item.disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'hover:bg-white/5 hover:text-white'" class="rounded-xl px-4 py-3 text-sm text-slate-200 transition" @click="item.disabled ? $event.preventDefault() : closeMenus()">{{ item.label }}</NuxtLink>
             </nav>
           </details>
         </div>
@@ -90,10 +90,30 @@ const registrationFlow = useRegistrationFlow();
 const { ctaLabel, ctaTo, isPaid: isRegistrationPaid } = registrationFlow;
 const paymentCtaTo = ctaTo;
 
+const desktopMenuRef = ref<HTMLElement | null>(null);
+const mobileMenuRef = ref<HTMLElement | null>(null);
+
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as Node;
+
+  const clickedInsideDesktop = desktopMenuRef.value && desktopMenuRef.value.contains(target);
+  const clickedInsideMobile = mobileMenuRef.value && mobileMenuRef.value.contains(target);
+
+  if (!clickedInsideDesktop && !clickedInsideMobile) {
+    closeMenus();
+  }
+};
+
 onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+
   if (isAuthenticated.value) {
     registrationFlow.loadFlow();
   }
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
 });
 
 watch(isAuthenticated, (value) => {
@@ -106,19 +126,32 @@ const handleLogout = async () => {
   await navigateTo('/');
 };
 
-const primaryNav = [
+const desktopMenuOpen = ref(false);
+const mobileMenuOpen = ref(false);
+
+const closeMenus = () => {
+  desktopMenuOpen.value = false;
+  mobileMenuOpen.value = false;
+};
+
+const hasDelegatePackageSelected = computed(() => {
+  if (!isAuthenticated.value) return false;
+  return ['selected', 'payment_pending', 'paid_profile_incomplete', 'completed'].includes(registrationFlow.delegateStatus.value);
+});
+
+const primaryNav = computed(() => [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
   { to: '/program', label: 'Program' },
   { to: '/speakers', label: 'Speakers' },
-  { to: '/business-matching', label: 'Business Matching' }
-];
+  { to: '/tickets', label: 'Delegate Packages', disabled: hasDelegatePackageSelected.value }
+]);
 const secondaryNav = computed(() => {
   const items = [
+    { to: '/business-matching', label: 'Business Matching' },
     { to: '/exhibition', label: 'Exhibition' },
     { to: '/deal-room', label: 'Deal Room' },
     { to: '/participants', label: 'Participants' },
-    { to: '/tickets', label: 'Delegate Packages' },
     { to: '/contact', label: 'Contact' },
     { to: '/partners', label: 'Partners' },
     { to: '/faq', label: 'FAQ' },
@@ -134,7 +167,7 @@ const secondaryNav = computed(() => {
 
   return items;
 });
-const allNav = computed(() => [...primaryNav, ...secondaryNav.value]);
+const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
 </script>
 
 <style scoped>
@@ -166,6 +199,7 @@ const allNav = computed(() => [...primaryNav, ...secondaryNav.value]);
 .nav-link {
   letter-spacing: 0.12em;
   font-size: 11px;
+  line-height: 1;
   transition: background 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
@@ -174,6 +208,12 @@ const allNav = computed(() => [...primaryNav, ...secondaryNav.value]);
 .header-signin:hover,
 .menu-button:hover {
   transform: translateY(-1px);
+}
+
+summary.nav-link,
+.nav-link {
+  display: inline-flex;
+  align-items: center;
 }
 
 .header-cta,

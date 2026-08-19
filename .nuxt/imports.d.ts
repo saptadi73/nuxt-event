@@ -52,3 +52,4 @@ export { useStore, StoreProduct, StoreCartItem, StoreCart, StoreOrder } from '..
 export { useTicket, TicketItem, TicketQr, TicketQrResponse } from '../app/composables/useTicket';
 export { useAuthStore } from '../app/stores/auth';
 export { defineStore, acceptHMRUpdate, usePinia, storeToRefs } from '../node_modules/@pinia/nuxt/dist/runtime/composables';
+export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';

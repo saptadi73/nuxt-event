@@ -7,7 +7,7 @@
         <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-300">Transfer the exact order amount and include your order number as the payment reference. Your order remains pending until the organizer verifies the bank transaction.</p>
       </div>
       <div class="p-5 sm:p-8">
-        <div class="rounded-2xl border border-red-300/25 bg-red-950/25 p-4 text-sm leading-6 text-red-100"><strong>Demo account only.</strong> These temporary bank details are placeholders. Do not transfer real funds.</div>
+        <div class="rounded-2xl border border-amber-300/25 bg-amber-300/5 p-4 text-sm leading-6 text-amber-100"><strong>Important.</strong> Verify the beneficiary name and transfer the exact order amount. Keep the receipt for organizer verification.</div>
         <p v-if="loading" class="mt-6 text-slate-300">Loading order...</p>
         <div v-else-if="errorMessage" class="mt-6 rounded-2xl border border-red-400/30 bg-red-950/30 p-4 text-red-100">{{ errorMessage }}</div>
         <template v-else>
@@ -36,9 +36,12 @@ const loading = ref(true);
 const errorMessage = ref('');
 const queryValue = (value: unknown) => Array.isArray(value) ? String(value[0] || '') : typeof value === 'string' ? value : '';
 const bankDetails = computed(() => [
-  { label: 'Bank', value: 'Bank Nusantara (Demo)' },
-  { label: 'Account number', value: '1234 5678 9012' },
-  { label: 'Account name', value: 'PT IWBIF Event Indonesia (Demo)' },
+  { label: 'Account Name', value: 'Pers. Ikatan Wanita Pengusaha Indonesia' },
+  { label: 'Account Number', value: '1260010014735' },
+  { label: 'Bank Name', value: 'PT Bank Mandiri (Persero) Tbk.' },
+  { label: 'SWIFT Code / BIC', value: 'BMRIIDJA' },
+  { label: 'Bank Address', value: 'Jl. Jend. Gatot Subroto 36-38, Jakarta 12190, Indonesia' },
+  { label: 'Beneficiary Address', value: 'Jl Kali Pasir No. 38 RT 9, RW 1, Cikini, Menteng, Jakarta Pusat, DKI Jakarta' },
   { label: 'Payment reference', value: order.value?.order_number || orderId.value || '-' }
 ]);
 onMounted(async () => {
