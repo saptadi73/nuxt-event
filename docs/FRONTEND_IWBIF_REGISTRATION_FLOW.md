@@ -22,7 +22,10 @@ access token -> user -> participant -> company -> registration/exhibitor
 
 ## 2. Bootstrap halaman registrasi
 
-Setelah login, ambil data berikut secara paralel:
+Respons login sudah memuat `user.role`, `registration_status`,
+`delegate_status`, `exhibitor_status`, `purchase_tracking`, `selected_types`,
+`profile`, `registrations`, dan `orders`. Gunakan snapshot ini untuk render
+dashboard pertama. Setelah itu ambil data master berikut secara paralel:
 
 ```http
 GET /api/v1/auth/me
@@ -33,8 +36,9 @@ GET /api/v1/events/{event_id}/business-matching-slots
 GET /api/v1/master/iwbif-options
 ```
 
-Ambil juga `GET /api/v1/auth/users/{user_id}` untuk membaca
-`delegate_status`, `exhibitor_status`, dan `purchase_tracking`. Nilai status
+Panggil kembali `GET /api/v1/auth/users/{user_id}` setelah checkout, callback
+pembayaran, submit form, atau perubahan organizer untuk menyegarkan tracking.
+Nilai status
 profile yang mungkin adalah `belum_terdaftar`, `belum_lengkap`, dan `lengkap`.
 Gunakan `purchase_tracking.delegate.status=paid_profile_incomplete` untuk
 mengarahkan user yang sudah membayar ke form Delegate.

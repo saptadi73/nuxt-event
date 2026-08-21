@@ -86,11 +86,24 @@ POST /api/v1/auth/login
 {"email":"delegate@example.com","password":"minimum-8-character"}
 ```
 
-Keduanya mengembalikan:
+Register mengembalikan user dan token. Login mengembalikan user, token, role,
+serta snapshot progres lengkap agar frontend dapat langsung menentukan dashboard
+dan langkah berikutnya tanpa request detail tambahan:
 
 ```json
 {
-  "user": {"id":"uuid","email":"delegate@example.com","full_name":null,"phone":"+628123456789","country":"Indonesia","status":"active","registration_status":"account_created","is_email_verified":false,"created_at":"2026-08-15T12:00:00Z"},
+  "user": {"id":"uuid","email":"delegate@example.com","full_name":null,"phone":"+628123456789","country":"Indonesia","status":"active","registration_status":"account_created","role":"participant","is_email_verified":false,"created_at":"2026-08-15T12:00:00Z"},
+  "registration_status": "package_selected",
+  "delegate_status": "belum_lengkap",
+  "exhibitor_status": "belum_terdaftar",
+  "purchase_tracking": {
+    "delegate": {"status":"selected","products":[],"profile_required":false},
+    "exhibitor": {"status":"not_selected","products":[],"profile_required":false}
+  },
+  "selected_types": ["delegate"],
+  "profile": null,
+  "registrations": [],
+  "orders": [],
   "access_token": "jwt",
   "refresh_token": "jwt",
   "token_type": "bearer"
@@ -134,6 +147,11 @@ User hanya dapat membaca detail dirinya sendiri. Role `admin` dan `organizer`
 dapat membaca detail user lain. Response menggabungkan data akun, participant
 profile, registration delegate/exhibitor, package, order, item order, dan
 payment terbaru.
+
+Objek tracking yang sama juga dikembalikan langsung oleh login. Endpoint detail
+tetap disediakan untuk refresh progres setelah checkout, webhook pembayaran,
+submit registrasi, atau tindakan organizer. Field `user.role` selalu tersedia
+dan bernilai `participant`, `organizer`, atau `admin`.
 
 ```json
 {
@@ -976,8 +994,13 @@ Mutasi event, session, dan speaker membutuhkan Bearer token dengan role `admin`
 atau `organizer`. Endpoint GET tetap dapat digunakan frontend publik:
 
 ```text
-POST /events, PUT /events/{id}, POST /sessions, PUT /sessions/{id},
-POST /speakers, PUT /speakers/{id}, POST /speakers/{id}/photo
+POST /events, PUT /events/{id}, DELETE /events/{id},
+POST /sessions, PUT /sessions/{id}, DELETE /sessions/{id},
+POST /speakers, PUT /speakers/{id}, DELETE /speakers/{id},
+POST /speakers/{id}/photo,
+POST /speakers/{id}/events, DELETE /speakers/{id}/events/{event_id},
+POST /store/admin/events/{event_id}/products,
+PUT /store/admin/products/{id}, DELETE /store/admin/products/{id}
 ```
 
 Payload event create:
@@ -992,7 +1015,49 @@ Session create menerima `event_id`, `title`, `slug`, `description`,
 menerima subsetnya. Speaker create menerima identity/professional fields,
 biography, links, expertise, featured/status; update menerima subsetnya. Foto
 speaker diunggah lewat `POST /api/v1/speakers/{speaker_id}/photo` multipart
-field `file`.
+field `file`. Hubungkan speaker ke event dengan payload
+`{"event_id":"uuid"}` pada `POST /api/v1/speakers/{speaker_id}/events`.
+Operasi delete dapat menghasilkan `409` jika resource masih direferensikan data
+lain yang tidak menggunakan cascade; frontend harus meminta admin melepas
+dependensi terlebih dahulu.
+
+Announcements dan certificates:
+
+```text
+GET    /api/v1/events/{event_id}/announcements
+GET    /api/v1/admin/events/{event_id}/announcements
+POST   /api/v1/admin/events/{event_id}/announcements
+PUT    /api/v1/admin/announcements/{id}
+DELETE /api/v1/admin/announcements/{id}
+
+GET    /api/v1/certificates/me
+GET    /api/v1/admin/events/{event_id}/certificates
+POST   /api/v1/admin/certificates
+PUT    /api/v1/admin/certificates/{id}
+DELETE /api/v1/admin/certificates/{id}
+```
+
+Announcement admin memakai payload
+`{"title":"...","body":"...","status":"draft|published|archived","published_at":null}`.
+Certificate diterbitkan untuk satu user per event dengan payload
+`{"event_id":"uuid","user_id":"uuid","certificate_number":"IWBIF-2026-0001","title":"Certificate of Attendance","download_url":"https://...","issued_at":null}`.
+Semua endpoint `/admin/...` memerlukan role `admin` atau `organizer`.
+
+Manajemen user dan role:
+
+```text
+GET  /api/v1/admin/users?page=1&size=20&role=participant&status=active
+POST /api/v1/admin/users
+PUT  /api/v1/admin/users/{user_id}
+```
+
+Create user menerima `email`, `password`, `full_name`, `phone`, `country`,
+`role`, `status`, dan `is_email_verified`. Update menerima subset selain email
+dan password. Nilai role adalah `participant`, `organizer`, atau `admin`; status
+adalah `active`, `inactive`, atau `suspended`. Organizer dapat membuat dan
+mengelola participant/organizer, tetapi hanya role `admin` yang dapat membuat
+atau mengubah akun admin. Backend juga mencegah admin/organizer menonaktifkan
+atau mengganti role akun sendiri untuk menghindari self-lockout.
 
 ## 16. Health dan alur frontend
 

@@ -13,6 +13,8 @@ import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRu
   interface SharedPublicRuntimeConfig {
    apiBaseUrl: string,
 
+   eventSlug: string,
+
    siteUrl: string,
 
    appName: string,

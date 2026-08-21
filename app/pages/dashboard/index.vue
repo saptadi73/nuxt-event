@@ -1,6 +1,6 @@
 ﻿<template>
   <section class="dashboard-shell mx-auto max-w-7xl px-3 py-10 sm:px-6 lg:px-8">
-    <p class="text-sm uppercase tracking-[.35em] text-cyan-200">Participant Dashboard</p>
+    <p class="text-sm uppercase tracking-[.35em] text-cyan-200">{{ canViewSalesReport ? 'Organizer Dashboard' : 'Participant Dashboard' }}</p>
     <div class="mt-3 flex flex-wrap items-end justify-between gap-5">
       <div>
         <h1 class="text-3xl font-black sm:text-4xl">Welcome to IWBIF 2026</h1>
@@ -28,7 +28,11 @@
         </div>
         <div class="flex flex-wrap gap-3">
           <NuxtLink to="/admin/packages" class="inline-flex items-center justify-center rounded-full bg-amber-300 px-5 py-3 text-sm font-bold text-slate-950 transition hover:brightness-110">Manage packages</NuxtLink>
+          <NuxtLink to="/admin/speakers" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-5 py-3 text-sm font-bold text-amber-100 transition hover:bg-amber-300/10">Manage speakers</NuxtLink>
           <NuxtLink to="/admin/program" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-5 py-3 text-sm font-bold text-amber-100 transition hover:bg-amber-300/10">Program & agenda</NuxtLink>
+          <NuxtLink to="/admin/users" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-5 py-3 text-sm font-bold text-amber-100 transition hover:bg-amber-300/10">Manage users</NuxtLink>
+          <NuxtLink to="/admin/announcements" class="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-white transition hover:border-white/40">Announcements</NuxtLink>
+          <NuxtLink to="/admin/certificates" class="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-white transition hover:border-white/40">Certificates</NuxtLink>
           <NuxtLink to="/admin/reports" class="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-white transition hover:border-white/40">Payment report</NuxtLink>
         </div>
       </div>
@@ -83,6 +87,7 @@ const menu=[
   {to:'/dashboard/invoice',label:'Document',title:'Invoice',text:'Review invoice and registration details.'},
   {to:'/dashboard/certificate',label:'Recognition',title:'Certificate',text:'Access your certificate after attendance eligibility.'},
   {to:'/dashboard/announcements',label:'Updates',title:'Announcements',text:'Read important information from the organizing team.'},
-  {to:'/directory-consent',label:'Privacy',title:'Directory Consent',text:'Understand and manage profile visibility.'}
+  {to:'/directory-consent',label:'Privacy',title:'Directory Consent',text:'Understand and manage profile visibility.'},
+  {to:'/dashboard/security',label:'Account',title:'Change Password',text:'Update the password used to sign in to your account.'}
 ];
 </script>

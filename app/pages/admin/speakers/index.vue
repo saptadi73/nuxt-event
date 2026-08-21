@@ -1,56 +1,67 @@
-﻿<template>
-  <section class="mx-auto max-w-4xl px-4 py-14 sm:px-6">
-    <h1 class="text-4xl font-black">Manage Speaker Photos</h1>
-    <p class="mt-3 text-slate-300">Upload a JPG, PNG, or WebP profile photo (maximum 5 MB) for each speaker.</p>
-
-    <div v-if="pending" class="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3"><div v-for="item in 6" :key="item" class="h-60 animate-pulse rounded-3xl bg-white/5" /></div>
-    <div v-else class="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-      <article v-for="speaker in speakers" :key="speaker.id" class="glass-card rounded-3xl p-6">
-        <img v-if="speaker.profile_photo_url" :src="mediaUrl(speaker.profile_photo_url)" :alt="speaker.full_name" class="h-20 w-20 rounded-2xl object-cover" />
-        <div v-else class="flex h-20 w-20 items-center justify-center rounded-2xl bg-cyan-300/10 text-xl font-bold text-cyan-200">{{ initials(speaker.full_name) }}</div>
-        <h2 class="mt-4 text-xl font-bold">{{ speaker.full_name }}</h2>
-        <p class="mt-1 text-sm text-slate-400">{{ speaker.professional_title || 'Speaker' }}</p>
-        <label class="mt-5 block text-sm text-slate-300">
-          <span class="mb-2 block">Replace photo</span>
-          <input type="file" accept="image/jpeg,image/png,image/webp" :disabled="uploadingId === speaker.id" @change="uploadPhoto(speaker.id, $event)" class="block w-full text-xs text-slate-300 file:mr-3 file:rounded-full file:border-0 file:bg-cyan-400 file:px-3 file:py-2 file:font-semibold file:text-slate-950 disabled:opacity-50" />
-        </label>
-      </article>
+<template>
+  <section class="mx-auto max-w-7xl px-3 py-10 sm:px-6 lg:px-8">
+    <div class="flex flex-wrap items-end justify-between gap-5">
+      <div><p class="text-sm uppercase tracking-[.3em] text-cyan-200">Event operations</p><h1 class="mt-3 text-3xl font-black sm:text-4xl">Speakers</h1><p class="mt-3 text-sm leading-7 text-slate-300">Manage speaker profiles, publication, event placement, and photos.</p></div>
+      <div class="flex flex-wrap gap-3"><NuxtLink to="/speakers" class="action-secondary">View public speakers</NuxtLink><button class="action-primary" @click="openCreate">+ New speaker</button></div>
     </div>
-    <p v-if="feedback" class="mt-6 rounded-2xl border border-cyan-300/30 bg-cyan-300/10 px-4 py-3 text-sm">{{ feedback }}</p>
+    <p v-if="feedback" class="mt-5 rounded-2xl border p-4 text-sm" :class="feedbackTone === 'error' ? 'border-red-300/30 bg-red-950/30 text-red-100' : 'border-emerald-300/30 bg-emerald-950/30 text-emerald-100'">{{ feedback }}</p>
+
+    <div class="mt-8 flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/[.04] p-4 sm:flex-row sm:items-center sm:justify-between">
+      <label class="relative block w-full sm:max-w-sm"><span class="sr-only">Search speakers</span><input v-model.trim="search" class="w-full rounded-full border border-white/10 bg-slate-950/70 px-5 py-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-cyan-300/50" placeholder="Search name or organization..." /></label>
+      <p class="text-sm text-slate-400">{{ filteredSpeakers.length }} speakers</p>
+    </div>
+
+    <div class="mt-6 overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950/45 shadow-2xl shadow-slate-950/30"><div class="overflow-x-auto">
+      <table class="w-full min-w-[900px] text-left"><thead class="border-b border-white/10 bg-white/[.045] text-[11px] uppercase tracking-[.18em] text-slate-400"><tr><th class="px-5 py-4">Speaker</th><th class="px-5 py-4">Organization</th><th class="px-5 py-4">Country</th><th class="px-5 py-4">Expertise</th><th class="px-5 py-4">Status</th><th class="px-5 py-4 text-right">Actions</th></tr></thead>
+        <tbody class="divide-y divide-white/[.07]">
+          <tr v-if="pending"><td colspan="6" class="px-5 py-12 text-center text-slate-400">Loading speakers...</td></tr><tr v-else-if="!filteredSpeakers.length"><td colspan="6" class="px-5 py-12 text-center text-slate-400">No speakers found.</td></tr>
+          <tr v-for="speaker in filteredSpeakers" v-else :key="speaker.id" class="transition hover:bg-cyan-300/[.035]">
+            <td class="px-5 py-4"><div class="flex items-center gap-3"><img v-if="speaker.profile_photo_url" :src="mediaUrl(speaker.profile_photo_url)" :alt="speaker.full_name" class="h-12 w-12 rounded-xl object-cover ring-1 ring-white/10" /><div v-else class="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-300/10 font-bold text-cyan-200">{{ initials(speaker.full_name) }}</div><div><p class="font-bold text-white">{{ speaker.full_name }}</p><p class="mt-1 text-xs text-slate-400">{{ speaker.professional_title || 'Speaker' }}</p></div></div></td>
+            <td class="px-5 py-4 text-sm text-slate-300">{{ speaker.organization_name || '—' }}</td><td class="px-5 py-4 text-sm uppercase text-slate-300">{{ speaker.country_code || '—' }}</td><td class="px-5 py-4"><div class="flex max-w-xs flex-wrap gap-1"><span v-for="tag in (speaker.expertise_tags || []).slice(0,2)" :key="tag" class="rounded-full bg-white/[.07] px-2 py-1 text-[10px] text-slate-300">{{ tag }}</span><span v-if="(speaker.expertise_tags || []).length > 2" class="text-xs text-slate-500">+{{ speaker.expertise_tags!.length - 2 }}</span></div></td>
+            <td class="px-5 py-4"><span class="status-pill" :class="speaker.status === 'published' ? 'status-live' : 'status-draft'">{{ speaker.status || 'published' }}</span><span v-if="speaker.is_featured" class="ml-2 text-amber-200" title="Featured">★</span></td>
+            <td class="px-5 py-4"><div class="flex justify-end gap-2"><button class="table-button" @click="openEdit(speaker)">Edit</button><button class="table-button border-red-300/20 text-red-200 hover:border-red-300/50" @click="removeSpeaker(speaker)">Delete</button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div></div>
+
+    <Teleport to="body"><div v-if="modalOpen" class="modal-backdrop" @click.self="closeModal"><form class="modal-card" @submit.prevent="saveSpeaker">
+      <div class="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5 sm:px-7"><div><p class="text-xs uppercase tracking-[.24em] text-cyan-200">Speaker editor</p><h2 class="mt-2 text-2xl font-black">{{ editingId ? 'Update speaker' : 'Create speaker' }}</h2></div><button type="button" class="modal-close" aria-label="Close" @click="closeModal">×</button></div>
+      <div class="max-h-[70vh] space-y-5 overflow-y-auto px-5 py-6 sm:px-7">
+        <div class="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[.035] p-4 sm:flex-row sm:items-center">
+          <img v-if="photoPreview" :src="photoPreview" alt="Speaker photo preview" class="h-24 w-24 rounded-2xl object-cover" /><div v-else class="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-cyan-300/10 text-2xl font-bold text-cyan-200">{{ initials(form.full_name || 'Speaker') }}</div>
+          <div><p class="font-semibold">Profile photo</p><p class="mt-1 text-xs leading-5 text-slate-400">JPG, PNG, or WebP; maximum 5 MB.</p><label class="mt-3 inline-flex cursor-pointer rounded-full bg-white/10 px-4 py-2 text-xs font-bold text-cyan-100 hover:bg-white/15"><span>{{ selectedPhoto ? 'Change selected photo' : editingId ? 'Replace photo' : 'Choose photo' }}</span><input class="sr-only" type="file" accept="image/jpeg,image/png,image/webp" @change="selectPhoto" /></label></div>
+        </div>
+        <label v-if="!editingId" class="field"><span>Event</span><select v-model="selectedEventId" required><option value="" disabled>Select event</option><option v-for="event in events" :key="event.id" :value="event.id">{{ event.name }}</option></select></label>
+        <div class="grid gap-4 sm:grid-cols-2"><label class="field"><span>Full name</span><input v-model.trim="form.full_name" required /></label><label class="field"><span>Professional title</span><input v-model.trim="form.professional_title" /></label></div>
+        <div class="grid gap-4 sm:grid-cols-2"><label class="field"><span>Organization</span><input v-model.trim="form.organization_name" /></label><label class="field"><span>Country code</span><input v-model.trim="form.country_code" maxlength="3" placeholder="IDN" /></label></div>
+        <label class="field"><span>Biography</span><textarea v-model.trim="form.biography" rows="4" /></label><label class="field"><span>Expertise (comma separated)</span><input v-model.trim="expertiseText" placeholder="Investment, Global Trade" /></label><label class="field"><span>Session title</span><input v-model.trim="form.session_title" /></label>
+        <div class="grid gap-4 sm:grid-cols-2"><label class="field"><span>LinkedIn URL</span><input v-model.trim="form.linkedin_url" type="url" /></label><label class="field"><span>Website URL</span><input v-model.trim="form.website_url" type="url" /></label></div>
+        <div class="grid gap-4 sm:grid-cols-2"><label class="field"><span>Status</span><select v-model="form.status"><option value="draft">Draft</option><option value="published">Published</option></select></label><label class="flex items-center gap-3 pt-7 text-sm text-slate-300"><input v-model="form.is_featured" type="checkbox" /> Featured speaker</label></div>
+      </div>
+      <div class="flex justify-end gap-3 border-t border-white/10 px-5 py-5 sm:px-7"><button type="button" class="action-secondary" @click="closeModal">Cancel</button><button class="action-primary" :disabled="saving">{{ saving ? 'Saving...' : 'Save speaker' }}</button></div>
+    </form></div></Teleport>
   </section>
 </template>
 
 <script setup lang="ts">
-import { useSpeaker } from '~/composables/useSpeaker';
-import type { SpeakerItem } from '~/composables/useEvent';
-import type { ApiResponse } from '~/composables/useApi';
-
-definePageMeta({ middleware: 'auth' });
-useSeoMeta({ title: 'Manage Speaker Photos | IWBIF 2026' });
-
-const { getSpeakers, uploadSpeakerPhoto } = useSpeaker();
-const { mediaUrl } = useMediaUrl();
-const feedback = ref('');
-const uploadingId = ref('');
-const { data: response, pending } = await useAsyncData<ApiResponse<SpeakerItem[]>>('admin-speakers', () => getSpeakers());
-const speakers = ref<SpeakerItem[]>(response.value?.data ?? []);
-const initials = (name: string) => name.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase();
-
-const uploadPhoto = async (speakerId: string, event: Event) => {
-  const file = (event.target as HTMLInputElement).files?.[0];
-  if (!file) return;
-
-  uploadingId.value = speakerId;
-  feedback.value = '';
-  try {
-    const result = await uploadSpeakerPhoto(speakerId, file);
-    const index = speakers.value.findIndex((speaker) => speaker.id === speakerId);
-    if (index >= 0) speakers.value[index] = result.data;
-    feedback.value = 'Speaker photo updated.';
-  } catch (error) {
-    feedback.value = error instanceof Error ? error.message : 'Speaker photo could not be uploaded.';
-  } finally {
-    uploadingId.value = '';
-  }
-};
+import { useSpeaker } from '~/composables/useSpeaker'; import { useAdminContent, type SpeakerMutationPayload } from '~/composables/useAdminContent'; import { useEvent, type EventItem, type SpeakerItem } from '~/composables/useEvent'; import type { ApiResponse } from '~/composables/useApi';
+definePageMeta({ middleware: ['auth','admin'] }); useSeoMeta({ title:'Manage Speakers | IWBIF 2026' });
+const {getSpeakers,uploadSpeakerPhoto}=useSpeaker(); const adminApi=useAdminContent(); const {getEvents}=useEvent(); const {mediaUrl}=useMediaUrl();
+const {data:response,pending}=await useAsyncData<ApiResponse<SpeakerItem[]>>('admin-speakers',()=>getSpeakers(1,100)); const speakers=ref<SpeakerItem[]>(response.value?.data??[]); const {data:eventResponse}=await useAsyncData('admin-speaker-events',()=>getEvents(1,100)); const events=computed<EventItem[]>(()=>eventResponse.value?.data||[]); const selectedEventId=ref(events.value[0]?.id||'');
+const search=ref(''); const filteredSpeakers=computed(()=>{const query=search.value.toLowerCase();return query?speakers.value.filter(item=>`${item.full_name} ${item.organization_name||''}`.toLowerCase().includes(query)):speakers.value;});
+const modalOpen=ref(false),editingId=ref(''),saving=ref(false),feedback=ref(''); const feedbackTone=ref<'success'|'error'>('success'),expertiseText=ref(''); const selectedPhoto=ref<File|null>(null),photoPreview=ref('');
+const emptyForm=():SpeakerMutationPayload=>({full_name:'',professional_title:'',organization_name:'',country_code:'',biography:'',linkedin_url:'',website_url:'',session_title:'',is_featured:false,status:'published'}); const form=reactive<SpeakerMutationPayload>(emptyForm());
+const initials=(name:string)=>name.split(' ').map(part=>part[0]).slice(0,2).join('').toUpperCase(); const apiError=(error:unknown)=>{const value=error as {data?:{message?:string;errors?:Array<{message:string}>}};return value.data?.errors?.[0]?.message||value.data?.message||(error instanceof Error?error.message:'Speaker could not be saved.');};
+const clearPreview=()=>{if(photoPreview.value.startsWith('blob:'))URL.revokeObjectURL(photoPreview.value);photoPreview.value='';selectedPhoto.value=null;}; const resetForm=()=>{editingId.value='';expertiseText.value='';clearPreview();Object.assign(form,emptyForm());};
+const openCreate=()=>{resetForm();modalOpen.value=true;}; const openEdit=(speaker:SpeakerItem)=>{resetForm();editingId.value=speaker.id;expertiseText.value=(speaker.expertise_tags||[]).join(', ');photoPreview.value=speaker.profile_photo_url?mediaUrl(speaker.profile_photo_url):'';Object.assign(form,{full_name:speaker.full_name,professional_title:speaker.professional_title||'',organization_name:speaker.organization_name||'',country_code:speaker.country_code||'',biography:speaker.biography||'',linkedin_url:speaker.linkedin_url||'',website_url:speaker.website_url||'',session_title:speaker.session_title||'',is_featured:speaker.is_featured||false,status:speaker.status||'published'});modalOpen.value=true;}; const closeModal=()=>{modalOpen.value=false;resetForm();};
+const selectPhoto=(event:Event)=>{const file=(event.target as HTMLInputElement).files?.[0];if(!file)return;if(file.size>5*1024*1024){feedbackTone.value='error';feedback.value='Photo must be 5 MB or smaller.';return;}clearPreview();selectedPhoto.value=file;photoPreview.value=URL.createObjectURL(file);}; const reload=async()=>{speakers.value=(await getSpeakers(1,100)).data||[];};
+const saveSpeaker=async()=>{if(saving.value||(!editingId.value&&!selectedEventId.value))return;saving.value=true;const payload:SpeakerMutationPayload={...form,professional_title:form.professional_title||null,organization_name:form.organization_name||null,country_code:form.country_code?.toUpperCase()||null,biography:form.biography||null,linkedin_url:form.linkedin_url||null,website_url:form.website_url||null,session_title:form.session_title||null,expertise_tags:expertiseText.value.split(',').map(item=>item.trim()).filter(Boolean)};try{let speakerId=editingId.value;if(speakerId)await adminApi.updateSpeaker(speakerId,payload);else{const created=await adminApi.createSpeaker(payload);speakerId=created.data.id;await adminApi.attachSpeakerToEvent(speakerId,selectedEventId.value);}if(selectedPhoto.value)await uploadSpeakerPhoto(speakerId,selectedPhoto.value);feedbackTone.value='success';feedback.value=editingId.value?'Speaker and photo updated.':'Speaker created and linked to the event.';closeModal();await reload();}catch(error){feedbackTone.value='error';feedback.value=apiError(error);}finally{saving.value=false;}};
+const removeSpeaker=async(speaker:SpeakerItem)=>{if(!window.confirm(`Delete speaker "${speaker.full_name}"?`))return;try{await adminApi.deleteSpeaker(speaker.id);feedbackTone.value='success';feedback.value='Speaker deleted.';await reload();}catch(error){feedbackTone.value='error';feedback.value=apiError(error);}}; onBeforeUnmount(clearPreview);
 </script>
+
+<style scoped>
+.field{display:block;font-size:.875rem;color:#cbd5e1}.field span{display:block;margin-bottom:.5rem}.field input,.field select,.field textarea{width:100%;border:1px solid rgba(255,255,255,.1);border-radius:1rem;background:rgba(2,6,23,.82);padding:.75rem 1rem;color:white;outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(103,232,249,.55);box-shadow:0 0 0 3px rgba(103,232,249,.08)}
+.action-primary,.action-secondary,.table-button{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:.7rem 1.15rem;font-size:.875rem;font-weight:700;transition:.18s}.action-primary{background:#67e8f9;color:#082f49}.action-primary:hover{filter:brightness(1.08)}.action-primary:disabled{opacity:.5}.action-secondary,.table-button{border:1px solid rgba(255,255,255,.15);color:#e2e8f0}.action-secondary:hover,.table-button:hover{border-color:rgba(103,232,249,.45);color:white}.table-button{padding:.45rem .85rem;font-size:.75rem}.status-pill{display:inline-flex;border-radius:999px;padding:.35rem .7rem;font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em}.status-live{background:rgba(52,211,153,.12);color:#a7f3d0}.status-draft{background:rgba(251,191,36,.12);color:#fde68a}
+.modal-backdrop{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,.78);padding:1rem;backdrop-filter:blur(12px)}.modal-card{width:min(100%,52rem);overflow:hidden;border:1px solid rgba(255,255,255,.13);border-radius:2rem;background:linear-gradient(145deg,#071a36,#020d20);color:white;box-shadow:0 35px 100px rgba(0,0,0,.55)}.modal-close{display:flex;height:2.5rem;width:2.5rem;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12);border-radius:999px;font-size:1.5rem;color:#cbd5e1}
+</style>

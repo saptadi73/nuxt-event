@@ -48,6 +48,17 @@ export function useRegistrationFlow() {
   const loaded = useState('registration-flow-loaded', () => false);
   const error = useState('registration-flow-error', () => '');
 
+  const primeFlow = (snapshot: RegistrationFlowState) => {
+    state.value = snapshot;
+    loaded.value = true;
+    error.value = '';
+    const snapshotUser = snapshot.user;
+    if (snapshotUser && typeof snapshotUser === 'object') {
+      authStore.setUser(snapshotUser as Parameters<typeof authStore.setUser>[0]);
+      authStore.hydrateUserFromToken();
+    }
+  };
+
   const statusFor = (type: PurchaseType): PurchaseStatus => normalizeStatus(state.value?.purchase_tracking?.[type]);
   const delegateStatus = computed(() => statusFor('delegate'));
   const exhibitorStatus = computed(() => statusFor('exhibitor'));
@@ -106,6 +117,7 @@ export function useRegistrationFlow() {
 
   const ctaLabel = computed(() => {
     if (!authStore.isAuthenticated) return 'Register Now!';
+    if (authStore.isAdminOrOrganizer) return 'Organizer Dashboard';
     if (primaryStatus.value === 'not_selected') return 'Secure your Seat!';
     if (primaryStatus.value === 'selected') return 'Continue to Checkout';
     if (primaryStatus.value === 'payment_pending') return 'Continue Payment';
@@ -115,6 +127,7 @@ export function useRegistrationFlow() {
 
   const ctaTo = computed(() => {
     if (!authStore.isAuthenticated) return '/auth/register';
+    if (authStore.isAdminOrOrganizer) return '/dashboard';
     if (primaryStatus.value === 'not_selected') return '/register';
     if (primaryStatus.value === 'selected') return '/dashboard/cart';
     if (primaryStatus.value === 'paid_profile_incomplete') return `/register/${profilePendingType.value || 'delegate'}`;
@@ -139,10 +152,17 @@ export function useRegistrationFlow() {
       const me = await api<ApiResponse<Record<string, unknown>>>('/auth/me');
       const meData = me.data as Record<string, unknown>;
       const user = (meData.user || meData) as Record<string, unknown>;
+      authStore.setUser(user as Parameters<typeof authStore.setUser>[0]);
+      authStore.hydrateUserFromToken();
       const userId = typeof user.id === 'string' ? user.id : '';
       if (!userId) throw new Error('User ID was not returned by the backend.');
       const detail = await api<ApiResponse<RegistrationFlowState>>(`/auth/users/${encodeURIComponent(userId)}`);
       state.value = detail.data;
+      const detailUser = detail.data.user;
+      if (detailUser && typeof detailUser === 'object') {
+        authStore.setUser(detailUser as Parameters<typeof authStore.setUser>[0]);
+        authStore.hydrateUserFromToken();
+      }
       loaded.value = true;
       return state.value;
     } catch (cause) {
@@ -154,5 +174,5 @@ export function useRegistrationFlow() {
     }
   };
 
-  return { state, loading, loaded, error, loadFlow, statusFor, delegateStatus, exhibitorStatus, selectedTypes, primaryType, primaryStatus, activeOrderId, activePaymentId, isPaid, profilePendingType, canEnterBusinessMatching, ctaLabel, ctaTo };
+  return { state, loading, loaded, error, primeFlow, loadFlow, statusFor, delegateStatus, exhibitorStatus, selectedTypes, primaryType, primaryStatus, activeOrderId, activePaymentId, isPaid, profilePendingType, canEnterBusinessMatching, ctaLabel, ctaTo };
 }

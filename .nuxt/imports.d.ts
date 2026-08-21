@@ -33,13 +33,15 @@ export { requestIdleCallback, cancelIdleCallback } from '#app/compat/idle-callba
 export { setInterval } from '#app/compat/interval';
 export { definePageMeta, PageMeta } from '#app/composables/pages';
 export { defineLazyHydrationComponent } from '#app/composables/lazy-hydration';
-export { useAdminContent, DelegatePackageMutationPayload, ProductMutationPayload, SessionMutationPayload } from '../app/composables/useAdminContent';
+export { useAdminContent, DelegatePackageMutationPayload, ProductMutationPayload, SessionMutationPayload, SpeakerMutationPayload } from '../app/composables/useAdminContent';
+export { useAdminOperations, AdminUserItem, AdminUserCreatePayload, AdminUserUpdatePayload, AnnouncementPayload, CertificatePayload } from '../app/composables/useAdminOperations';
 export { useAdminReport, PaymentReportSummary, PaymentReportMetric, PaymentReportTransaction, PaymentReportResponse, ManualPaymentConfirmPayload } from '../app/composables/useAdminReport';
 export { useApi, ApiMeta, ApiResponse } from '../app/composables/useApi';
 export { useAuth } from '../app/composables/useAuth';
 export { useBusinessMatching, BusinessMatchingProfile, MeetingItem, MeetingCreatePayload } from '../app/composables/useBusinessMatching';
 export { useCommunication, ConversationCreatePayload, ConversationItem, MessageItem, NotificationItem } from '../app/composables/useCommunication';
 export { useEvent, EventItem, SpeakerItem, SessionItem, WorkshopTrackItem, TicketTypeItem, DelegatePackageItem, ActivityItem, ExhibitorItem } from '../app/composables/useEvent';
+export { useEventUpdates, AnnouncementItem, CertificateItem } from '../app/composables/useEventUpdates';
 export { useExhibitor, ExhibitorCreatePayload, ExhibitorRecord } from '../app/composables/useExhibitor';
 export { useMediaUrl } from '../app/composables/useMediaUrl';
 export { useParticipant, ParticipantProfile, ParticipantPayload } from '../app/composables/useParticipant';
@@ -52,4 +54,3 @@ export { useStore, StoreProduct, StoreCartItem, StoreCart, StoreOrder } from '..
 export { useTicket, TicketItem, TicketQr, TicketQrResponse } from '../app/composables/useTicket';
 export { useAuthStore } from '../app/stores/auth';
 export { defineStore, acceptHMRUpdate, usePinia, storeToRefs } from '../node_modules/@pinia/nuxt/dist/runtime/composables';
-export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';

@@ -139,15 +139,17 @@ const hasDelegatePackageSelected = computed(() => {
   return ['selected', 'payment_pending', 'paid_profile_incomplete', 'completed'].includes(registrationFlow.delegateStatus.value);
 });
 
-const primaryNav = computed(() => [
+type NavItem = { to: string; label: string; disabled?: boolean };
+
+const primaryNav = computed<NavItem[]>(() => [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
   { to: '/program', label: 'Program' },
   { to: '/speakers', label: 'Speakers' },
   { to: '/tickets', label: 'Delegate Packages', disabled: hasDelegatePackageSelected.value }
 ]);
-const secondaryNav = computed(() => {
-  const items = [
+const secondaryNav = computed<NavItem[]>(() => {
+  const items: NavItem[] = [
     { to: '/business-matching', label: 'Business Matching' },
     { to: '/exhibition', label: 'Exhibition' },
     { to: '/deal-room', label: 'Deal Room' },
@@ -162,7 +164,11 @@ const secondaryNav = computed(() => {
     items.push({ to: '/admin/packages', label: 'Manage Packages' });
     items.push({ to: '/admin/manual-payments', label: 'Manual Payments' });
     items.push({ to: '/admin/reports', label: 'Sales Report' });
-    items.push({ to: '/admin/speakers', label: 'Admin' });
+    items.push({ to: '/admin/speakers', label: 'Manage Speakers' });
+    items.push({ to: '/admin/program', label: 'Manage Program' });
+    items.push({ to: '/admin/users', label: 'Manage Users' });
+    items.push({ to: '/admin/announcements', label: 'Announcements' });
+    items.push({ to: '/admin/certificates', label: 'Certificates' });
   }
 
   return items;

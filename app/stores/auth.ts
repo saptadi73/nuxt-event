@@ -1,4 +1,5 @@
 type AuthUser = {
+  id?: string;
   email?: string;
   full_name?: string;
   name?: string;
@@ -85,11 +86,13 @@ export const useAuthStore = defineStore('auth', {
       if (!payload) return;
 
       const role = this.resolveRoleFromPayload(payload);
+      const id = typeof payload.sub === 'string' ? payload.sub : typeof payload.id === 'string' ? payload.id : undefined;
       const email = typeof payload.email === 'string' ? payload.email : undefined;
       const fullName = typeof payload.full_name === 'string' ? payload.full_name : typeof payload.name === 'string' ? payload.name : undefined;
 
       this.user = {
         ...(this.user ?? {}),
+        ...(id ? { id } : {}),
         ...(email ? { email } : {}),
         ...(fullName ? { full_name: fullName } : {}),
         ...(role ? { role } : {})

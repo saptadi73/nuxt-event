@@ -1,5 +1,5 @@
 import { useApi, type ApiResponse } from '~/composables/useApi';
-import { useRegistrationFlow } from '~/composables/useRegistrationFlow';
+import { useRegistrationFlow, type RegistrationFlowState } from '~/composables/useRegistrationFlow';
 
 interface LoginPayload {
   email: string;
@@ -14,13 +14,32 @@ interface RegisterPayload {
   password: string;
 }
 
+interface ChangePasswordPayload {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
+interface AuthUserPayload {
+  id?: string;
+  email: string;
+  full_name?: string;
+  role?: string;
+}
+
+type LoginResponse = RegistrationFlowState & {
+  user: AuthUserPayload;
+  access_token: string;
+  refresh_token: string;
+};
+
 export function useAuth() {
   const authStore = useAuthStore();
   const registrationFlow = useRegistrationFlow();
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
 
   const login = async (payload: LoginPayload) => {
-    const result = await api<ApiResponse<{ user: { email: string; full_name: string; role?: string }; access_token: string; refresh_token: string }>>(
+    const result = await api<ApiResponse<LoginResponse>>(
       '/auth/login',
       { method: 'POST', body: payload }
     );
@@ -32,9 +51,7 @@ export function useAuth() {
       });
       authStore.setUser(result.data.user);
       authStore.hydrateUserFromToken();
-    }
-    if (result.success) {
-      await registrationFlow.loadFlow(true);
+      registrationFlow.primeFlow(result.data);
     }
     return result;
   };
@@ -67,5 +84,8 @@ export function useAuth() {
     }
   };
 
-  return { login, register, logout, authStore };
+  const changePassword = (payload: ChangePasswordPayload) =>
+    api<ApiResponse<Record<string, unknown>>>('/auth/password', { method: 'PUT', body: payload });
+
+  return { login, register, logout, changePassword, authStore };
 }

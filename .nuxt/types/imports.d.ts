@@ -102,6 +102,7 @@ declare global {
   const unref: typeof import('vue').unref
   const updateAppConfig: typeof import('../../node_modules/nuxt/dist/app/config').updateAppConfig
   const useAdminContent: typeof import('../../app/composables/useAdminContent').useAdminContent
+  const useAdminOperations: typeof import('../../app/composables/useAdminOperations').useAdminOperations
   const useAdminReport: typeof import('../../app/composables/useAdminReport').useAdminReport
   const useAnnouncer: typeof import('../../node_modules/nuxt/dist/app/composables/announcer').useAnnouncer
   const useApi: typeof import('../../app/composables/useApi').useApi
@@ -117,6 +118,7 @@ declare global {
   const useCssVars: typeof import('vue').useCssVars
   const useError: typeof import('../../node_modules/nuxt/dist/app/composables/error').useError
   const useEvent: typeof import('../../app/composables/useEvent').useEvent
+  const useEventUpdates: typeof import('../../app/composables/useEventUpdates').useEventUpdates
   const useExhibitor: typeof import('../../app/composables/useExhibitor').useExhibitor
   const useFetch: typeof import('../../node_modules/nuxt/dist/app/composables/fetch').useFetch
   const useHead: typeof import('../../node_modules/nuxt/dist/app/composables/head').useHead
@@ -132,7 +134,6 @@ declare global {
   const useModel: typeof import('vue').useModel
   const useNuxtApp: typeof import('../../node_modules/nuxt/dist/app/nuxt').useNuxtApp
   const useNuxtData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData').useNuxtData
-  const useNuxtDevTools: typeof import('../../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools').useNuxtDevTools
   const useParticipant: typeof import('../../app/composables/useParticipant').useParticipant
   const usePayment: typeof import('../../app/composables/usePayment').usePayment
   const usePinia: typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables').usePinia
@@ -226,8 +227,11 @@ declare global {
   export type { PageMeta } from '../../node_modules/nuxt/dist/app/composables/pages'
   import('../../node_modules/nuxt/dist/app/composables/pages')
   // @ts-ignore
-  export type { DelegatePackageMutationPayload, ProductMutationPayload, SessionMutationPayload } from '../../app/composables/useAdminContent'
+  export type { DelegatePackageMutationPayload, ProductMutationPayload, SessionMutationPayload, SpeakerMutationPayload } from '../../app/composables/useAdminContent'
   import('../../app/composables/useAdminContent')
+  // @ts-ignore
+  export type { AdminUserItem, AdminUserCreatePayload, AdminUserUpdatePayload, AnnouncementPayload, CertificatePayload } from '../../app/composables/useAdminOperations'
+  import('../../app/composables/useAdminOperations')
   // @ts-ignore
   export type { PaymentReportSummary, PaymentReportMetric, PaymentReportTransaction, PaymentReportResponse, ManualPaymentConfirmPayload } from '../../app/composables/useAdminReport'
   import('../../app/composables/useAdminReport')
@@ -243,6 +247,9 @@ declare global {
   // @ts-ignore
   export type { EventItem, SpeakerItem, SessionItem, WorkshopTrackItem, TicketTypeItem, DelegatePackageItem, ActivityItem, ExhibitorItem } from '../../app/composables/useEvent'
   import('../../app/composables/useEvent')
+  // @ts-ignore
+  export type { AnnouncementItem, CertificateItem } from '../../app/composables/useEventUpdates'
+  import('../../app/composables/useEventUpdates')
   // @ts-ignore
   export type { ExhibitorCreatePayload, ExhibitorRecord } from '../../app/composables/useExhibitor'
   import('../../app/composables/useExhibitor')
@@ -373,6 +380,7 @@ declare module 'vue' {
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
     readonly updateAppConfig: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/config')['updateAppConfig']>
     readonly useAdminContent: UnwrapRef<typeof import('../../app/composables/useAdminContent')['useAdminContent']>
+    readonly useAdminOperations: UnwrapRef<typeof import('../../app/composables/useAdminOperations')['useAdminOperations']>
     readonly useAdminReport: UnwrapRef<typeof import('../../app/composables/useAdminReport')['useAdminReport']>
     readonly useAnnouncer: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/announcer')['useAnnouncer']>
     readonly useApi: UnwrapRef<typeof import('../../app/composables/useApi')['useApi']>
@@ -388,6 +396,7 @@ declare module 'vue' {
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
     readonly useError: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/error')['useError']>
     readonly useEvent: UnwrapRef<typeof import('../../app/composables/useEvent')['useEvent']>
+    readonly useEventUpdates: UnwrapRef<typeof import('../../app/composables/useEventUpdates')['useEventUpdates']>
     readonly useExhibitor: UnwrapRef<typeof import('../../app/composables/useExhibitor')['useExhibitor']>
     readonly useFetch: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/fetch')['useFetch']>
     readonly useHead: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/head')['useHead']>
@@ -403,7 +412,6 @@ declare module 'vue' {
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
     readonly useNuxtApp: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/nuxt')['useNuxtApp']>
     readonly useNuxtData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['useNuxtData']>
-    readonly useNuxtDevTools: UnwrapRef<typeof import('../../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools')['useNuxtDevTools']>
     readonly useParticipant: UnwrapRef<typeof import('../../app/composables/useParticipant')['useParticipant']>
     readonly usePayment: UnwrapRef<typeof import('../../app/composables/usePayment')['usePayment']>
     readonly usePinia: UnwrapRef<typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables')['usePinia']>

@@ -68,7 +68,6 @@ const onSubmit = async () => {
   try {
     const result = await login(form);
     if (result.success) {
-      await flow.loadFlow(true);
       message.value = `Login successful. ${flow.ctaLabel.value}`;
       messageTone.value = 'success';
       await navigateTo(flow.ctaTo.value);

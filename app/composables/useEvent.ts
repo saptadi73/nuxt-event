@@ -24,6 +24,10 @@ export interface SpeakerItem {
   profile_photo_url?: string;
   expertise_tags?: string[];
   session_title?: string;
+  linkedin_url?: string;
+  website_url?: string;
+  is_featured?: boolean;
+  status?: string;
 }
 
 export interface SessionItem {
