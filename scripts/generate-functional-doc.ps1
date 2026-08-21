@@ -61,7 +61,7 @@ $content += Code 'Copy-Item .env.example .env'
 $content += Para 'Isi variabel berikut sesuai alamat backend dan frontend:'
 $content += Code "NUXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000/api/v1`nNUXT_PUBLIC_SITE_URL=http://localhost:3000`nNUXT_PUBLIC_APP_NAME=IWBIF 2026"
 $content += Para 'Untuk production, contoh konfigurasi yang digunakan adalah:'
-$content += Code "NUXT_PUBLIC_API_BASE_URL=https://api-event.gagakrimang.web.id/api/v1`nNUXT_PUBLIC_SITE_URL=https://event.gagakrimang.web.id"
+$content += Code "NUXT_PUBLIC_API_BASE_URL=https://api.iwbif.id/api/v1`nNUXT_PUBLIC_SITE_URL=https://iwbif.id"
 $content += Para 'Jangan pernah menyimpan Consumer Secret, DOKU key, merchant private key, password database, atau credential backend di variabel NUXT_PUBLIC karena nilainya akan masuk ke bundle browser.' 'Warning'
 $content += Para '5. Menjalankan aplikasi' 'Heading1'
 $content += Para '5.1 Development' 'Heading2'

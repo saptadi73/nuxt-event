@@ -1,15 +1,17 @@
 const localApiBaseUrl = 'http://127.0.0.1:8000/api/v1';
-const productionApiBaseUrl = 'https://api-event.gagakrimang.web.id/api/v1';
-const productionSiteUrl = 'https://event.gagakrimang.web.id';
-const isGenerate = process.env.npm_lifecycle_event === 'generate' || process.argv.some((argument) => argument === 'generate');
+const productionApiBaseUrl = 'https://api.iwbif.id/api/v1';
+const productionSiteUrl = 'https://iwbif.id';
+const productionCommands = new Set(['build', 'generate']);
+const isProductionBuild = productionCommands.has(process.env.npm_lifecycle_event || '')
+  || process.argv.some((argument) => productionCommands.has(argument));
 const configuredApiBaseUrl = process.env.NUXT_PUBLIC_API_BASE_URL || localApiBaseUrl;
-const apiBaseUrl = isGenerate && /^http:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?(?:\/|$)/i.test(configuredApiBaseUrl)
+const apiBaseUrl = isProductionBuild && /^http:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?(?:\/|$)/i.test(configuredApiBaseUrl)
   ? productionApiBaseUrl
   : configuredApiBaseUrl;
 
 export default defineNuxtConfig({
   experimental: {
-    appManifest: !isGenerate
+    appManifest: !isProductionBuild
   },
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
   nitro: {
@@ -37,7 +39,7 @@ export default defineNuxtConfig({
     public: {
       apiBaseUrl,
       eventSlug: process.env.NUXT_PUBLIC_EVENT_SLUG || 'iwbif-2026',
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || (isGenerate ? productionSiteUrl : 'http://localhost:3000'),
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || (isProductionBuild ? productionSiteUrl : 'http://localhost:3000'),
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'IWBIF 2026'
     }
   },
