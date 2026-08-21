@@ -8,8 +8,20 @@
       </span>
     </div>
 
-    <div v-if="loading" class="mt-8 grid gap-4 md:grid-cols-3">
-      <div v-for="item in 6" :key="item" class="h-48 animate-pulse rounded-[1.75rem] bg-white/5"></div>
+    <div v-if="loading" class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3" role="status" aria-live="polite" aria-label="Loading speakers">
+      <article v-for="item in 6" :key="item" class="rounded-[1.75rem] border border-white/10 bg-white/5 p-4 sm:p-5" aria-hidden="true">
+        <div class="speaker-skeleton h-20 w-20 rounded-2xl" />
+        <div class="speaker-skeleton mt-5 h-2.5 w-12 rounded-full" />
+        <div class="speaker-skeleton mt-3 h-5 w-3/4 rounded-full" />
+        <div class="speaker-skeleton mt-2 h-3 w-1/2 rounded-full" />
+        <div class="speaker-skeleton mt-5 h-3 w-2/3 rounded-full" />
+        <div class="mt-5 space-y-2">
+          <div class="speaker-skeleton h-3 w-full rounded-full" />
+          <div class="speaker-skeleton h-3 w-5/6 rounded-full" />
+          <div class="speaker-skeleton h-3 w-2/3 rounded-full" />
+        </div>
+      </article>
+      <span class="sr-only">Loading speakers...</span>
     </div>
 
     <div v-else-if="error" class="mt-8 rounded-[1.75rem] border border-orange-300/20 bg-orange-300/10 p-4 text-sm text-orange-100">
@@ -43,35 +55,20 @@
 </template>
 
 <script setup lang="ts">
-import { useApi, type ApiResponse } from '~/composables/useApi';
+import { useEvent } from '~/composables/useEvent';
 
-interface SpeakerItem {
-  id: string;
-  full_name: string;
-  professional_title?: string;
-  organization_name?: string;
-  country_code?: string;
-  biography?: string;
-  session_title?: string;
-  profile_photo_url?: string;
-  expertise_tags?: string[];
-}
-
-const api = useNuxtApp().$api as ReturnType<typeof useApi>;
+const config = useRuntimeConfig();
+const { getEventSpeakers } = useEvent();
 const { mediaUrl } = useMediaUrl();
 const unavailablePhotos = ref(new Set<string>());
 const initials = (name: string) => name.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase();
 const markPhotoUnavailable = (speakerId: string) => {
   unavailablePhotos.value = new Set([...unavailablePhotos.value, speakerId]);
 };
-const page = ref(1);
-const size = ref(12);
-const sortBy = ref('full_name');
-const sortDir = ref('asc');
-
-const { data: response, pending: loading, error, refresh } = await useAsyncData<ApiResponse<SpeakerItem[]>>(
-  `speakers-${page.value}-${size.value}-${sortBy.value}-${sortDir.value}`,
-  () => api(`/speakers?page=${page.value}&size=${size.value}&sortBy=${sortBy.value}&sortDir=${sortDir.value}`)
+const eventSlug = config.public.eventSlug;
+const { data: response, pending: loading, error, refresh } = await useAsyncData(
+  `event-speakers-${eventSlug}`,
+  () => getEventSpeakers(eventSlug)
 );
 
 const items = computed(() => response.value?.data ?? []);
@@ -86,3 +83,10 @@ const displayItems = computed(() =>
   })
 );
 </script>
+
+<style scoped>
+.speaker-skeleton { position:relative; overflow:hidden; background:rgba(255,255,255,.075); }
+.speaker-skeleton::after { content:''; position:absolute; inset:0; transform:translateX(-100%); background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent); animation:speaker-shimmer 1.5s infinite; }
+@keyframes speaker-shimmer { to { transform:translateX(100%); } }
+@media (prefers-reduced-motion:reduce) { .speaker-skeleton::after { animation:none; } }
+</style>

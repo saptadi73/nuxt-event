@@ -13,10 +13,31 @@
         <p class="mt-6 max-w-3xl text-sm leading-7 text-[#aeb9c8] sm:text-base">Sessions are delivered by forum leaders and updated from the official event operations source. Prepare your business materials early for every matching window.</p>
       </div>
 
-      <div v-if="pending" class="mt-10 space-y-4">
-        <div v-for="n in 6" :key="n" class="h-28 animate-pulse rounded-3xl border border-white/10 bg-white/5" />
+      <div v-if="pending" class="mt-10 space-y-8" role="status" aria-live="polite" aria-label="Loading event program">
+        <section v-for="day in 2" :key="day" class="day-block" aria-hidden="true">
+          <div class="flex items-center gap-4">
+            <div class="skeleton h-3 w-16 rounded-full" />
+            <div class="skeleton h-3 w-44 rounded-full" />
+          </div>
+          <div class="mt-5 space-y-4">
+            <article v-for="session in 3" :key="session" class="session-card grid gap-5 rounded-3xl p-4 sm:grid-cols-[170px_1fr] sm:p-7">
+              <div class="space-y-3 border-b border-white/10 pb-4 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-6">
+                <div class="skeleton h-3 w-28 rounded-full" />
+                <div class="skeleton h-2.5 w-20 rounded-full" />
+              </div>
+              <div class="space-y-3">
+                <div class="skeleton h-2.5 w-24 rounded-full" />
+                <div class="skeleton h-5 w-3/4 rounded-full" />
+                <div class="skeleton h-3 w-full rounded-full" />
+                <div class="skeleton h-3 w-2/3 rounded-full" />
+              </div>
+            </article>
+          </div>
+        </section>
+        <span class="sr-only">Loading event program...</span>
       </div>
       <div v-else-if="error" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">The event schedule could not be loaded.</div>
+      <div v-else-if="!groupedSessions.length" class="mt-10 rounded-3xl border border-white/10 bg-white/5 p-6 text-slate-200">No program sessions have been published yet.</div>
       <div v-else class="mt-10 space-y-10">
         <section v-for="(day, dayIndex) in groupedSessions" :key="day.date" class="day-block">
           <div class="day-heading">
@@ -50,13 +71,13 @@ useSeoMeta({
   description: 'Live event schedule loaded from the IWBIF 2026 session source.'
 });
 
-const {getEvents,getEventSessions}=useEvent();
-const {data:response,pending,error}=await useAsyncData('public-event-sessions',async()=>{
-  const events=await getEvents(1,1);
-  const event=events.data[0];
-  if(!event?.slug) throw new Error('Event not found');
-  return getEventSessions(event.slug)
-});
+const config=useRuntimeConfig();
+const {getEventSessions}=useEvent();
+const eventSlug=config.public.eventSlug;
+const {data:response,pending,error}=await useAsyncData(
+  `public-event-sessions-${eventSlug}`,
+  ()=>getEventSessions(eventSlug)
+);
 
 const sessions=computed(()=>response.value?.data??[]);
 const groupedSessions=computed(()=>{
@@ -85,6 +106,9 @@ const label=(value?:string)=>(value??'session').replaceAll('_',' ');
 .session-card { border:1px solid rgba(255,255,255,.1); background:linear-gradient(135deg,rgba(11,36,71,.78),rgba(4,21,45,.7)); box-shadow:0 22px 55px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.035); transition:transform 250ms ease,border-color 250ms ease,box-shadow 250ms ease; backdrop-filter:blur(14px); }
 .session-card:hover { transform:translateY(-3px); border-color:rgba(216,172,89,.34); box-shadow:0 28px 68px rgba(0,0,0,.34),0 0 32px rgba(216,172,89,.055); }
 .session-time { border-bottom:1px solid rgba(255,255,255,.09); padding-bottom:1rem; }
+.skeleton { position:relative; overflow:hidden; background:rgba(255,255,255,.075); }
+.skeleton::after { content:''; position:absolute; inset:0; transform:translateX(-100%); background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent); animation:skeleton-shimmer 1.5s infinite; }
+@keyframes skeleton-shimmer { to { transform:translateX(100%); } }
 @media (min-width:640px) { .day-block { padding-left:2rem; } .session-time { border-right:1px solid rgba(255,255,255,.09); border-bottom:0; padding-right:1.5rem; padding-bottom:0; } }
 @media (max-width:639px) {
   .day-block { padding-left: 0; }
@@ -93,5 +117,5 @@ const label=(value?:string)=>(value??'session').replaceAll('_',' ');
   .session-card { border-radius: 1.25rem; }
   .session-time { border-bottom: 1px solid rgba(255,255,255,.09); padding-bottom: .9rem; }
 }
-@media (prefers-reduced-motion:reduce) { .session-card { transition:none; } }
+@media (prefers-reduced-motion:reduce) { .session-card { transition:none; } .skeleton::after { animation:none; } }
 </style>

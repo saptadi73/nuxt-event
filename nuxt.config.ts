@@ -36,6 +36,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBaseUrl,
+      eventSlug: process.env.NUXT_PUBLIC_EVENT_SLUG || 'iwbif-2026',
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || (isGenerate ? productionSiteUrl : 'http://localhost:3000'),
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'IWBIF 2026'
     }
@@ -57,8 +58,8 @@ export default defineNuxtConfig({
     '/code-of-conduct': { prerender: true },
     '/refund-policy': { prerender: true },
     '/directory-consent': { prerender: true },
-    '/speakers/**': isGenerate ? { prerender: true } : { swr: 3600 },
-    '/program': isGenerate ? { prerender: true } : { swr: 600 },
+    '/speakers/**': { ssr: false },
+    '/program': { ssr: false },
     '/dashboard/**': { ssr: false },
     '/admin/**': { ssr: false }
   },

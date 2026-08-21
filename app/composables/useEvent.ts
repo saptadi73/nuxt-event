@@ -23,6 +23,7 @@ export interface SpeakerItem {
   country_code?: string;
   profile_photo_url?: string;
   expertise_tags?: string[];
+  session_title?: string;
 }
 
 export interface SessionItem {
