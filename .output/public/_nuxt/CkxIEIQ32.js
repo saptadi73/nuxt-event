@@ -1,0 +1,1 @@
+import{i as e}from"./JXK3sUeE.js";function t(){let t=e().$api;return{getAnnouncements:e=>t(`/events/${e}/announcements`),getMyCertificates:()=>t(`/certificates/me`)}}export{t};
