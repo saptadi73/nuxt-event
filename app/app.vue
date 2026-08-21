@@ -7,7 +7,8 @@
       <div class="mx-auto flex w-full max-w-[1440px] flex-wrap items-center gap-3 px-3 py-3 sm:gap-4 sm:px-6 lg:px-8">
         <NuxtLink to="/" class="brand-block flex min-w-0 shrink-0 items-center gap-3">
           <span class="brand-mark flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-amber-300/40 bg-white/10 p-1 shadow-lg shadow-cyan-950/20 sm:h-11 sm:w-11">
-            <span class="text-sm font-black text-amber-200">IW</span>
+            <img v-if="!logoHasError" :src="logoSrc" alt="IWBIF 2026" width="44" height="44" class="h-full w-full object-contain" @error="logoHasError = true" />
+            <span v-else class="brand-fallback text-sm font-black">IWBIF</span>
           </span>
           <span class="hidden sm:block">
             <span class="brand-kicker block whitespace-nowrap text-[10px] uppercase tracking-[0.35em] text-amber-200/75">IWAPI presents</span>
@@ -83,6 +84,9 @@
 </template>
 
 <script setup lang="ts">
+import logoSrc from '~/assets/images/logo_iwbif.png';
+const logoHasError = ref(false);
+
 const authStore = useAuthStore();
 const { isAuthenticated } = storeToRefs(authStore);
 const { logout } = useAuth();
@@ -181,6 +185,25 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
   transition: transform 180ms ease;
 }
 
+.brand-mark img {
+  transform: scale(1.04);
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+}
+
+.brand-mark {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.brand-fallback {
+  line-height: 1;
+  color: #fef08a;
+  font-size: 0.65rem;
+  font-size: clamp(0.62rem, 1.8vw, 0.75rem);
+}
+
 .brand-block:hover {
   transform: translateY(-1px);
 }
@@ -238,6 +261,16 @@ summary::-webkit-details-marker {
 }
 
 @media (max-width: 639px) {
+  .brand-block .brand-mark {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .brand-kicker,
+  .brand-name {
+    display: none;
+  }
+
   .header-cta,
   .header-signin {
     padding-inline: 0.85rem;
