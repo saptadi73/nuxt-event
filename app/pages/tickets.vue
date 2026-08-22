@@ -19,7 +19,6 @@
     <div v-else class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
       <article v-for="item in packages" :key="item.id" class="ticket-card glass-card flex flex-col rounded-[2rem] p-5 sm:p-7">
         <div class="flex items-center justify-between gap-3">
-          <p class="text-sm font-semibold text-amber-200">{{ item.code || 'IWBIF' }}</p>
           <span class="rounded-full border border-amber-200/20 bg-amber-300/10 px-2.5 py-1 text-[10px] uppercase tracking-[.2em] text-amber-100">{{ item.product_type }}</span>
         </div>
         <h2 class="mt-4 text-2xl font-bold text-white">{{ item.name }}</h2>

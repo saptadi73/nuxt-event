@@ -16,20 +16,20 @@
       <article class="info-card rounded-[1.75rem] p-5 sm:p-6">
         <p class="text-xs uppercase tracking-[.2em] text-cyan-200">General</p>
         <h2 class="mt-3 text-xl font-bold text-white">General Inquiry</h2>
-        <a href="mailto:event@iwbif.id" class="mt-3 inline-flex text-sm leading-7 text-slate-300 transition hover:text-amber-200">event@iwbif.id</a>
-        <span class="mt-5 inline-flex text-xs uppercase tracking-[.2em] text-slate-400">Support desk</span>
+        <a href="mailto:event@iwbif.id" class="mt-3 block break-all text-sm leading-7 text-slate-300 transition hover:text-amber-200">event@iwbif.id</a>
+        <span class="mt-4 block text-xs uppercase tracking-[.2em] text-slate-400">Support desk</span>
       </article>
       <article class="info-card rounded-[1.75rem] p-5 sm:p-6">
         <p class="text-xs uppercase tracking-[.2em] text-cyan-200">Partnerships</p>
         <h2 class="mt-3 text-xl font-bold text-white">Partnership &amp; Sponsors</h2>
-        <a href="mailto:partner@iwbif.id" class="mt-3 inline-flex text-sm leading-7 text-slate-300 transition hover:text-amber-200">partner@iwbif.id</a>
-        <span class="mt-5 inline-flex text-xs uppercase tracking-[.2em] text-slate-400">Visibility and collaboration</span>
+        <a href="mailto:partner@iwbif.id" class="mt-3 block break-all text-sm leading-7 text-slate-300 transition hover:text-amber-200">partner@iwbif.id</a>
+        <span class="mt-4 block text-xs uppercase tracking-[.2em] text-slate-400">Visibility and collaboration</span>
       </article>
       <article class="info-card rounded-[1.75rem] p-5 sm:p-6">
         <p class="text-xs uppercase tracking-[.2em] text-cyan-200">Media</p>
         <h2 class="mt-3 text-xl font-bold text-white">Press &amp; Media</h2>
-        <a href="mailto:media@iwbif.id" class="mt-3 inline-flex text-sm leading-7 text-slate-300 transition hover:text-amber-200">media@iwbif.id</a>
-        <span class="mt-5 inline-flex text-xs uppercase tracking-[.2em] text-slate-400">Announcements and coverage</span>
+        <a href="mailto:media@iwbif.id" class="mt-3 block break-all text-sm leading-7 text-slate-300 transition hover:text-amber-200">media@iwbif.id</a>
+        <span class="mt-4 block text-xs uppercase tracking-[.2em] text-slate-400">Announcements and coverage</span>
       </article>
     </div>
   </section>

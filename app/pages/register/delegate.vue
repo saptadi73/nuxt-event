@@ -24,7 +24,7 @@
       </fieldset>
 
       <fieldset class="card"><legend>2. Delegate package *</legend>
-        <div class="grid gap-4 md:grid-cols-2"><label v-for="item in packages" :key="item.id" class="choice" :class="form.delegate_package_id===item.id?'selected':''"><input v-model="form.delegate_package_id" class="sr-only" type="radio" :value="item.id" required /><span class="text-xs uppercase tracking-widest text-amber-200">{{ item.code }}</span><strong class="mt-2 block text-xl">{{ item.name }}</strong><span class="mt-2 block">{{ money(item.amount ?? item.price,item.currency) }}</span></label></div>
+        <div class="grid gap-4 md:grid-cols-2"><label v-for="item in packages" :key="item.id" class="choice" :class="form.delegate_package_id===item.id?'selected':''"><input v-model="form.delegate_package_id" class="sr-only" type="radio" :value="item.id" required /><strong class="block text-xl">{{ item.name }}</strong><span class="mt-2 block">{{ money(item.amount ?? item.price,item.currency) }}</span></label></div>
       </fieldset>
 
       <fieldset class="card"><legend>3. Participation and activities</legend>

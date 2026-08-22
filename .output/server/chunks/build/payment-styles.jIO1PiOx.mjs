@@ -1,0 +1,9 @@
+//#region app/pages/dashboard/payment.vue?vue&type=style&index=0&scoped=4894b942&inline&used&lang.css
+var payment_vue_vue_type_style_index_0_scoped_4894b942_inline_used_lang_default = ".notice[data-v-4894b942]{--tw-text-opacity:1;color:rgb(254 243 199/var(--tw-text-opacity,1));background-color:#fcd34d0d;border-width:1px;border-color:#fcd34d33;border-radius:1rem;margin-top:2rem;padding:1.25rem}.payment-choice[data-v-4894b942]{border:1px solid #ffffff1f;border-radius:1.5rem;flex-direction:column;min-height:17rem;padding:1.4rem;transition:transform .2s,border-color .2s,box-shadow .2s;display:flex}.payment-choice[data-v-4894b942]:hover{border-color:#e6c47780;transform:translateY(-4px);box-shadow:0 20px 45px #020a1859}.payment-choice-bank[data-v-4894b942]{background:linear-gradient(145deg,#e6c4771f,#04152db8)}.payment-choice-qr[data-v-4894b942]{background:linear-gradient(145deg,#22d3ee1f,#04152db8)}.payment-choice-doku[data-v-4894b942]{background:linear-gradient(145deg,#ffffff14,#04152dc7)}.payment-choice__tag[data-v-4894b942]{color:#d8ac59;letter-spacing:.2em;text-transform:uppercase;font-size:.65rem;font-weight:800}.payment-choice strong[data-v-4894b942]{color:#fff;margin-top:1rem;font-size:1.3rem}.payment-choice p[data-v-4894b942]{color:#aeb9c8;margin-top:.75rem;font-size:.875rem;line-height:1.65}.payment-choice__action[data-v-4894b942]{color:#04152d;background:#e6c477;border-radius:999px;justify-content:space-between;align-items:center;gap:.75rem;margin-top:auto;padding:.8rem 1rem;font-size:.875rem;font-weight:800;display:inline-flex}";
+
+const paymentStyles_jIO1PiOx = [
+  payment_vue_vue_type_style_index_0_scoped_4894b942_inline_used_lang_default
+];
+
+export { paymentStyles_jIO1PiOx as default };
+//# sourceMappingURL=payment-styles.jIO1PiOx.mjs.map
