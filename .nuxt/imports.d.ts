@@ -40,6 +40,7 @@ export { useApi, ApiMeta, ApiResponse } from '../app/composables/useApi';
 export { useAuth } from '../app/composables/useAuth';
 export { useBusinessMatching, BusinessMatchingProfile, MeetingItem, MeetingCreatePayload } from '../app/composables/useBusinessMatching';
 export { useCommunication, ConversationCreatePayload, ConversationItem, MessageItem, NotificationItem } from '../app/composables/useCommunication';
+export { useEmailNotifications, EmailNotificationTemplate, EmailDeliveryItem, EmailPreview, EmailTemplatePayload } from '../app/composables/useEmailNotifications';
 export { useEvent, EventItem, SpeakerItem, SessionItem, WorkshopTrackItem, TicketTypeItem, DelegatePackageItem, ActivityItem, ExhibitorItem } from '../app/composables/useEvent';
 export { useEventUpdates, AnnouncementItem, CertificateItem } from '../app/composables/useEventUpdates';
 export { useExhibitor, ExhibitorCreatePayload, ExhibitorRecord } from '../app/composables/useExhibitor';
@@ -54,3 +55,4 @@ export { useStore, StoreProduct, StoreCartItem, StoreCart, StoreOrder } from '..
 export { useTicket, TicketItem, TicketQr, TicketQrResponse } from '../app/composables/useTicket';
 export { useAuthStore } from '../app/stores/auth';
 export { defineStore, acceptHMRUpdate, usePinia, storeToRefs } from '../node_modules/@pinia/nuxt/dist/runtime/composables';
+export { useNuxtDevTools } from '../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools';

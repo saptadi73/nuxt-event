@@ -116,6 +116,7 @@ declare global {
   const useCookie: typeof import('../../node_modules/nuxt/dist/app/composables/cookie').useCookie
   const useCssModule: typeof import('vue').useCssModule
   const useCssVars: typeof import('vue').useCssVars
+  const useEmailNotifications: typeof import('../../app/composables/useEmailNotifications').useEmailNotifications
   const useError: typeof import('../../node_modules/nuxt/dist/app/composables/error').useError
   const useEvent: typeof import('../../app/composables/useEvent').useEvent
   const useEventUpdates: typeof import('../../app/composables/useEventUpdates').useEventUpdates
@@ -134,6 +135,7 @@ declare global {
   const useModel: typeof import('vue').useModel
   const useNuxtApp: typeof import('../../node_modules/nuxt/dist/app/nuxt').useNuxtApp
   const useNuxtData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData').useNuxtData
+  const useNuxtDevTools: typeof import('../../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools').useNuxtDevTools
   const useParticipant: typeof import('../../app/composables/useParticipant').useParticipant
   const usePayment: typeof import('../../app/composables/usePayment').usePayment
   const usePinia: typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables').usePinia
@@ -244,6 +246,9 @@ declare global {
   // @ts-ignore
   export type { ConversationCreatePayload, ConversationItem, MessageItem, NotificationItem } from '../../app/composables/useCommunication'
   import('../../app/composables/useCommunication')
+  // @ts-ignore
+  export type { EmailNotificationTemplate, EmailDeliveryItem, EmailPreview, EmailTemplatePayload } from '../../app/composables/useEmailNotifications'
+  import('../../app/composables/useEmailNotifications')
   // @ts-ignore
   export type { EventItem, SpeakerItem, SessionItem, WorkshopTrackItem, TicketTypeItem, DelegatePackageItem, ActivityItem, ExhibitorItem } from '../../app/composables/useEvent'
   import('../../app/composables/useEvent')
@@ -394,6 +399,7 @@ declare module 'vue' {
     readonly useCookie: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/cookie')['useCookie']>
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
+    readonly useEmailNotifications: UnwrapRef<typeof import('../../app/composables/useEmailNotifications')['useEmailNotifications']>
     readonly useError: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/error')['useError']>
     readonly useEvent: UnwrapRef<typeof import('../../app/composables/useEvent')['useEvent']>
     readonly useEventUpdates: UnwrapRef<typeof import('../../app/composables/useEventUpdates')['useEventUpdates']>
@@ -412,6 +418,7 @@ declare module 'vue' {
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
     readonly useNuxtApp: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/nuxt')['useNuxtApp']>
     readonly useNuxtData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['useNuxtData']>
+    readonly useNuxtDevTools: UnwrapRef<typeof import('../../node_modules/@nuxt/devtools/dist/runtime/use-nuxt-devtools')['useNuxtDevTools']>
     readonly useParticipant: UnwrapRef<typeof import('../../app/composables/useParticipant')['useParticipant']>
     readonly usePayment: UnwrapRef<typeof import('../../app/composables/usePayment')['usePayment']>
     readonly usePinia: UnwrapRef<typeof import('../../node_modules/@pinia/nuxt/dist/runtime/composables')['usePinia']>

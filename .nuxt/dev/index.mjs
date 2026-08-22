@@ -688,18 +688,10 @@ const _inlineRuntimeConfig = {
         "prerender": true
       },
       "/speakers/**": {
-        "swr": 3600,
-        "cache": {
-          "swr": true,
-          "maxAge": 3600
-        }
+        "ssr": false
       },
       "/program": {
-        "swr": 600,
-        "cache": {
-          "swr": true,
-          "maxAge": 600
-        }
+        "ssr": false
       },
       "/dashboard/**": {
         "ssr": false
@@ -776,20 +768,15 @@ const _inlineRuntimeConfig = {
       "/directory-consent/_payload.json": {
         "ssr": true,
         "prerender": true
-      },
-      "/program/_payload.json": {
-        "ssr": true,
-        "cache": {
-          "swr": true,
-          "maxAge": 600
-        }
       }
     }
   },
   "public": {
     "apiBaseUrl": "http://127.0.0.1:8000/api/v1",
+    "eventSlug": "iwbif-2026",
     "siteUrl": "http://localhost:3000",
-    "appName": "IWBIF 2026"
+    "appName": "IWBIF 2026",
+    "paymentProvider": "doku"
   }
 };
 const envOptions = {
@@ -2481,7 +2468,7 @@ function exceedsMaxBytes(raw, maxBytes = MAX_ISLAND_BODY_BYTES) {
 	return Buffer.byteLength(raw, "utf8") > maxBytes;
 }
 
-const NUXT_PAYLOAD_INLINE = false;
+const NUXT_RUNTIME_PAYLOAD_EXTRACTION = false;
 const NUXT_SSR_STREAMING = false;
 
 const headSymbol = "usehead";
@@ -2906,9 +2893,6 @@ const handlers = [
   { route: '', handler: _tKzoev, lazy: false, middleware: true, method: undefined },
   { route: '/__nuxt_error', handler: _lazy_FuRilh, lazy: true, middleware: false, method: undefined },
   { route: '/__nuxt_island/**', handler: handler$1, lazy: false, middleware: false, method: undefined },
-  { route: '/speakers/**', handler: _lazy_FuRilh, lazy: true, middleware: false, method: undefined },
-  { route: '/program', handler: _lazy_FuRilh, lazy: true, middleware: false, method: undefined },
-  { route: '/program/_payload.json', handler: _lazy_FuRilh, lazy: true, middleware: false, method: undefined },
   { route: '/**', handler: _lazy_FuRilh, lazy: true, middleware: false, method: undefined }
 ];
 
@@ -3344,9 +3328,8 @@ async function renderRoute(event, ssrError) {
 	}
 	const routeOptions = getRouteRules(event);
 	if (routeOptions.ssr === false) ssrContext.noSSR = true;
-	const _PAYLOAD_EXTRACTION = !ssrContext.noSSR && ((routeOptions.isr || routeOptions.cache));
-	const _PAYLOAD_INLINE = !_PAYLOAD_EXTRACTION || NUXT_PAYLOAD_INLINE;
-	const isRenderingPayload = (_PAYLOAD_EXTRACTION || routeOptions.prerender) && PAYLOAD_URL_RE.test(ssrContext.url);
+	!ssrContext.noSSR && (NUXT_RUNTIME_PAYLOAD_EXTRACTION);
+	const isRenderingPayload = (routeOptions.prerender) && PAYLOAD_URL_RE.test(ssrContext.url);
 	if (isRenderingPayload) {
 		const payloadURL = new URL(ssrContext.url, "http://localhost");
 		const url = payloadURL.pathname.slice(0, -`/${PAYLOAD_FILENAME}`.length) || "/";
@@ -3355,7 +3338,6 @@ async function renderRoute(event, ssrError) {
 		event._path = event.node.req.url = ssrContext.url;
 		getPayloadCacheKey(ssrContext.url);
 	}
-	const payloadURL = _PAYLOAD_EXTRACTION ? buildPayloadURL(ssrContext) : void 0;
 	const renderer = await getRenderer(ssrContext);
 	const canStream = NUXT_SSR_STREAMING;
 	const renderRouteContext = {
@@ -3382,12 +3364,6 @@ async function renderRoute(event, ssrError) {
 	}
 	const NO_SCRIPTS = routeOptions.noScripts;
 	const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext);
-	if (_PAYLOAD_EXTRACTION && !_PAYLOAD_INLINE && !NO_SCRIPTS) ssrContext.head.push({ link: [{
-		rel: "preload",
-		as: "fetch",
-		crossorigin: "anonymous",
-		href: payloadURL
-	} ] });
 	if (inlinedStyles.length) ssrContext.head.push({ style: inlinedStyles });
 	const link = [];
 	for (const resource of Object.values(styles)) {
@@ -3403,14 +3379,10 @@ async function renderRoute(event, ssrError) {
 		const dependencyOptions = ssrContext["~lazyHydratedModules"]?.size ? { exclude: ssrContext["~lazyHydratedModules"] } : void 0;
 		const stylesheetHrefs = new Set(link.map((l) => l.href));
 		ssrContext.head.push({ link: [...getPreloadLinks(ssrContext, renderer.rendererContext, dependencyOptions), ...getPrefetchLinks(ssrContext, renderer.rendererContext, dependencyOptions)].filter((l) => !stylesheetHrefs.has(l.href)) });
-		ssrContext.head.push({ script: _PAYLOAD_INLINE ? renderPayloadJsonScript({
+		ssrContext.head.push({ script: renderPayloadJsonScript({
 			ssrContext,
 			data: stripInlineOnlyPayloadFields(ssrContext.payload)
-		})  : renderPayloadJsonScript({
-			ssrContext,
-			data: splitPayload(ssrContext).initial,
-			src: payloadURL
-		})  }, {
+		})   }, {
 			tagPosition: "bodyClose",
 			tagPriority: "high"
 		});
@@ -3448,12 +3420,6 @@ async function renderRoute(event, ssrError) {
 function getPayloadCacheKey(url) {
 	const { pathname, search } = new URL(url, "http://localhost");
 	return (pathname === "/" ? "/" : pathname.replace(/\/$/, "")) + (search ? encodeURIComponent(search) : "") + ".json";
-}
-function buildPayloadURL(ssrContext) {
-	const url = new URL(ssrContext.url, "http://localhost");
-	const payloadURL = joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, url.pathname, PAYLOAD_FILENAME);
-	url.searchParams.set(PAYLOAD_BUILD_ID_PARAM, ssrContext.runtimeConfig.app.buildId);
-	return payloadURL + url.search;
 }
 function normalizeChunks(chunks) {
 	const result = [];

@@ -40,7 +40,8 @@ export default defineNuxtConfig({
       apiBaseUrl,
       eventSlug: process.env.NUXT_PUBLIC_EVENT_SLUG || 'iwbif-2026',
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || (isProductionBuild ? productionSiteUrl : 'http://localhost:3000'),
-      appName: process.env.NUXT_PUBLIC_APP_NAME || 'IWBIF 2026'
+      appName: process.env.NUXT_PUBLIC_APP_NAME || 'IWBIF 2026',
+      paymentProvider: (process.env.NUXT_PUBLIC_PAYMENT_PROVIDER || 'doku').toLowerCase()
     }
   },
   routeRules: {

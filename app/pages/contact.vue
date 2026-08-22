@@ -9,26 +9,26 @@
         <p class="text-xs uppercase tracking-[.3em] text-amber-200">Need assistance?</p>
         <p class="mt-3 text-lg font-semibold text-white sm:text-xl">We can help with registration, partnerships, and event logistics.</p>
       </div>
-      <a href="mailto:hello@iwbif-event.example" class="mt-5 inline-flex rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950 sm:mt-0">Email the team</a>
+      <a href="mailto:event@iwbif.id" class="mt-5 inline-flex rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950 sm:mt-0">Email the team</a>
     </div>
 
     <div class="mt-10 grid gap-5 md:grid-cols-3">
       <article class="info-card rounded-[1.75rem] p-5 sm:p-6">
         <p class="text-xs uppercase tracking-[.2em] text-cyan-200">General</p>
         <h2 class="mt-3 text-xl font-bold text-white">General Inquiry</h2>
-        <p class="mt-3 text-sm leading-7 text-slate-300">hello@iwbif-event.example</p>
+        <a href="mailto:event@iwbif.id" class="mt-3 inline-flex text-sm leading-7 text-slate-300 transition hover:text-amber-200">event@iwbif.id</a>
         <span class="mt-5 inline-flex text-xs uppercase tracking-[.2em] text-slate-400">Support desk</span>
       </article>
       <article class="info-card rounded-[1.75rem] p-5 sm:p-6">
         <p class="text-xs uppercase tracking-[.2em] text-cyan-200">Partnerships</p>
         <h2 class="mt-3 text-xl font-bold text-white">Partnership &amp; Sponsors</h2>
-        <p class="mt-3 text-sm leading-7 text-slate-300">partners@iwbif-event.example</p>
+        <a href="mailto:partner@iwbif.id" class="mt-3 inline-flex text-sm leading-7 text-slate-300 transition hover:text-amber-200">partner@iwbif.id</a>
         <span class="mt-5 inline-flex text-xs uppercase tracking-[.2em] text-slate-400">Visibility and collaboration</span>
       </article>
       <article class="info-card rounded-[1.75rem] p-5 sm:p-6">
         <p class="text-xs uppercase tracking-[.2em] text-cyan-200">Media</p>
         <h2 class="mt-3 text-xl font-bold text-white">Press &amp; Media</h2>
-        <p class="mt-3 text-sm leading-7 text-slate-300">media@iwbif-event.example</p>
+        <a href="mailto:media@iwbif.id" class="mt-3 inline-flex text-sm leading-7 text-slate-300 transition hover:text-amber-200">media@iwbif.id</a>
         <span class="mt-5 inline-flex text-xs uppercase tracking-[.2em] text-slate-400">Announcements and coverage</span>
       </article>
     </div>

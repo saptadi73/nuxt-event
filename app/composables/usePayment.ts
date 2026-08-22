@@ -1,4 +1,5 @@
 import { useApi, type ApiResponse } from '~/composables/useApi';
+import { getPaymentProviderConfig, normalizePaymentProvider } from '../config/payment';
 
 export interface DokuCheckoutData {
   payment_url: string;
@@ -56,6 +57,7 @@ export const normalizeInvoices = (data: InvoiceResponseData): Invoice[] => {
 
 export function usePayment() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
+  const runtimeProvider = getPaymentProviderConfig();
   const getPaymentMethods = () => api<ApiResponse<PaymentMethod[]>>('/payments/methods');
   const getDirectPaymentMethods = () => api<ApiResponse<DirectPaymentMethods>>('/payments/doku/direct/methods');
   const createDirectVa = (registrationId: string, bankCode: string) => api<ApiResponse<DirectVaData>>('/payments/doku/direct/va', { method: 'POST', body: { registration_id: registrationId, bank_code: bankCode } });
@@ -64,9 +66,34 @@ export function usePayment() {
   const createDirectDebitPayment = (registrationId: string, bindingId: string) => api<ApiResponse<DirectDebitPaymentData>>('/payments/doku/snap/direct-debit/payment', { method: 'POST', body: { registration_id: registrationId, binding_id: bindingId } });
   const submitDirectDebitOtp = (paymentId: string, bindingId: string, otp: string) => api<ApiResponse<DirectDebitPaymentData>>(`/payments/doku/snap/direct-debit/payment/${encodeURIComponent(paymentId)}/otp`, { method: 'POST', body: { binding_id: bindingId, otp } });
   const createDokuCheckout = (orderId: string) => api<ApiResponse<DokuCheckoutData>>('/payments/doku/checkout', { method: 'POST', body: { order_id: orderId } });
+  const createMidtransCheckout = (orderId: string) => api<ApiResponse<DokuCheckoutData>>('/payments/midtrans/checkout', { method: 'POST', body: { order_id: orderId } });
+  const createCheckout = (orderId: string) => {
+    if (runtimeProvider.isMidtrans) return createMidtransCheckout(orderId);
+    return createDokuCheckout(orderId);
+  };
   const getOrder = (orderId: string) => api<ApiResponse<OrderItem>>(`/orders/${orderId}`);
   const getPayment = (paymentId: string) => api<ApiResponse<PaymentItem>>(`/payments/${paymentId}`);
   const getMyInvoices = () => api<ApiResponse<InvoiceResponseData>>('/payments/me/invoices');
   const getInvoiceByRegistration = (registrationId: string) => api<ApiResponse<Invoice>>(`/payments/registrations/${encodeURIComponent(registrationId)}/invoice`);
-  return { getPaymentMethods, getDirectPaymentMethods, createDirectVa, createDirectQris, createDirectDebitBinding, createDirectDebitPayment, submitDirectDebitOtp, createDokuCheckout, getOrder, getPayment, getMyInvoices, getInvoiceByRegistration };
+  return {
+    paymentProvider: runtimeProvider.provider,
+    paymentProviderLabel: runtimeProvider.label,
+    isMidtransProvider: runtimeProvider.isMidtrans,
+    isDokuProvider: runtimeProvider.isDoku,
+    getPaymentMethods,
+    getDirectPaymentMethods,
+    createDirectVa,
+    createDirectQris,
+    createDirectDebitBinding,
+    createDirectDebitPayment,
+    submitDirectDebitOtp,
+    createDokuCheckout,
+    createMidtransCheckout,
+    createCheckout,
+    getOrder,
+    getPayment,
+    getMyInvoices,
+    getInvoiceByRegistration,
+    normalizePaymentProvider
+  };
 }
