@@ -1,4 +1,4 @@
-import { f as useNuxtApp, i as useRuntimeConfig } from '../virtual/entry.mjs';
+import { c as useNuxtApp, i as useRuntimeConfig } from '../virtual/entry.mjs';
 
 var PAYMENT_PROVIDER_LABELS = {
 	doku: "DOKU",

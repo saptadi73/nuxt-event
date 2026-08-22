@@ -1,0 +1,1 @@
+import{c as e,u as t}from"./WQN8epGd.js";import{t as n}from"./CgYbeKt0.js";var r=e(()=>{let e=n();if(e.hydrateUserFromToken(),!e.isAuthenticated)return t(`/auth/login`);if(!e.isAdminOrOrganizer)return t(`/dashboard`)});export{r as default};

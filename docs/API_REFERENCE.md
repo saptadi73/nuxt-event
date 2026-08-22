@@ -398,10 +398,12 @@ Payload add item:
 
 Checkout memberi `order_id`, `order_number`, `total_amount`, `currency`, dan
 status order. Backend menyimpan snapshot product pada `order_items`. Gunakan
-order tersebut untuk payment:
+order tersebut untuk payment. Frontend dapat memilih gateway tanpa membuat
+ulang order:
 
 ```http
 POST /api/v1/payments/doku/checkout
+POST /api/v1/payments/midtrans/checkout
 ```
 
 ```json
@@ -683,7 +685,7 @@ Fields: `id`, `user_id`, `event_id`, `type`, `title`, `body`, `entity_type`,
 `entity_id`, `is_read`, `created_at`, `read_at`. Badge chat memakai
 `/messages/unread-count`; badge notification memakai `/notifications/unread-count`.
 
-## 13. DOKU Direct API SNAP
+## 13. Payment gateway: DOKU dan Midtrans
 
 ### Katalog payment method untuk frontend
 
@@ -691,7 +693,7 @@ Fields: `id`, `user_id`, `event_id`, `type`, `title`, `body`, `entity_type`,
 GET /api/v1/payments/methods
 ```
 
-Endpoint ini membaca channel aktif dari database, bukan memanggil DOKU pada
+Endpoint ini membaca channel/provider aktif dari database, bukan memanggil gateway pada
 setiap halaman. Respons publik memuat `id`, `provider`, `code`, `category`,
 `display_name`, `logo_url`, dan `sort_order`; metadata merchant serta credential
 rahasia tidak pernah dikembalikan.
@@ -706,13 +708,15 @@ PUT|DELETE /api/v1/admin/payment-channels/{channel_id}
 Contoh payload create/update:
 
 ```json
-{"provider":"doku","code":"DANA","category":"e_wallet","display_name":"DANA","logo_url":"https://...","config_key":"DOKU_EWALLET_DANA","sub_merchant_id":"...","is_enabled":true,"sort_order":20}
+{"provider":"midtrans","code":"SNAP","category":"gateway","display_name":"Midtrans","logo_url":"https://...","config_key":"MIDTRANS_SNAP","is_enabled":true,"sort_order":200}
 ```
 
 Katalog di-seed oleh `python scripts/seed_payment_channels.py`; seluruh item
-awal nonaktif. Aktifkan melalui admin hanya setelah channel aktif di DOKU dan
-secret backend lengkap. `logo_url` adalah URL aset yang dikelola operator;
+awal nonaktif. Aktifkan melalui admin hanya setelah channel/provider aktif di
+dashboard gateway dan secret backend lengkap. `logo_url` adalah URL aset yang dikelola operator;
 backend tidak mengunduh logo dari DOKU saat request frontend.
+
+### DOKU Direct API SNAP
 
 Flow frontend: ambil bank → pilih bank → buat VA → tampilkan VA/expiry/instruksi
 → poll status. Notification DOKU adalah penentu status final.
@@ -753,7 +757,7 @@ Payment fields: IDs/provider references, `payment_type`, `gross_amount`,
 `currency`, `transaction_status`, `paid_at`, `channel_code`,
 `virtual_account_no`, `payment_instructions_url`. Order status: `draft`,
 `pending`, `paid`, `expired`, `canceled`. Payment status: `created`, `pending`,
-`success`, `failed`, `expired`.
+`success`, `failed`, `expired`, `refunded`.
 
 Server-to-server; **jangan dipanggil frontend**:
 
@@ -871,23 +875,123 @@ Browser callback/redirect bukan bukti pembayaran. Frontend mem-poll
 `GET /api/v1/payments/{payment_id}` dan hanya menampilkan sukses setelah
 notifikasi DOKU tervalidasi backend.
 
-### Laporan pembayaran dan pendapatan organizer
+### Midtrans Snap
 
-Kedua endpoint berikut memerlukan Bearer token dengan role `admin` atau
-`organizer`:
+Endpoint checkout Midtrans menerima kontrak yang sama dengan DOKU Checkout.
+Request harus memuat tepat satu dari `order_id` atau `registration_id` dan
+membutuhkan Bearer token milik user:
 
 ```http
+POST /api/v1/payments/midtrans/checkout
+Authorization: Bearer <access_token>
+Content-Type: application/json
+
+{"order_id":"order-uuid"}
+```
+
+Alternatif registration-first:
+
+```json
+{"registration_id":"registration-uuid"}
+```
+
+Nominal tidak diterima dari frontend. Backend mengambil nominal IDR bulat dari
+order, membuat Midtrans Snap transaction, dan mengembalikan data berikut:
+
+```json
+{
+  "success": true,
+  "data": {
+    "payment_url": "https://app.sandbox.midtrans.com/snap/v4/redirection/...",
+    "token": "midtrans-snap-token",
+    "expires_at": "2026-08-22T15:00:00Z",
+    "already_paid": false,
+    "payment_id": "payment-uuid",
+    "order_status": "pending",
+    "requires_payment": true
+  },
+  "meta": {"order_id":"order-uuid","order_number":"ORD-..."}
+}
+```
+
+Frontend dapat redirect ke `payment_url`, atau memberikan `token` kepada
+Snap.js. `MIDTRANS_CLIENT_KEY` adalah public credential untuk Snap.js;
+`MIDTRANS_SERVER_KEY` tidak boleh dikirim ke browser.
+
+Jika order sudah dibayar, response memiliki `already_paid: true`,
+`requires_payment: false`, dan URL/token kosong. Untuk polling gunakan endpoint
+detail payment/order yang sama dengan DOKU. Browser return tersedia di:
+
+```http
+GET /api/v1/payments/midtrans/return
+```
+
+Endpoint return hanya landing dan tidak mengubah status. Notification berikut
+khusus server-to-server dan **jangan dipanggil frontend**:
+
+```http
+POST /api/v1/webhooks/midtrans
+```
+
+Backend memverifikasi SHA-512 `signature_key`, mengambil ulang transaction
+status melalui Midtrans Status API, mencocokkan `order_id`, status dan nominal,
+lalu memproses event secara idempoten. Mapping status utamanya:
+
+| Midtrans | Status payment backend |
+|---|---|
+| `settlement` | `success` |
+| `capture` + fraud `accept` | `success` |
+| `pending` atau capture `challenge` | `pending` |
+| `deny`, `cancel`, `failure` | `failed` |
+| `expire` | `expired` |
+| `refund`, `partial_refund` | `refunded` |
+
+Setiap attempt memakai Midtrans order ID tersendiri, sementara `order_number`
+bisnis tetap sama. Karena itu user dapat memilih DOKU atau Midtrans untuk order
+yang sama tanpa membuat webhook salah memperbarui transaksi provider lain.
+
+Konfigurasi backend melalui environment/secret manager:
+
+```env
+MIDTRANS_SERVER_KEY=
+MIDTRANS_CLIENT_KEY=
+MIDTRANS_IS_PRODUCTION=false
+MIDTRANS_PAYMENT_DUE_MINUTES=60
+MIDTRANS_CALLBACK_URL=https://frontend.example/payment/result
+```
+
+Gunakan sandbox dengan `MIDTRANS_IS_PRODUCTION=false`. Pada dashboard Midtrans,
+atur **Payment Notification URL** ke URL publik backend:
+
+```text
+https://<backend-host>/api/v1/webhooks/midtrans
+```
+
+Untuk production, gunakan production Server/Client Key dan ubah
+`MIDTRANS_IS_PRODUCTION=true`. Jangan commit key asli ke repository.
+
+### Laporan pembayaran dan pendapatan organizer
+
+Laporan DOKU dan Midtrans dipisahkan berdasarkan field `provider`. Semua endpoint
+berikut memerlukan Bearer token dengan role `admin` atau `organizer`:
+
+```http
+# DOKU (termasuk provider `doku_snap_*`)
 GET /api/v1/admin/reports/payments
 GET /api/v1/admin/reports/payments.csv
+
+# Midtrans
+GET /api/v1/admin/reports/payments/midtrans
+GET /api/v1/admin/reports/payments/midtrans.csv
 Authorization: Bearer <admin_access_token>
 ```
 
-Query parameter opsional untuk kedua endpoint:
+Query parameter opsional untuk seluruh endpoint laporan:
 
 - `event_id`: UUID event.
 - `date_from`, `date_to`: datetime ISO 8601. Filter memakai `paid_at`, atau
   `created_at` ketika transaksi belum dibayar.
-- `status`: `created`, `pending`, `success`, `failed`, atau `expired`.
+- `status`: `created`, `pending`, `success`, `failed`, `expired`, atau `refunded`.
 - `channel_code`: contoh `BCA`, `BNI`, `BRI`, atau `MANDIRI`.
 - `package_id`: UUID delegate package/tiket.
 - Khusus JSON: `limit` 1–500 dan `offset` untuk daftar transaksi.
@@ -901,8 +1005,8 @@ Response JSON memberikan `summary`, agregasi `by_status`, `by_channel`,
 
 `gross_revenue`, `tickets_sold`, dan `daily_revenue` hanya menghitung payment
 berstatus `success`. Browser return tidak pernah dihitung sebagai keberhasilan;
-sumber final tetap notification DOKU yang telah diverifikasi. CSV berisi detail
-payment, order, registrasi, event, peserta, paket, channel, reference DOKU,
+sumber final tetap notification gateway yang telah diverifikasi. CSV berisi detail
+payment, order, registrasi, event, peserta, paket, channel, reference gateway,
 nominal, dan waktu pembayaran sesuai filter yang sama.
 
 ## 14. Tickets dan check-in
@@ -937,6 +1041,65 @@ POST /api/v1/check-ins/manual
 
 `GET /api/v1/check-ins?event_id={optional_uuid}` mengembalikan check-in. Kontrol
 ini tidak boleh tampil di UI peserta.
+
+### Absensi Hari-H (rekomendasi untuk scanner)
+
+Frontend scanning dapat dipisah ke modul attendance untuk report yang lebih jelas:
+
+```http
+POST /api/v1/attendance/scan
+GET  /api/v1/attendance/events/{event_id}/report?include_without_ticket=true
+GET  /api/v1/attendance/events/{event_id}/roster/{registration_id}
+```
+
+Payload scan:
+
+```json
+{"qr_token":"token-from-ticket","event_id":"uuid","gate_name":"Main Gate","device_id":"tablet-01"}
+```
+
+Response:
+
+```json
+{
+  "check_in": {
+    "id":"uuid",
+    "ticket_id":"uuid",
+    "event_id":"uuid",
+    "check_in_type":"qr",
+    "check_in_at":"2026-08-22T10:00:00Z",
+    "check_in_by":"uuid",
+    "gate_name":"Main Gate",
+    "device_id":"tablet-01",
+    "status":"success",
+    "notes":null
+  },
+  "registrant": {
+    "registration_id":"uuid",
+    "event_id":"uuid",
+    "registration_number":"REG-....",
+    "registration_status":"confirmed",
+    "participant_id":"uuid",
+    "participant_name":"Nama Peserta",
+    "organization_name":"Nama organisasi",
+    "ticket_id":"uuid",
+    "ticket_number":"TIX-....",
+    "is_checked_in":true
+  }
+}
+```
+
+`GET /api/v1/attendance/events/{event_id}/report` mengembalikan daftar registrasi
+yang sudah terdaftar (kecuali status canceled) + status hadir, lengkap dengan
+`summary` dan `attendance_rate`. Ini cocok untuk dashboard panitia agar langsung
+mengetahui siapa yang sudah hadir, sudah terdaftar tapi belum scan, dan siapa yang
+belum punya tiket (ketika `include_without_ticket=true`).  
+Export CSV disarankan dilakukan dari sisi frontend agar bisa mengikuti format tampilan
+yang dipilih panitia.
+
+`GET /api/v1/attendance/events/{event_id}/roster/{registration_id}` digunakan untuk
+detail satu registran, misalnya untuk pengecekan cepat saat scanner menemukan konflik
+atau data belum sinkron.
 
 ## 15. Organizer/admin
 
@@ -1076,7 +1239,7 @@ GET /api/v1/health/readiness
 Alur store-first utama:
 
 ```text
-register/login → auth/me → event/store → cart → checkout → DOKU Checkout
+register/login → auth/me → event/store → cart → checkout → pilih DOKU/Midtrans
 → payment success → registration draft → upload passport → submit
 → organizer verification/confirmation → ticket → matching profile
 ```
@@ -1095,7 +1258,7 @@ Checklist:
 - Baca HTTP status, `success`, `errors`, dan `request_id`.
 - Disable mutation berdasarkan workflow, tetapi tetap tangani `409`.
 - Jangan menandai payment paid dari redirect; tunggu backend.
-- Jangan panggil webhook/token callback DOKU dari browser.
+- Jangan panggil webhook/token callback DOKU atau Midtrans dari browser.
 - Jangan hard-code master, harga charge, bank VA, atau slot.
 - Upload/download memakai multipart/blob.
 - WebSocket tidak menggantikan REST; sync history setelah reconnect.
@@ -1104,5 +1267,6 @@ Dokumen tambahan:
 
 - `docs/FRONTEND_BUSINESS_MATCHING_MESSAGING.md`
 - `docs/FRONTEND_DOKU_PAYMENT_INTEGRATION.md`
+- `docs/FRONTEND_MIDTRANS_PAYMENT_INTEGRATION.md`
 - `docs/FRONTEND_STORE_PURCHASE_FLOW.md`
 - `docs/DOKU_SNAP_SANDBOX_SETUP.md`

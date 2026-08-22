@@ -64,33 +64,77 @@
 </template>
 
 <script setup lang="ts">
-import {useEvent,type SessionItem} from '~/composables/useEvent';
+import { useEvent, type SessionItem } from '~/composables/useEvent';
 
 useSeoMeta({
   title: 'Program | IWBIF 2026',
   description: 'Live event schedule loaded from the IWBIF 2026 session source.'
 });
 
-const config=useRuntimeConfig();
-const {getEventSessions}=useEvent();
-const eventSlug=config.public.eventSlug;
-const {data:response,pending,error}=await useAsyncData(
+const config = useRuntimeConfig();
+const { getEventSessions, getSessionsByEventId, getEvents } = useEvent();
+const eventSlug = config.public.eventSlug || 'iwbif-2026';
+
+const resolveEventSessions = async () => {
+  try {
+    const fallback = await getEventSessions(eventSlug);
+    return fallback?.data ?? [];
+  } catch {
+    const eventResponse = await getEvents(1, 50);
+    const eventList = Array.isArray(eventResponse?.data) ? eventResponse.data : [];
+    const matchedEvent = eventList.find((event) => event.slug === eventSlug || event.id === eventSlug) ?? eventList[0];
+
+    if (!matchedEvent?.id) {
+      return [];
+    }
+
+    const byEventId = await getSessionsByEventId(matchedEvent.id);
+    return byEventId?.data ?? [];
+  }
+};
+
+const { data: response, pending, error, refresh } = await useAsyncData(
   `public-event-sessions-${eventSlug}`,
-  ()=>getEventSessions(eventSlug)
+  resolveEventSessions
 );
 
-const sessions=computed(()=>response.value?.data??[]);
-const groupedSessions=computed(()=>{
-  const groups=new Map<string,SessionItem[]>();
-  for(const item of sessions.value){
-    const date=new Intl.DateTimeFormat('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Jakarta'}).format(new Date(item.start_at));
-    groups.set(date,[...(groups.get(date)??[]),item]);
+const sessions = computed(() => response.value ?? []);
+const groupedSessions = computed(() => {
+  const groups = new Map<string, SessionItem[]>();
+
+  for (const item of sessions.value) {
+    if (!item?.start_at) continue;
+
+    const parsedDate = new Date(item.start_at);
+    if (Number.isNaN(parsedDate.getTime())) continue;
+
+    const date = new Intl.DateTimeFormat('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'Asia/Jakarta'
+    }).format(parsedDate);
+
+    groups.set(date, [...(groups.get(date) ?? []), item]);
   }
-  return [...groups].map(([date,items])=>({date,items}));
+
+  return [...groups].map(([date, items]) => ({ date, items }));
 });
 
-const formatTime=(iso:string)=>new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Asia/Jakarta'}).format(new Date(iso));
-const label=(value?:string)=>(value??'session').replaceAll('_',' ');
+const formatTime = (iso: string) => {
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return '—';
+
+  return new Intl.DateTimeFormat('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Asia/Jakarta'
+  }).format(parsed);
+};
+
+const label = (value?: string) => (value ?? 'session').replaceAll('_', ' ');
 </script>
 
 <style scoped>

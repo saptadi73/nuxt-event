@@ -1,4 +1,4 @@
-import { c as useRoute, j as useState, N as NuxtLink } from '../virtual/entry.mjs';
+import { b as useRoute, j as useState, N as NuxtLink } from '../virtual/entry.mjs';
 import { u as useSeoMeta$1 } from './head-D-xrF-Fu.mjs';
 import { u as usePayment } from './usePayment-C_Rsx3yc.mjs';
 import { u as useRegistration } from './useRegistration-CYl8EOu6.mjs';

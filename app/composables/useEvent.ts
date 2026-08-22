@@ -106,6 +106,9 @@ export function useEvent() {
   const getEventSessions = (slug: string) =>
     api<ApiResponse<SessionItem[]>>(`/events/${slug}/sessions`);
 
+  const getSessionsByEventId = (eventId: string) =>
+    api<ApiResponse<SessionItem[]>>(`/sessions/events/${eventId}`);
+
   const getEventSpeakers = (slug: string) =>
     api<ApiResponse<SpeakerItem[]>>(`/events/${slug}/speakers`);
 
@@ -128,6 +131,7 @@ export function useEvent() {
     getEvents,
     getEvent,
     getEventSessions,
+    getSessionsByEventId,
     getEventSpeakers,
     getEventWorkshopTracks,
     getEventTicketTypes,

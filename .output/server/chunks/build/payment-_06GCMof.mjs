@@ -1,4 +1,4 @@
-import { _ as _plugin_vue_export_helper_default, c as useRoute, N as NuxtLink } from '../virtual/entry.mjs';
+import { _ as _plugin_vue_export_helper_default, b as useRoute, N as NuxtLink } from '../virtual/entry.mjs';
 import { u as useSeoMeta$1 } from './head-D-xrF-Fu.mjs';
 import { u as usePayment } from './usePayment-C_Rsx3yc.mjs';
 import { defineComponent, ref, computed, mergeProps, unref, withCtx, createTextVNode, createVNode, useSSRContext } from 'vue';

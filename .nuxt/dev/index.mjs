@@ -772,11 +772,11 @@ const _inlineRuntimeConfig = {
     }
   },
   "public": {
-    "apiBaseUrl": "http://127.0.0.1:8000/api/v1",
+    "apiBaseUrl": "https://api.iwbif.id/api/v1",
     "eventSlug": "iwbif-2026",
-    "siteUrl": "http://localhost:3000",
+    "siteUrl": "https://iwbif.id",
     "appName": "IWBIF 2026",
-    "paymentProvider": "doku"
+    "paymentProvider": "midtrans"
   }
 };
 const envOptions = {
@@ -2201,7 +2201,7 @@ const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
 	}
 });
 
-const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"},{"name":"description","content":"International Women Business & Investment Forum 2026."}],"link":[{"rel":"icon","type":"image/png","href":"/favicon.png"},{"rel":"apple-touch-icon","href":"/apple-touch-icon.png"}],"style":[],"script":[],"noscript":[],"title":"IWBIF 2026"};
+const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"},{"name":"description","content":"International Women Business & Investment Forum 2026."}],"link":[{"rel":"icon","type":"image/png","href":"/logo_iwbif2.png"},{"rel":"apple-touch-icon","href":"/logo_iwbif2.png"}],"style":[],"script":[],"noscript":[],"title":"IWBIF 2026"};
 
 const appRootTag = "div";
 

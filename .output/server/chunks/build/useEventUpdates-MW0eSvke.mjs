@@ -1,4 +1,4 @@
-import { f as useNuxtApp } from '../virtual/entry.mjs';
+import { c as useNuxtApp } from '../virtual/entry.mjs';
 
 //#region app/composables/useEventUpdates.ts
 function useEventUpdates() {

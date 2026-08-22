@@ -1,4 +1,4 @@
-import { f as useNuxtApp, p as prodReporters, k as docsBase } from '../virtual/entry.mjs';
+import { c as useNuxtApp, p as prodReporters, k as docsBase } from '../virtual/entry.mjs';
 import { defineProdDiagnostics } from 'nostics';
 import { getCurrentScope, ref, watchEffect, getCurrentInstance, onBeforeUnmount, onDeactivated, onActivated, hasInjectionContext, inject } from 'vue';
 import { FlatMetaPlugin } from 'unhead/plugins';

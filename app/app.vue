@@ -6,8 +6,8 @@
     <header class="sticky top-0 z-50 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl">
       <div class="mx-auto flex w-full max-w-[1440px] flex-wrap items-center gap-3 px-3 py-3 sm:gap-4 sm:px-6 lg:px-8">
         <NuxtLink to="/" class="brand-block flex min-w-0 shrink-0 items-center gap-3">
-          <span class="brand-mark flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-amber-300/40 bg-white/10 p-1 shadow-lg shadow-cyan-950/20 sm:h-11 sm:w-11">
-            <img v-if="!logoHasError" :src="logoSrc" alt="IWBIF 2026" width="44" height="44" class="h-full w-full object-contain" @error="logoHasError = true" />
+          <span class="brand-mark flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-amber-300/40 bg-white/10 p-1.5 shadow-lg shadow-cyan-950/20 sm:h-14 sm:w-14">
+            <img v-if="!logoHasError" :src="logoSrc" alt="IWBIF 2026" width="56" height="56" class="h-full w-full object-contain" @error="logoHasError = true" />
             <span v-else class="brand-fallback text-sm font-black">IWBIF</span>
           </span>
           <span class="hidden sm:block">
@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import logoSrc from '~/assets/images/logo_iwbif.png';
+import logoSrc from '~/assets/images/logo_iwbif2.png';
 const logoHasError = ref(false);
 
 const authStore = useAuthStore();
@@ -194,8 +194,15 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
 }
 
 .brand-mark {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 3rem;
+  height: 3rem;
+}
+
+@media (min-width: 640px) {
+  .brand-mark {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
 }
 
 .brand-fallback {

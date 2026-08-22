@@ -37,6 +37,7 @@ export { useAdminContent, DelegatePackageMutationPayload, ProductMutationPayload
 export { useAdminOperations, AdminUserItem, AdminUserCreatePayload, AdminUserUpdatePayload, AnnouncementPayload, CertificatePayload } from '../app/composables/useAdminOperations';
 export { useAdminReport, PaymentReportSummary, PaymentReportMetric, PaymentReportTransaction, PaymentReportResponse, ManualPaymentConfirmPayload } from '../app/composables/useAdminReport';
 export { useApi, ApiMeta, ApiResponse } from '../app/composables/useApi';
+export { useAttendance, AttendanceCheckInType, AttendanceScanPayload, AttendanceManualPayload, AttendanceRegistrant, AttendanceCheckInRecord, AttendanceScanResponse, AttendanceSummary, AttendanceReportResponse } from '../app/composables/useAttendance';
 export { useAuth } from '../app/composables/useAuth';
 export { useBusinessMatching, BusinessMatchingProfile, MeetingItem, MeetingCreatePayload } from '../app/composables/useBusinessMatching';
 export { useCommunication, ConversationCreatePayload, ConversationItem, MessageItem, NotificationItem } from '../app/composables/useCommunication';

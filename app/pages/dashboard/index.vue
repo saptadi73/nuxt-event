@@ -34,6 +34,7 @@
           <NuxtLink to="/admin/announcements" class="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-white transition hover:border-white/40">Announcements</NuxtLink>
           <NuxtLink to="/admin/certificates" class="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-white transition hover:border-white/40">Certificates</NuxtLink>
           <NuxtLink to="/admin/email-notifications" class="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-white transition hover:border-white/40">Email notifications</NuxtLink>
+          <NuxtLink to="/admin/attendance" class="inline-flex items-center justify-center rounded-full border border-cyan-300/40 bg-cyan-300/10 px-5 py-3 text-sm font-bold text-cyan-100 transition hover:bg-cyan-300/20">Attendance scanner</NuxtLink>
           <NuxtLink to="/admin/reports" class="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-white transition hover:border-white/40">Payment report</NuxtLink>
         </div>
       </div>

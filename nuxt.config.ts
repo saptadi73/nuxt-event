@@ -5,9 +5,9 @@ const productionCommands = new Set(['build', 'generate']);
 const isProductionBuild = productionCommands.has(process.env.npm_lifecycle_event || '')
   || process.argv.some((argument) => productionCommands.has(argument));
 const configuredApiBaseUrl = process.env.NUXT_PUBLIC_API_BASE_URL || localApiBaseUrl;
-const apiBaseUrl = isProductionBuild && /^http:\/\/(?:127\.0\.0\.1|localhost)(?::\d+)?(?:\/|$)/i.test(configuredApiBaseUrl)
-  ? productionApiBaseUrl
-  : configuredApiBaseUrl;
+const configuredSiteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const apiBaseUrl = isProductionBuild ? productionApiBaseUrl : configuredApiBaseUrl;
+const siteUrl = isProductionBuild ? productionSiteUrl : configuredSiteUrl;
 
 export default defineNuxtConfig({
   experimental: {
@@ -23,8 +23,8 @@ export default defineNuxtConfig({
     head: {
       title: 'IWBIF 2026',
       link: [
-        { rel: 'icon', type: 'image/png', href: '/favicon.png' },
-        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }
+        { rel: 'icon', type: 'image/png', href: '/logo_iwbif2.png' },
+        { rel: 'apple-touch-icon', href: '/logo_iwbif2.png' }
       ],
       meta: [
         {
@@ -39,7 +39,7 @@ export default defineNuxtConfig({
     public: {
       apiBaseUrl,
       eventSlug: process.env.NUXT_PUBLIC_EVENT_SLUG || 'iwbif-2026',
-      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || (isProductionBuild ? productionSiteUrl : 'http://localhost:3000'),
+      siteUrl,
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'IWBIF 2026',
       paymentProvider: (process.env.NUXT_PUBLIC_PAYMENT_PROVIDER || 'doku').toLowerCase()
     }

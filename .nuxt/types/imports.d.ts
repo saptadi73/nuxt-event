@@ -108,6 +108,7 @@ declare global {
   const useApi: typeof import('../../app/composables/useApi').useApi
   const useAppConfig: typeof import('../../node_modules/nuxt/dist/app/config').useAppConfig
   const useAsyncData: typeof import('../../node_modules/nuxt/dist/app/composables/asyncData').useAsyncData
+  const useAttendance: typeof import('../../app/composables/useAttendance').useAttendance
   const useAttrs: typeof import('vue').useAttrs
   const useAuth: typeof import('../../app/composables/useAuth').useAuth
   const useAuthStore: typeof import('../../app/stores/auth').useAuthStore
@@ -240,6 +241,9 @@ declare global {
   // @ts-ignore
   export type { ApiMeta, ApiResponse } from '../../app/composables/useApi'
   import('../../app/composables/useApi')
+  // @ts-ignore
+  export type { AttendanceCheckInType, AttendanceScanPayload, AttendanceManualPayload, AttendanceRegistrant, AttendanceCheckInRecord, AttendanceScanResponse, AttendanceSummary, AttendanceReportResponse } from '../../app/composables/useAttendance'
+  import('../../app/composables/useAttendance')
   // @ts-ignore
   export type { BusinessMatchingProfile, MeetingItem, MeetingCreatePayload } from '../../app/composables/useBusinessMatching'
   import('../../app/composables/useBusinessMatching')
@@ -391,6 +395,7 @@ declare module 'vue' {
     readonly useApi: UnwrapRef<typeof import('../../app/composables/useApi')['useApi']>
     readonly useAppConfig: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/config')['useAppConfig']>
     readonly useAsyncData: UnwrapRef<typeof import('../../node_modules/nuxt/dist/app/composables/asyncData')['useAsyncData']>
+    readonly useAttendance: UnwrapRef<typeof import('../../app/composables/useAttendance')['useAttendance']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
     readonly useAuth: UnwrapRef<typeof import('../../app/composables/useAuth')['useAuth']>
     readonly useAuthStore: UnwrapRef<typeof import('../../app/stores/auth')['useAuthStore']>

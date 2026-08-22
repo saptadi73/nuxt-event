@@ -149,7 +149,7 @@ function lazyCachedFunction(fn) {
 	};
 }
 
-const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"},{"name":"description","content":"International Women Business & Investment Forum 2026."}],"link":[{"rel":"icon","type":"image/png","href":"/favicon.png"},{"rel":"apple-touch-icon","href":"/apple-touch-icon.png"}],"style":[],"script":[],"noscript":[],"title":"IWBIF 2026"};
+const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"},{"name":"description","content":"International Women Business & Investment Forum 2026."}],"link":[{"rel":"icon","type":"image/png","href":"/logo_iwbif2.png"},{"rel":"apple-touch-icon","href":"/logo_iwbif2.png"}],"style":[],"script":[],"noscript":[],"title":"IWBIF 2026"};
 
 const appRootTag = "div";
 
@@ -258,7 +258,7 @@ const renderSSRHeadOptions = {"omitLineBreaks":true};
 
 const entryIds = ["../node_modules/nuxt/dist/app/entry.js"];
 
-const entryFileName = "BBl-IXqi.js";
+const entryFileName = "DFsxDngM.js";
 
 //#region src/runtime/handlers/renderer.ts
 globalThis.__buildAssetsURL = buildAssetsURL;
