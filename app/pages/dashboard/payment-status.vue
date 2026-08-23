@@ -109,6 +109,8 @@ const checkStatus = async () => {
     if (paymentId.value) {
       const response = await paymentApi.getPayment(paymentId.value);
       payment.value = response.data;
+      orderId.value = response.data.order_id;
+      sessionStorage.setItem(STORAGE_ORDER, response.data.order_id);
       status.value = response.data.transaction_status.toLowerCase();
     } else if (registrationId.value) {
       const response = await paymentApi.getInvoiceByRegistration(registrationId.value);
@@ -136,7 +138,9 @@ onMounted(async () => {
     || sessionStorage.getItem(LEGACY_STORAGE_PAYMENT)
     || '';
   registrationId.value = queryValue(route.query.registration_id) || sessionStorage.getItem(STORAGE_REGISTRATION) || '';
-  orderId.value = queryValue(route.query.order_id) || sessionStorage.getItem(STORAGE_ORDER) || '';
+  // Midtrans appends its provider order_id to the finish URL. Prefer the
+  // application's internal order UUID saved before redirecting to Midtrans.
+  orderId.value = sessionStorage.getItem(STORAGE_ORDER) || queryValue(route.query.order_id) || '';
   await checkStatus();
   if (status.value === 'created' || status.value === 'pending') {
     polling.value = true;

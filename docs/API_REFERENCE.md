@@ -1071,6 +1071,68 @@ Setiap attempt memakai Midtrans order ID tersendiri, sementara `order_number`
 bisnis tetap sama. Karena itu user dapat memilih DOKU atau Midtrans untuk order
 yang sama tanpa membuat webhook salah memperbarui transaksi provider lain.
 
+Payload mentah, header transport terpilih, hasil parsing, dan error pemrosesan
+setiap notification disimpan lebih dahulu di `payment_webhook_captures`.
+Capture tetap tersimpan ketika JSON invalid, signature gagal, payment tidak
+ditemukan, atau verifikasi Status API gagal. Nilai `provider` untuk endpoint
+transaksi biasa adalah `midtrans`.
+
+#### Midtrans recurring/subscription notification
+
+```http
+POST /api/v1/webhooks/midtrans/recurring
+Content-Type: application/json
+```
+
+Endpoint ini menerima dua bentuk notification Subscription API: objek
+subscription langsung (`id`, `status`, dan atribut subscription lain), atau
+event charge yang memiliki objek `subscription`, `transaction`, dan
+`event_name`. Minimal harus tersedia `subscription.id` dan
+`subscription.status`.
+
+Notification disimpan dengan provider `midtrans_recurring`. Karena contoh
+notification Subscription API resmi tidak menyertakan `signature_key` dan
+aplikasi belum memiliki model subscription, endpoint hanya menyimpan dan
+mengakui event untuk audit; endpoint ini tidak mengubah order atau payment.
+
+Contoh acknowledgment:
+
+```json
+{
+  "success": true,
+  "message": "Notifikasi recurring Midtrans diterima",
+  "data": {"result": "captured:subscription-id:active"}
+}
+```
+
+#### Midtrans GoPay account linking notification
+
+```http
+POST /api/v1/webhooks/midtrans/account-linking
+Content-Type: application/json
+```
+
+Field wajib untuk verifikasi adalah `account_id`, `account_status`,
+`status_code`, dan `signature_key`. Signature diverifikasi dengan formula:
+
+```text
+SHA512(account_id + account_status + status_code + MIDTRANS_SERVER_KEY)
+```
+
+Notification disimpan dengan provider `midtrans_account`. Endpoint ini
+memverifikasi dan mengaudit status linking/unlinking, tetapi belum memetakan
+akun GoPay ke user aplikasi.
+
+Contoh acknowledgment:
+
+```json
+{
+  "success": true,
+  "message": "Notifikasi account linking Midtrans diterima",
+  "data": {"result": "verified:account-id:enabled"}
+}
+```
+
 Konfigurasi backend melalui environment/secret manager:
 
 ```env
@@ -1082,11 +1144,25 @@ MIDTRANS_CALLBACK_URL=https://frontend.example/payment/result
 ```
 
 Gunakan sandbox dengan `MIDTRANS_IS_PRODUCTION=false`. Pada dashboard Midtrans,
-atur **Payment Notification URL** ke URL publik backend:
+atur URL berikut sesuai fitur yang digunakan:
 
 ```text
+Finish Redirect URL:
+https://<frontend-host>/dashboard/payment-status
+
+Payment Notification URL:
 https://<backend-host>/api/v1/webhooks/midtrans
+
+Recurring Payment Notification URL:
+https://<backend-host>/api/v1/webhooks/midtrans/recurring
+
+Account Linking Notification URL:
+https://<backend-host>/api/v1/webhooks/midtrans/account-linking
 ```
+
+Recurring dan account linking hanya perlu diisi ketika Subscription API atau
+GoPay Tokenization digunakan. Seluruh notification harus dikirim langsung oleh
+Midtrans ke URL HTTPS publik dan tidak boleh dipanggil frontend.
 
 Untuk production, gunakan production Server/Client Key dan ubah
 `MIDTRANS_IS_PRODUCTION=true`. Jangan commit key asli ke repository.

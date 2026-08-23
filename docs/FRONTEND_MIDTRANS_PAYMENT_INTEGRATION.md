@@ -99,6 +99,19 @@ Atur Payment Notification URL di dashboard Midtrans ke:
 
 `https://<backend-public-host>/api/v1/webhooks/midtrans`
 
+Jika fitur Subscription API dan GoPay Tokenization diaktifkan, gunakan endpoint
+terpisah berikut agar format notification tidak tercampur:
+
+- Recurring Payment Notification URL:
+  `https://<backend-public-host>/api/v1/webhooks/midtrans/recurring`
+- Account Linking Notification URL:
+  `https://<backend-public-host>/api/v1/webhooks/midtrans/account-linking`
+
+Endpoint recurring saat ini menyimpan dan mengakui event untuk audit tanpa
+mengubah order. Endpoint account linking memverifikasi signature resmi Midtrans
+sebelum menandai capture berhasil. Keduanya tersimpan di
+`payment_webhook_captures`.
+
 Gunakan sandbox lebih dahulu dengan `MIDTRANS_IS_PRODUCTION=false`. Setelah uji
 berhasil, pasang production Server/Client Key dan ubah flag menjadi `true`.
 
