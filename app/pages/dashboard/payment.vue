@@ -1,18 +1,15 @@
 <template>
   <section class="mx-auto max-w-6xl px-3 py-10 sm:px-6">
     <div class="glass-card rounded-[2rem] p-4 sm:p-7">
-      <p class="text-sm uppercase tracking-[.3em] text-amber-200">Payment method</p><h1 class="mt-3 text-3xl font-black sm:text-4xl">Choose how you would like to pay</h1><p class="mt-3 max-w-3xl text-sm leading-7 text-slate-300">Select manual bank transfer, direct QR Code Pay, or continue to {{ paymentProviderLabel }} for online payment. The final amount comes directly from your backend order.</p>
+      <p class="text-sm uppercase tracking-[.3em] text-amber-200">Payment method</p><h1 class="mt-3 text-3xl font-black sm:text-4xl">Choose how you would like to pay</h1><p class="mt-3 max-w-3xl text-sm leading-7 text-slate-300">Choose manual bank transfer or continue to {{ paymentProviderLabel }} for online payment. The final amount comes directly from your backend order.</p>
       <p v-if="loading" class="mt-8 text-slate-300">Loading your order...</p>
       <div v-else-if="!orderId" class="notice"><p>No active order was found. Review your cart and create an order first.</p><NuxtLink to="/dashboard/cart" class="mt-5 inline-flex rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950">Open cart</NuxtLink></div>
       <template v-else>
         <div class="mt-8 rounded-2xl border border-white/10 bg-white/5 p-5"><div class="flex flex-wrap items-start justify-between gap-4"><div><p class="text-xs uppercase tracking-[.2em] text-slate-400">Order</p><p class="mt-2 text-xl font-bold">{{ order?.order_number || orderId }}</p></div><span class="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 text-xs uppercase tracking-[.18em] text-amber-100">{{ order?.status || 'pending' }}</span></div><div v-if="order" class="mt-5 flex items-end justify-between border-t border-white/10 pt-5"><span class="text-slate-400">Total</span><strong class="text-2xl text-amber-200">{{ money(order.total_amount,order.currency) }}</strong></div></div>
         <NuxtLink v-if="isPaid" :to="`/dashboard/invoice?order_id=${orderId}`" class="mt-6 inline-flex rounded-full bg-emerald-300 px-6 py-3 text-center font-bold text-slate-950">View invoice</NuxtLink>
-        <div v-else class="mt-6 grid gap-4 md:grid-cols-3">
+        <div v-else class="mt-6 grid gap-4 md:grid-cols-2">
           <NuxtLink :to="`/dashboard/payment-manual?order_id=${encodeURIComponent(orderId)}`" class="payment-choice payment-choice-bank">
             <span class="payment-choice__tag">Bank account</span><strong>Manual Bank Transfer</strong><p>View the temporary account number and transfer instructions.</p><span class="payment-choice__action">View bank details <span aria-hidden="true">→</span></span>
-          </NuxtLink>
-          <NuxtLink :to="`/dashboard/payment-qr?order_id=${encodeURIComponent(orderId)}`" class="payment-choice payment-choice-qr">
-            <span class="payment-choice__tag">Scan to pay</span><strong>Direct QR Code Pay</strong><p>Open a dedicated QR page and scan it with your banking app.</p><span class="payment-choice__action">Show QR code <span aria-hidden="true">→</span></span>
           </NuxtLink>
           <article class="payment-choice payment-choice-doku">
             <span class="payment-choice__tag">Online gateway</span><strong>Online Payment</strong><p>Continue securely to the hosted {{ paymentProviderLabel }} payment page.</p><button class="payment-choice__action disabled:cursor-not-allowed disabled:opacity-60" :disabled="submitting" @click="startPayment">{{ submitting ? `Preparing ${paymentProviderLabel}...` : `Continue to ${paymentProviderLabel}` }} <span aria-hidden="true">→</span></button>

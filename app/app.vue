@@ -77,8 +77,11 @@
                   >
                     <div class="mb-1 flex items-center justify-between gap-2">
                       <p class="text-xs font-semibold text-amber-100">{{ item.title || 'Notification' }}</p>
-                      <span v-if="item.type === 'payment_status_update'" class="inline-flex rounded-full bg-amber-400/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-100">
-                        Payment
+                      <span
+                        v-if="notificationBadge(item)"
+                        class="inline-flex rounded-full bg-amber-400/25 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-amber-100"
+                      >
+                        {{ notificationBadge(item) }}
                       </span>
                     </div>
                     <p v-if="item.entity_type || item.entity_id" class="text-[10px] uppercase tracking-[0.15em] text-amber-200/80">
@@ -333,6 +336,33 @@ const resolveNotificationRoute = (notification: InboxNotification) => {
   }
 };
 
+const notificationBadge = (notification: InboxNotification) => {
+  switch ((notification.type || '').toLowerCase()) {
+    case 'payment_status_update':
+      return 'Payment';
+  }
+
+  const entityType = (notification.entity_type || '').toLowerCase();
+  switch (entityType) {
+    case 'meeting_request':
+    case 'meeting_requested':
+    case 'meeting_accepted':
+    case 'meeting_declined':
+    case 'meeting_confirmed':
+    case 'meeting_reschedule':
+    case 'meeting_reschedule_requested':
+    case 'meeting_cancelled':
+    case 'new_message':
+      return 'Meeting';
+    case 'manual_payment':
+    case 'manual_payment_confirmation':
+    case 'admin_order':
+      return 'Manual Payment';
+    default:
+      return '';
+  }
+};
+
 const handleNotificationAction = async (notification: InboxNotification) => {
   const targetRoute = resolveNotificationRoute(notification);
   await handleMarkRead(notification);
@@ -456,7 +486,6 @@ const secondaryNav = computed<NavItem[]>(() => {
     { to: '/deal-room', label: 'Deal Room' },
     { to: '/participants', label: 'Participants' },
     { to: '/contact', label: 'Contact' },
-    { to: '/partners', label: 'Partners' },
     { to: '/faq', label: 'FAQ' },
     { to: '/dashboard', label: 'Dashboard' }
   ];

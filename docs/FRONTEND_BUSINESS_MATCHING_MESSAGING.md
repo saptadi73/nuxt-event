@@ -186,6 +186,16 @@ function routeActionFromNotification(item) {
   return null;
 }
 
+function notificationBadgeFromItem(item) {
+  if (item.type === "payment_status_update") return "Payment";
+  if ([
+    "meeting_request","meeting_requested","meeting_accepted","meeting_declined",
+    "meeting_confirmed","meeting_reschedule","meeting_cancelled","meeting_reschedule_requested","new_message"
+  ].includes(item.entity_type)) return "Meeting";
+  if (["manual_payment","manual_payment_confirmation","admin_order"].includes(item.entity_type)) return "Manual Payment";
+  return null;
+}
+
 async function markNotificationRead(id) {
   const base = role === "admin" || role === "organizer"
     ? `/api/v1/admin/notifications/${id}/read`
@@ -200,7 +210,7 @@ Contoh rendering card:
 function renderNotification(item) {
   const isPaid = item.type === "payment_status_update";
   const title = isPaid ? "Update Pembayaran" : item.title;
-  const badge = isPaid ? "Payment" : null;
+  const badge = notificationBadgeFromItem(item);
   const subtitle = item.created_at;
   const target = routeActionFromNotification(item);
   return { title, badge, subtitle, body: item.body, unread: !item.is_read, href: target };

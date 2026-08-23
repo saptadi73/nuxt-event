@@ -100,6 +100,15 @@ gagal, ambil ulang cart dan jangan mengasumsikan order telah dibuat.
 
 ## 4. Buat pembayaran DOKU
 
+### Pilihan metode pembayaran di frontend
+
+Sementara halaman pembayaran hanya menampilkan dua pilihan:
+
+- **Manual Bank Transfer**: peserta melihat instruksi transfer; admin/organizer memverifikasi mutasi dan mengonfirmasi dengan `manual_transfer`.
+- **Online Payment**: frontend membuat checkout gateway dari order melalui endpoint di bawah ini.
+
+**Direct QR Code Pay tidak ditampilkan dan tidak boleh dipilih frontend.** URL lama `/dashboard/payment-qr` harus kembali ke halaman pilihan pembayaran.
+
 ```http
 POST /api/v1/payments/doku/checkout
 Content-Type: application/json
@@ -160,6 +169,30 @@ menandai `success`, jangan ubah UI ke sukses sampai /payments/{payment_id} sudah
 - Sisakan tombol “Periksa lagi” untuk memicu ulang polling.
 - Jika user mengkonfirmasi ada mismatch yang berkepanjangan, sarankan admin
   verifikasi manual lewat workflow admin.
+
+## 5a. Notifikasi admin jika status di payment gateway sudah sukses tapi backend belum sinkron
+
+Skenario ini tetap muncul karena sistem frontend menggunakan status final dari
+backend (`/payments/{payment_id}` / `/orders/{order_id}`). Jika `payment.transaction_status`
+tetap `pending` atau `created` terlalu lama, tampilkan CTA:
+
+- "Verifikasi manual payment"
+- Link ke helpdesk/admin contact
+- Tombol "Periksa lagi" untuk refresh manual
+
+Selain itu, admin/organizer harus memantau dan menangani mismatch melalui panel
+inbox notifikasi:
+
+- Notifikasi tipe: `payment_status_update`
+- Endpoint daftar notifikasi admin:
+  - `GET /api/v1/admin/notifications?event_id=<uuid>`
+- Mark read:
+  - `POST /api/v1/admin/notifications/{id}/read`
+- Aksi manual penyelesaian:
+  - `POST /api/v1/admin/orders/{order_id}/confirm-manual-payment`
+
+Backend akan membuat notifikasi/riwayat yang terkait agar user juga mendapatkan
+catatan status terbaru setelah admin confirm manual.
 
 Khusus Midtrans, keberadaan `provider_order_id` atau
 `provider_transaction_id` tidak mengubah aturan UI di atas. Frontend tetap

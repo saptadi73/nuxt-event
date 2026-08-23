@@ -1,4 +1,4 @@
-import { useApi, type ApiResponse } from '~/composables/useApi';
+import type { useApi, ApiResponse } from '~/composables/useApi';
 import { getPaymentProviderConfig } from '~/config/payment';
 
 export interface PaymentReportSummary {
@@ -46,7 +46,7 @@ export interface PaymentReportResponse {
 }
 
 export interface ManualPaymentConfirmPayload {
-  payment_method: 'manual_transfer' | 'manual_qr_code';
+  payment_method: 'manual_transfer';
   transfer_reference: string;
   notes?: string | null;
   paid_at?: string | null;

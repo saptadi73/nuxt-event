@@ -779,6 +779,28 @@ untuk admin/organizer. Untuk ikon inbox keseluruhan, pakai
 `/inbox/unread-count` yang mengembalikan jumlah pesan + notifikasi dalam satu
 response.
 
+### Alur mismatch payment gateway vs backend report
+
+Frontend tidak boleh mengambil status sukses dari:
+
+- redirect halaman gateway,
+- `provider_order_id`,
+- `provider_transaction_id`,
+- token atau status lokal Snap/SDK.
+
+Sumber kebenaran tetap endpoint `GET /api/v1/payments/{payment_id}`.
+
+- Untuk user: jika pending bertahan setelah gateway mengirim success, tampilkan
+  status "Menunggu verifikasi admin/payment gateway".
+- Untuk admin/organizer: notifikasi tipe `payment_status_update` dikirim ke inbox
+  dan dapat digunakan untuk menindaklanjuti verifikasi manual:
+  - `GET /api/v1/admin/notifications?event_id=<uuid>`
+  - `POST /api/v1/admin/notifications/{notification_id}/read`
+  - `POST /api/v1/admin/orders/{order_id}/confirm-manual-payment`
+
+`entity_type` yang umum dipakai pada kasus ini: `order`, `payment`,
+`manual_payment`, `manual_payment_confirmation`, `admin_order`.
+
 ## 13. Payment gateway: DOKU dan Midtrans
 
 ### Katalog payment method untuk frontend
@@ -1255,13 +1277,13 @@ Content-Type: application/json
 ```
 
 Backend memakai nominal yang tersimpan pada order, membuat payment
-`manual_transfer` atau `manual_qr_code`, dan mengubah status order menjadi
-`paid`. Jika order sudah terhubung ke registration, status registration juga
-menjadi `paid`. Endpoint ini idempoten untuk konfirmasi manual yang sama dan
-menolak order canceled/expired atau order yang sudah dibayar melalui gateway
-lain. Untuk QR direct yang tidak melalui DOKU, kirim
-`"payment_method":"manual_qr_code"` dan isi `transfer_reference` dengan
-referensi transaksi QR.
+`manual_transfer`, dan mengubah status order menjadi `paid`. Jika order sudah
+terhubung ke registration, status registration juga menjadi `paid`. Endpoint
+ini idempoten untuk konfirmasi manual yang sama dan menolak order
+canceled/expired atau order yang sudah dibayar melalui gateway lain.
+
+Frontend saat ini hanya menawarkan **Manual Bank Transfer** dan **Online
+Payment**. `manual_qr_code` tidak dikirim maupun ditampilkan sebagai pilihan UI.
 
 Path item literal untuk GET/PUT/DELETE:
 

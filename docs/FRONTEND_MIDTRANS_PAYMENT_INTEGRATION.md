@@ -70,6 +70,29 @@ rekonsiliasi manual tampilkan juga `gross_amount`, `currency`, `paid_at`,
 tidak boleh memanggil Midtrans Status API secara langsung karena Server Key tetap
 dimiliki backend.
 
+## Mismatch gateway vs backend report
+
+Jika pengguna melihat status gateway sudah sukses tapi backend belum memuat
+`transaction_status=success`, frontend wajib tetap mematuhi status backend.
+
+- Tampilkan pesan "Menunggu verifikasi backend/payment gateway".
+- Lakukan polling ulang `/api/v1/payments/{payment_id}`.
+- Jangan menandai UI sebagai berhasil hanya berdasarkan token/redirect/ID gateway.
+
+Untuk admin/organizer, kasus mismatch dipush ke inbox notifikasi:
+
+- `GET /api/v1/admin/notifications?event_id=<uuid>`
+- `POST /api/v1/admin/notifications/{id}/read`
+- `POST /api/v1/admin/orders/{order_id}/confirm-manual-payment`
+
+Notifikasi yang umum dipakai untuk jalur ini:
+
+- `type`: `payment_status_update`
+- `entity_type`: `payment`, `manual_payment`, `manual_payment_confirmation`, `order`
+
+Setelah admin konfirmasi manual/payment sync sukses, status final tetap diambil dari
+`/api/v1/payments/{payment_id}` agar frontend dan notifikasi konsisten.
+
 ## Konfigurasi Midtrans
 
 Atur Payment Notification URL di dashboard Midtrans ke:

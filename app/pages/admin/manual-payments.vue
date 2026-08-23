@@ -4,7 +4,7 @@
       <div>
         <p class="text-sm uppercase tracking-[.3em] text-amber-200">Organizer payment desk</p>
         <h1 class="mt-3 text-3xl font-black sm:text-4xl">Confirm Manual Payment</h1>
-        <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-300">Confirm a bank transfer or direct QR payment only after matching the amount and transaction reference. The backend will create the appropriate manual payment record and mark the order as paid.</p>
+        <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-300">Confirm a manual bank transfer only after matching the amount and transaction reference. The backend will create the manual payment record and mark the order as paid.</p>
       </div>
       <NuxtLink to="/admin/reports" class="rounded-full border border-white/20 px-5 py-3 text-sm font-semibold">Open sales report</NuxtLink>
     </div>
@@ -13,11 +13,10 @@
       <form class="glass-card rounded-[2rem] p-5 sm:p-7" @submit.prevent="submitConfirmation">
         <div class="rounded-2xl border border-amber-300/20 bg-amber-300/5 p-4 text-sm leading-6 text-amber-100"><strong>Verification required.</strong> This action changes the backend order to paid. Confirm the bank mutation before submitting.</div>
         <div class="mt-6 space-y-5">
-          <label class="field"><span>Payment method</span><select v-model="form.payment_method" required><option value="manual_transfer">Manual Bank Transfer</option><option value="manual_qr_code">Manual QR Code Payment</option></select></label>
           <label class="field"><span>Order ID</span><input v-model.trim="form.orderId" required placeholder="Order UUID" autocomplete="off"></label>
-          <label class="field"><span>{{ form.payment_method === 'manual_qr_code' ? 'QR transaction reference' : 'Transfer reference' }}</span><input v-model.trim="form.transfer_reference" required minlength="3" maxlength="128" :placeholder="form.payment_method === 'manual_qr_code' ? 'QR-TRANSACTION-REFERENCE' : 'BCA-20260819-001'" autocomplete="off"></label>
+          <label class="field"><span>Transfer reference</span><input v-model.trim="form.transfer_reference" required minlength="3" maxlength="128" placeholder="BCA-20260819-001" autocomplete="off"></label>
           <label class="field"><span>Paid at <small>(optional)</small></span><input v-model="form.paid_at" type="datetime-local"></label>
-          <label class="field"><span>Verification notes <small>(optional)</small></span><textarea v-model.trim="form.notes" rows="4" maxlength="1000" placeholder="Bank statement checked by organizer"></textarea></label>
+          <label class="field"><span>Verification notes <small>(optional)</small></span><textarea v-model.trim="form.notes" rows="4" maxlength="1000" placeholder="Bank statement checked by organizer" /></label>
           <label class="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-slate-300"><input v-model="confirmed" type="checkbox" class="mt-1 h-4 w-4 accent-amber-300"><span>I have verified the recipient, amount, order, and transaction reference.</span></label>
           <button class="w-full rounded-full bg-amber-300 px-6 py-3 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50" :disabled="submitting || !confirmed">{{ submitting ? 'Confirming payment...' : 'Confirm manual payment' }}</button>
         </div>
@@ -44,7 +43,7 @@ definePageMeta({ middleware: ['auth', 'admin'] });
 useSeoMeta({ title: 'Confirm Manual Payment | IWBIF 2026' });
 
 const { confirmManualPayment } = useAdminReport();
-const form = reactive({ payment_method: 'manual_transfer' as 'manual_transfer' | 'manual_qr_code', orderId: '', transfer_reference: '', notes: '', paid_at: '' });
+const form = reactive({ payment_method: 'manual_transfer' as const, orderId: '', transfer_reference: '', notes: '', paid_at: '' });
 const confirmed = ref(false);
 const submitting = ref(false);
 const feedback = ref('');

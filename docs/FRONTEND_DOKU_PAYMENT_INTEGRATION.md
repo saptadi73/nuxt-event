@@ -45,7 +45,9 @@ Binding URL: https://api-event.gagakrimang.web.id/api/v1/payments/doku/snap/dire
 Payment Notification URL: https://api-event.gagakrimang.web.id/api/v1/webhooks/doku/snap/direct-debit/payment
 ```
 
-## QRIS melalui DOKU Checkout
+## QRIS melalui DOKU Checkout (tidak ditampilkan sementara)
+
+Endpoint QRIS berikut tetap didokumentasikan untuk kompatibilitas backend, tetapi frontend saat ini tidak menampilkan **Direct QR Code Pay**. Halaman pembayaran hanya menawarkan **Manual Bank Transfer** dan **Online Payment**.
 
 Jika `GET /api/v1/payments/doku/direct/methods` mengembalikan `"qris": true`,
 frontend dapat membuat QR dinamis melalui:
@@ -95,13 +97,8 @@ Content-Type: application/json
 ```
 
 Backend mengambil nominal dari order, membuat catatan payment
-`manual_transfer`, dan mengubah order menjadi `paid`. Untuk QR code direct
-yang tidak melalui DOKU, gunakan payload berikut setelah admin memverifikasi
-transaksi QR:
-
-```json
-{"payment_method":"manual_qr_code","transfer_reference":"QR-TRANSACTION-REFERENCE"}
-```
+`manual_transfer`, dan mengubah order menjadi `paid`. Frontend admin hanya
+mengirim `manual_transfer`; `manual_qr_code` tidak disediakan sebagai pilihan UI.
 
 Peserta tidak boleh memanggil endpoint ini atau mengubah status pembayaran dari
 browser. QR direct hanya dianggap paid setelah konfirmasi admin berhasil.

@@ -1,9 +1,9 @@
 <template>
-  <section class="mx-auto max-w-4xl px-3 py-10 sm:px-6">
+  <section v-if="false" class="mx-auto max-w-4xl px-3 py-10 sm:px-6">
     <div class="glass-card grid overflow-hidden rounded-[2rem] border border-cyan-300/20 lg:grid-cols-[1fr_1.05fr]">
       <div class="flex items-center justify-center bg-gradient-to-br from-cyan-300/10 to-slate-950/70 p-6 sm:p-10">
         <div class="w-full max-w-sm rounded-[2rem] bg-[#fffaf0] p-5 text-center text-slate-950 shadow-2xl shadow-cyan-950/30">
-          <p class="text-xs font-black uppercase tracking-[.25em] text-slate-500">Direct QR Code Pay</p>
+          <p class="text-xs font-black uppercase tracking-[.25em] text-slate-500">Deprecated payment method</p>
           <div class="mx-auto mt-5 aspect-square overflow-hidden rounded-2xl border border-slate-200 bg-white p-3"><img v-if="qrImage" :src="qrImage" alt="Temporary demo QR payment code" class="h-full w-full object-contain"><div v-else class="flex h-full items-center justify-center text-sm text-slate-500">Generating QR code...</div></div>
           <p class="mt-5 text-2xl font-black">{{ money(order?.total_amount || 0, order?.currency || 'IDR') }}</p>
           <p class="mt-1 text-xs text-slate-500">{{ order?.order_number || orderId }}</p>
@@ -27,7 +27,7 @@
 import QRCode from 'qrcode';
 import { usePayment, type OrderItem } from '~/composables/usePayment';
 definePageMeta({ middleware: 'auth' });
-useSeoMeta({ title: 'Direct QR Code Pay | IWBIF 2026' });
+useSeoMeta({ title: 'Payment Options | IWBIF 2026' });
 const route = useRoute();
 const { getOrder } = usePayment();
 const orderId = ref('');
@@ -37,6 +37,8 @@ const errorMessage = ref('');
 const queryValue = (value: unknown) => Array.isArray(value) ? String(value[0] || '') : typeof value === 'string' ? value : '';
 onMounted(async () => {
   orderId.value = queryValue(route.query.order_id) || sessionStorage.getItem('iwbif-store-order-id') || '';
+  await navigateTo(orderId.value ? `/dashboard/payment?order_id=${encodeURIComponent(orderId.value)}` : '/dashboard/payment', { replace: true });
+  return;
   if (!orderId.value) { errorMessage.value = 'Order reference was not found. Please return to your cart.'; return; }
   try {
     order.value = (await getOrder(orderId.value)).data;
