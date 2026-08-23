@@ -8,6 +8,7 @@
     <div v-else-if="!invoice" class="glass-card mt-8 rounded-[2rem] p-7">
       <p class="text-lg font-semibold">No invoice is available yet.</p>
       <p class="mt-2 text-slate-400">{{ emptyInvoiceMessage }}</p>
+      <p v-if="contextMismatchMessage" class="mt-2 text-amber-200/80">{{ contextMismatchMessage }}</p>
       <NuxtLink :to="emptyInvoiceTo" class="mt-6 inline-flex rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950">{{ emptyInvoiceAction }}</NuxtLink>
     </div>
     <article v-else id="invoice" ref="invoiceElement" class="glass-card mt-8 rounded-[2rem] p-5 sm:p-7">
@@ -50,9 +51,29 @@ const pendingProfileType = computed(() => registrationFlow.profilePendingType.va
 const emptyInvoiceMessage = computed(() => pendingProfileType.value
   ? 'Your payment is complete. Finish your profile so the backend can link this order to your registration and generate the invoice.'
   : 'Your invoice will appear after your payment and registration have been confirmed.');
-const emptyInvoiceTo = computed(() => pendingProfileType.value ? `/register/${pendingProfileType.value}` : '/dashboard/payment');
-const emptyInvoiceAction = computed(() => pendingProfileType.value ? `Complete ${pendingProfileType.value === 'exhibitor' ? 'Exhibitor' : 'Delegate'} Profile` : 'Go to payment');
+const hasInvoiceContext = computed(() => Boolean(
+  getOrderIdFromQuery().trim() ||
+  getRegistrationIdFromQuery().trim() ||
+  (typeof window !== 'undefined' ? sessionStorage.getItem('iwbif-store-order-id') : '')
+));
+const contextMismatchMessage = computed(() => {
+  if (!hasInvoiceContext.value) return '';
+  return pendingProfileType.value
+    ? 'No invoice was found for this payment context yet. Please complete your profile if it is still pending.'
+    : 'No invoice was found for this specific payment context yet.';
+});
+const emptyInvoiceAction = computed(() => {
+  if (pendingProfileType.value) return `Complete ${pendingProfileType.value === 'exhibitor' ? 'Exhibitor' : 'Delegate'} Profile`;
+  if (hasInvoiceContext.value) return 'Check payment status';
+  return 'Go to payment';
+});
+const emptyInvoiceTo = computed(() => {
+  if (pendingProfileType.value) return `/register/${pendingProfileType.value}`;
+  if (hasInvoiceContext.value) return '/dashboard/payment-status';
+  return '/dashboard/payment';
+});
 const LAST_REGISTRATION_KEY = 'last-paid-registration-id';
+const CURRENT_INVOICE_KEY = 'current-invoice';
 const getOrderIdFromQuery = () => {
   const queryValue = route.query.order_id ?? route.query.orderId ?? '';
   if (Array.isArray(queryValue)) return queryValue[0] || '';
@@ -69,6 +90,28 @@ const rememberRegistration = (id: string) => {
   const trimmed = id.trim();
   if (!trimmed) return;
   sessionStorage.setItem(LAST_REGISTRATION_KEY, trimmed);
+};
+
+const matchesContext = (candidate: Invoice, orderId: string, registrationId: string) => {
+  const normalizedOrderId = orderId.trim();
+  const normalizedRegistrationId = registrationId.trim();
+  if (!normalizedOrderId && !normalizedRegistrationId) return true;
+  if (normalizedOrderId && candidate.order?.id === normalizedOrderId) return true;
+  if (normalizedRegistrationId) {
+    return candidate.registration?.id === normalizedRegistrationId
+      || candidate.registration?.registration_number === normalizedRegistrationId;
+  }
+  return false;
+};
+
+const persistCurrentInvoice = (value: Invoice | null) => {
+  if (!value) {
+    currentInvoice.value = null;
+    sessionStorage.removeItem(CURRENT_INVOICE_KEY);
+    return;
+  }
+  currentInvoice.value = value;
+  sessionStorage.setItem(CURRENT_INVOICE_KEY, JSON.stringify(value));
 };
 
 const tryInvoiceByIdentifier = async (identifier: string) => {
@@ -95,29 +138,49 @@ const tryInvoiceByIdentifier = async (identifier: string) => {
 };
 
 onMounted(async () => {
+  const queryOrderId = getOrderIdFromQuery() || sessionStorage.getItem('iwbif-store-order-id') || '';
+  const queryRegistrationId = getRegistrationIdFromQuery();
+
   try {
     await registrationFlow.loadFlow(true);
   } catch {
     // Invoice lookup can still continue when progress bootstrap is unavailable.
   }
-  const queryRegistrationId = getRegistrationIdFromQuery();
-  const queryOrderId = getOrderIdFromQuery() || sessionStorage.getItem('iwbif-store-order-id') || '';
   invoice.value = currentInvoice.value;
-  if (!invoice.value) {
+  if (invoice.value && !matchesContext(invoice.value, queryOrderId, queryRegistrationId)) {
+    invoice.value = null;
+    persistCurrentInvoice(null);
+  } else {
     try {
-      const storedInvoice = sessionStorage.getItem('current-invoice');
+      const storedInvoice = sessionStorage.getItem(CURRENT_INVOICE_KEY);
       if (storedInvoice) invoice.value = JSON.parse(storedInvoice) as Invoice;
     } catch {
-      sessionStorage.removeItem('current-invoice');
+      sessionStorage.removeItem(CURRENT_INVOICE_KEY);
     }
+  }
+  if (invoice.value && !matchesContext(invoice.value, queryOrderId, queryRegistrationId)) {
+    invoice.value = null;
+    persistCurrentInvoice(null);
   }
 
   try {
     try {
       const response = await getMyInvoices();
       const invoices = normalizeInvoices(response.data);
-      const fetchedInvoice = (queryOrderId ? invoices.find((item) => item.order.id === queryOrderId) : null) || invoices.find((item) => item.order.status?.toLowerCase() === 'paid') || invoices[0] || null;
-      if (fetchedInvoice) invoice.value = fetchedInvoice;
+      const matchedInvoice = queryOrderId
+        ? invoices.find((item) => item.order.id === queryOrderId) || null
+        : queryRegistrationId
+          ? (invoices.find((item) => item.registration?.id === queryRegistrationId || item.registration?.registration_number === queryRegistrationId) || null)
+          : null;
+      if (matchedInvoice) {
+        invoice.value = matchedInvoice;
+      } else if (!queryOrderId && !queryRegistrationId) {
+        const paidInvoice = invoices.find((item) => item.order.status?.toLowerCase() === 'paid') || null;
+        invoice.value = paidInvoice || invoices[0] || null;
+      } else {
+        const fallbackInvoice = invoices.find((item) => matchesContext(item, queryOrderId, queryRegistrationId)) || null;
+        if (fallbackInvoice) invoice.value = fallbackInvoice;
+      }
     } catch {
       // Try the registration invoice endpoint using the user's ticket below.
     }
@@ -149,8 +212,7 @@ onMounted(async () => {
     }
 
     if (invoice.value) {
-      currentInvoice.value = invoice.value;
-      sessionStorage.setItem('current-invoice', JSON.stringify(invoice.value));
+      persistCurrentInvoice(invoice.value);
       if (invoice.value.registration?.id) rememberRegistration(invoice.value.registration.id);
     }
   } catch {
@@ -159,6 +221,9 @@ onMounted(async () => {
     }
   } finally {
     pending.value = false;
+  }
+  if (!invoice.value) {
+    persistCurrentInvoice(null);
   }
 });
 

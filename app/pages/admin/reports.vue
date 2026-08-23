@@ -718,15 +718,6 @@ watch(totalPages, () => {
   }
 });
 
-await loadEvents();
-readFiltersFromQuery();
-if (eventFilter.value) {
-  await loadPackagesByEvent(false);
-}
-await loadReport();
-routeReady.value = true;
-syncFiltersToUrl();
-
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -826,6 +817,18 @@ const showManualReviewAlert = (message: string) => {
     manualReviewToast.value = '';
   }, 7000);
 };
+
+// Run the initial requests only after every helper used by loadReport has been
+// initialized. Calling loadReport earlier triggers a temporal-dead-zone error
+// in the production bundle (for example hasDateRangeInvalid/manual review).
+await loadEvents();
+readFiltersFromQuery();
+if (eventFilter.value) {
+  await loadPackagesByEvent(false);
+}
+await loadReport();
+routeReady.value = true;
+syncFiltersToUrl();
 
 watch(eventFilter, async () => {
   currentPage.value = 1;
@@ -1017,5 +1020,4 @@ onBeforeUnmount(() => {
   }
 }
 </style>
-
 
