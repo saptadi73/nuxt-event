@@ -43,6 +43,12 @@ profile yang mungkin adalah `belum_terdaftar`, `belum_lengkap`, dan `lengkap`.
 Gunakan `purchase_tracking.delegate.status=paid_profile_incomplete` untuk
 mengarahkan user yang sudah membayar ke form Delegate.
 
+Jangan menampilkan CTA **View invoice** pada tahap ini. Walaupun order sudah
+`paid`, invoice registration belum tersedia sampai form Delegate dibuat dan
+backend menautkan order tersebut ke registration. Setelah create registration
+berhasil, muat ulang `GET /api/v1/payments/me/invoices` atau endpoint invoice
+berdasarkan registration.
+
 Gunakan master API sebagai sumber dropdown dan checkbox. Jangan hard-code UUID,
 harga paket, aktivitas, atau slot. Participant profile boleh `null`; kondisi ini
 tidak menghalangi pembuatan draft registrasi.
@@ -87,6 +93,7 @@ melakukan confirmation, backend memverifikasi bahwa order tertaut sudah `paid`.
 ```text
 order(pending) -> payment(created/pending) -> order(paid)
                       -> Delegate form
+                      -> order linked to registration -> invoice available
 
 registration(draft) -> submitted -> under_verification -> verified -> confirmed
 ```

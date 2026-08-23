@@ -264,6 +264,12 @@ not_selected -> selected -> payment_pending -> paid_profile_incomplete -> comple
 menentukan status dari redirect browser; gunakan response endpoint ini setelah
 payment notification diproses backend.
 
+Status `paid_profile_incomplete` berarti pembayaran order sudah berhasil tetapi
+registration untuk tipe tersebut belum dibuat atau belum ditautkan. Frontend
+harus menampilkan CTA **Complete Delegate/Exhibitor Profile**, bukan **View
+invoice**. Invoice registration baru tersedia setelah form profil dibuat dan
+backend menautkan order paid ke registration.
+
 ## 3. Event, agenda, speaker, dan master
 
 Public reads:
@@ -874,6 +880,13 @@ GET /api/v1/orders/{order_id}
 GET /api/v1/payments/registrations/{registration_ref}/invoice
 GET /api/v1/payments/me/invoices?event_id={optional_uuid}
 ```
+
+Kedua endpoint invoice mengembalikan invoice registration. Order berstatus
+`paid` yang belum mempunyai `registration_id` belum dapat menghasilkan invoice
+registration. Dalam kondisi `purchase_tracking.status=paid_profile_incomplete`,
+frontend mengarahkan user ke form profil terlebih dahulu. Setelah create
+registration berhasil dan backend menautkan order, frontend dapat memuat ulang
+endpoint invoice.
 
 Payment fields: IDs/provider references, `payment_type`, `gross_amount`,
 `currency`, `transaction_status`, `paid_at`, `channel_code`,

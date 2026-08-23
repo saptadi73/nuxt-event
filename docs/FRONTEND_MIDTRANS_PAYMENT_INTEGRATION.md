@@ -48,6 +48,11 @@ Halaman pembayaran pelanggan tidak memerlukan perubahan kontrak. Tetap gunakan
 Jangan memakai redirect, token Snap, atau keberadaan ID transaksi sebagai bukti
 pembayaran. Hanya status `success` hasil verifikasi backend yang final.
 
+Untuk flow store-first, `success` belum selalu berarti invoice registration
+tersedia. Jika `purchase_tracking` masih `paid_profile_incomplete`, arahkan user
+ke form Delegate/Exhibitor. Tampilkan invoice hanya setelah backend membuat atau
+menautkan registration ke order paid.
+
 Untuk halaman report admin/organizer, tampilkan kedua field berikut sebagai
 kolom yang dapat disalin:
 

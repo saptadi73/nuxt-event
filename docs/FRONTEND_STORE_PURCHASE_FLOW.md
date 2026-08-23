@@ -28,6 +28,10 @@ redirect setelah pemilihan atau pembayaran. Status `paid_profile_incomplete`
 berarti user wajib diarahkan ke profile tipe tersebut sebelum fitur berikutnya
 dibuka.
 
+Status tersebut juga berarti invoice registration belum tersedia. Pada halaman
+payment/order paid, tampilkan **Complete Delegate/Exhibitor Profile** dan jangan
+menampilkan **View invoice** sampai backend menautkan order ke registration.
+
 ## State pembelian
 
 ```text
@@ -142,6 +146,10 @@ user, lalu menautkan order pending atau paid tersebut ke registration baru.
 Frontend tidak boleh mengirim `delegate_package_id`, data package, `order_id`,
 atau nominal pada payload registration.
 
+Setelah create registration berhasil, ambil ulang invoice. Endpoint invoice
+berbasis registration tidak menghasilkan data untuk order paid yang belum
+ditautkan ke registration.
+
 ## 5. Halaman hasil dan polling
 
 Redirect kembali dari DOKU bukan bukti pembayaran. Setelah halaman hasil dibuka:
@@ -157,7 +165,7 @@ terminal atau komponen dilepas.
 | Payment status | UI | Aksi |
 |---|---|---|
 | `created`, `pending` | Menunggu pembayaran | Lanjutkan polling |
-| `success` | Pembayaran berhasil | Tampilkan invoice dan langkah berikutnya |
+| `success` | Pembayaran berhasil | Jika `paid_profile_incomplete`, arahkan ke form profil; tampilkan invoice setelah registration tertaut |
 | `failed` | Pembayaran gagal | Izinkan payment ulang setelah order baru/valid |
 | `expired` | Pembayaran kedaluwarsa | Izinkan checkout ulang |
 
