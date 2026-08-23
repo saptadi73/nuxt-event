@@ -120,7 +120,8 @@ sebelum menandai capture berhasil. Keduanya tersimpan di
 Gunakan sandbox lebih dahulu dengan `MIDTRANS_IS_PRODUCTION=false`. Setelah uji
 berhasil, pasang production Server/Client Key dan ubah flag menjadi `true`.
 
-Laporan admin sengaja dipisahkan:
+Laporan admin utama menggabungkan semua provider:
 
-- DOKU: `/api/v1/admin/reports/payments` dan `.csv`
-- Midtrans: `/api/v1/admin/reports/payments/midtrans` dan `.csv`
+- Semua provider: `/api/v1/admin/reports/payments` dan `.csv`
+- Filter opsional: `?provider=doku` atau `?provider=midtrans`
+- Midtrans khusus: `/api/v1/admin/reports/payments/midtrans` dan `.csv`

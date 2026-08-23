@@ -121,6 +121,7 @@
         </button>
       </div>
       <p class="text-xs text-slate-400 sm:col-span-6">Filter diterapkan otomatis setelah kamu selesai mengubah pilihan (dengan delay 350ms).</p>
+      <p class="text-xs text-cyan-200 sm:col-span-6">{{ reportScopeLabel }}</p>
     </div>
 
     <div v-if="pending" class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -281,14 +282,17 @@
 <script setup lang="ts">
 import { useAdminReport, type PaymentReportResponse } from '~/composables/useAdminReport';
 import { useEvent, type DelegatePackageItem, type EventItem } from '~/composables/useEvent';
+import { getPaymentProviderConfig } from '~/config/payment';
 const route = useRoute();
 const router = useRouter();
+const config = useRuntimeConfig();
 
 definePageMeta({ middleware: ['auth', 'admin'] });
 useSeoMeta({ title: 'Sales Report | IWBIF 2026' });
 
 const authStore = useAuthStore();
-const { getReport, isMidtransReport } = useAdminReport();
+const { getReport } = useAdminReport();
+const isMidtransReport = getPaymentProviderConfig().isMidtrans;
 const { getEvents, getEventDelegatePackages } = useEvent();
 const dateFrom = ref('');
 const dateTo = ref('');
@@ -390,6 +394,11 @@ const defaultReport: PaymentReportResponse = {
 const report = ref<PaymentReportResponse>(defaultReport);
 const pending = computed(() => loading.value);
 const lastUpdated = ref<Date | null>(null);
+const isOrganizer = computed(() => authStore.userRole === 'organizer');
+const selectedEventName = computed(() => events.value.find((item) => item.id === eventFilter.value)?.name || 'event aktif');
+const reportScopeLabel = computed(() => isOrganizer.value && eventFilter.value
+  ? `Data organizer dibatasi untuk ${selectedEventName.value}.`
+  : 'Menampilkan data sesuai akses akun dan filter yang dipilih.');
 
 const formatDateShort = (value: string) => {
   const date = new Date(value);
@@ -480,7 +489,7 @@ const csvUrl = computed(() => {
   Object.entries(params).forEach(([key, value]) => {
     if (value) query.append(key, value);
   });
-  const path = isMidtransReport ? '/admin/reports/payments/midtrans.csv' : '/admin/reports/payments.csv';
+  const path = '/admin/reports/payments.csv';
   return query.toString() ? `${path}?${query.toString()}` : path;
 });
 
@@ -561,6 +570,24 @@ const loadEvents = async () => {
     events.value = response.data || [];
   } finally {
     eventsLoading.value = false;
+  }
+};
+
+const applyOrganizerDefaultEvent = () => {
+  // The report backend scopes organizer data by event. Send the current event
+  // explicitly so an organizer does not receive an empty cross-event report.
+  // Never replace an event selected through the URL or by the user.
+  if (!isOrganizer.value || eventFilter.value || !events.value.length) return;
+
+  const configuredSlug = String(config.public.eventSlug || '').trim().toLowerCase();
+  const configuredEvent = configuredSlug
+    ? events.value.find((item) => (item.slug || '').trim().toLowerCase() === configuredSlug)
+    : undefined;
+
+  if (configuredEvent) {
+    eventFilter.value = configuredEvent.id;
+  } else if (events.value.length === 1) {
+    eventFilter.value = events.value[0]?.id || '';
   }
 };
 
@@ -821,8 +848,9 @@ const showManualReviewAlert = (message: string) => {
 // Run the initial requests only after every helper used by loadReport has been
 // initialized. Calling loadReport earlier triggers a temporal-dead-zone error
 // in the production bundle (for example hasDateRangeInvalid/manual review).
-await loadEvents();
 readFiltersFromQuery();
+await loadEvents();
+applyOrganizerDefaultEvent();
 if (eventFilter.value) {
   await loadPackagesByEvent(false);
 }
@@ -1020,4 +1048,3 @@ onBeforeUnmount(() => {
   }
 }
 </style>
-
