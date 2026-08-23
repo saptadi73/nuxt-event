@@ -375,10 +375,11 @@ draft → submitted → under_verification → verified/payment_pending
 - Business Matching IWBIF baru tersedia setelah `confirmed`.
 
 Untuk alur beli package lebih dulu, lakukan cart, checkout, dan pembayaran
-sebelum membuat draft registration. Setelah payment, frontend mengirim form
-Delegate lengkap dengan `delegate_package_id` dari metadata product yang dibeli.
-Backend otomatis menautkan order Delegate cocok milik user ke registration.
-Frontend tidak mengirim `order_id` pada payload registration.
+sebelum membuat draft registration. Setelah payment, frontend hanya mengirim
+data profil Delegate. Backend mengambil `delegate_package_id` dari metadata
+product pada order milik user dan otomatis menautkan order tersebut ke
+registration. Frontend tidak mengirim `delegate_package_id`, data package,
+`order_id`, atau nominal pada payload registration.
 
 Create/update — **Auth**:
 
@@ -389,8 +390,8 @@ PATCH /api/v1/events/{event_id}/registrations/{registration_id}
 
 ```json
 {
-  "delegate_package_id":"uuid","full_name":"Delegate Name",
-  "job_title":"Director","company_organization":"Example Company",
+  "full_name":"Delegate Name","job_title":"Director",
+  "company_organization":"Example Company",
   "nationality":"Indonesian","title":"Ms.","business_sector":"Technology",
   "email":"delegate@example.com","office_phone":null,
   "company_website":"https://example.com","linkedin":null,
@@ -476,10 +477,10 @@ Untuk product `delegate`, metadata berisi:
 
 `price/currency` product adalah nominal pembayaran yang dipakai checkout (saat
 ini IDR). `display_amount/display_currency` hanya untuk tampilan harga sumber.
-Setelah payment, gunakan `delegate_package_id` metadata saat membuat registration
-Delegate; backend akan menautkan order pending atau paid yang cocok. Disable
-tombol selama request, simpan ID response, dan jangan membuat order baru saat
-halaman hasil di-refresh. Detail ada di
+Setelah payment, backend menggunakan `delegate_package_id` metadata untuk
+membuat relasi registration secara otomatis. Frontend tidak meneruskan field
+tersebut ke form registration. Disable tombol selama request, simpan ID
+response, dan jangan membuat order baru saat halaman hasil di-refresh. Detail ada di
 `docs/FRONTEND_STORE_PURCHASE_FLOW.md`.
 
 Admin mengelola product:

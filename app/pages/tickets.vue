@@ -86,13 +86,6 @@ const apiError=(error:unknown)=>{
   const value=error as {data?:{message?:string;errors?:Array<{message?:string}>}};
   return value.data?.errors?.[0]?.message||value.data?.message||(error instanceof Error?error.message:'Package could not be added.');
 };
-const rememberDelegatePackage=(productId:string)=>{
-  const selectedProduct=response.value?.data.find(item=>item.id===productId);
-  const delegatePackageId=typeof selectedProduct?.metadata_json?.delegate_package_id==='string'?selectedProduct.metadata_json.delegate_package_id:'';
-  if(delegatePackageId){
-    try{sessionStorage.setItem('iwbif-last-delegate-package-id',delegatePackageId);}catch{/* Storage is optional; adding to the server cart must still work. */}
-  }
-};
 const addToCart=async(productId:string)=>{
   debugLog('Vue click handler entered',{productId,authenticated:isAuthenticated.value,eventId:currentEventId.value});
   if(!isAuthenticated.value){debugLog('redirecting: unauthenticated');await navigateTo('/auth/register');return;}
@@ -112,7 +105,6 @@ const addToCart=async(productId:string)=>{
     sessionStorage.removeItem('iwbif-store-order');
     sessionStorage.removeItem('iwbif-payment-id');
     sessionStorage.removeItem('iwbif-doku-payment-id');
-    rememberDelegatePackage(productId);
     noticeTone.value='success';notice.value='Package added to your cart.';
     debugLog('navigating to cart');
     await navigateTo('/dashboard/cart');

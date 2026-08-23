@@ -23,11 +23,7 @@
         </div>
       </fieldset>
 
-      <fieldset class="card"><legend>2. Delegate package *</legend>
-        <div class="grid gap-4 md:grid-cols-2"><label v-for="item in packages" :key="item.id" class="choice" :class="form.delegate_package_id===item.id?'selected':''"><input v-model="form.delegate_package_id" class="sr-only" type="radio" :value="item.id" required /><strong class="block text-xl">{{ item.name }}</strong><span class="mt-2 block">{{ money(item.amount ?? item.price,item.currency) }}</span></label></div>
-      </fieldset>
-
-      <fieldset class="card"><legend>3. Participation and activities</legend>
+      <fieldset class="card"><legend>2. Participation and activities</legend>
         <span class="label">Participation categories *</span>
         <div class="mt-3 grid gap-3 md:grid-cols-2"><label v-for="option in participationCategoryOptions" :key="option" class="choice flex gap-3"><input v-model="form.participation_categories" type="checkbox" :value="option" class="accent-amber-300" /><span>{{ option }}</span></label></div>
         <div class="mt-5 grid gap-4 md:grid-cols-2">
@@ -39,7 +35,7 @@
         <p v-if="!activities.length" class="mt-3 text-sm text-slate-400">No active activities are currently published.</p>
       </fieldset>
 
-      <fieldset class="card"><legend>4. Business matching</legend>
+      <fieldset class="card"><legend>3. Business matching</legend>
         <label class="label"><span>Products / services *</span><textarea v-model.trim="form.products_services" required class="field" rows="3" /></label>
         <span class="label mt-5">Looking for *</span>
         <div class="mt-3 grid gap-3 md:grid-cols-2"><label v-for="option in lookingForOptions" :key="option" class="choice flex gap-3"><input v-model="form.looking_for" type="checkbox" :value="option" class="accent-amber-300" /><span>{{ option }}</span></label></div>
@@ -48,11 +44,11 @@
         <label class="label mt-5"><span>Business objectives *</span><textarea v-model.trim="form.business_objectives" required class="field" rows="3" /></label>
       </fieldset>
 
-      <fieldset class="card"><legend>5. Travel and delegate requirements</legend>
+      <fieldset class="card"><legend>4. Travel and delegate requirements</legend>
         <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>Room preference *</span><select v-model="form.room_preference" required class="field"><option value="Twin Sharing">Twin Sharing</option><option value="Single Room (+Supplement)">Single Room (+Supplement)</option></select></label><label class="label"><span>Preferred roommate</span><input v-model.trim="form.preferred_roommate" class="field" /></label><label class="label"><span>Arrival date *</span><input v-model="form.arrival_date" type="date" required class="field" /></label><label class="label"><span>Departure date *</span><input v-model="form.departure_date" type="date" :min="form.arrival_date" required class="field" /></label><label class="label"><span>Airport *</span><select v-model="form.airport" required class="field"><option value="" disabled>Select airport</option><option v-for="option in airportOptions" :key="option" :value="option">{{ option }}</option></select></label><label class="label"><span>Flight number</span><input v-model.trim="form.flight_number" class="field" /></label><div class="label"><span>Need airport pickup? *</span><div class="flex gap-5"><label class="check"><input v-model="form.need_airport_pickup" type="radio" :value="true" /> Yes</label><label class="check"><input v-model="form.need_airport_pickup" type="radio" :value="false" /> No</label></div></div><label class="label"><span>Dietary restrictions</span><input v-model.trim="form.dietary_restrictions" class="field" /></label><label class="label"><span>Medical condition</span><input v-model.trim="form.medical_condition" class="field" /></label><label class="label"><span>Special assistance</span><input v-model.trim="form.special_assistance" class="field" /></label></div>
       </fieldset>
 
-      <fieldset class="card"><legend>6. Invoice and consent</legend>
+      <fieldset class="card"><legend>5. Invoice and consent</legend>
         <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>Tax ID</span><input v-model.trim="form.tax_id" class="field" /></label><div class="label"><span>Need official invoice? *</span><div class="flex gap-5"><label class="check"><input v-model="form.need_official_invoice" type="radio" :value="true" /> Yes</label><label class="check"><input v-model="form.need_official_invoice" type="radio" :value="false" /> No</label></div></div></div>
         <div class="mt-5 space-y-3"><label class="check"><input v-model="form.information_accuracy_confirmed" required type="checkbox" /> I confirm that the information is accurate *</label><label class="check"><input v-model="form.terms_accepted" required type="checkbox" /> I accept the Terms and Conditions *</label><label class="check"><input v-model="form.business_matching_data_consent" required type="checkbox" /> I consent to business matching data processing *</label></div>
       </fieldset>
@@ -60,7 +56,7 @@
       <div v-if="feedback" class="rounded-2xl border p-5" :class="success?'border-emerald-300/30 bg-emerald-950/30':'border-red-300/30 bg-red-950/30'">{{ feedback }}</div>
 
       <div class="submit-row">
-        <button class="rounded-full bg-amber-300 px-7 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="submitting||!form.delegate_package_id||!form.activity_ids.length||!form.participation_categories.length||!form.looking_for.length||!form.preferred_countries.length||form.need_airport_pickup===null||form.need_official_invoice===null">{{ submitting?'Submitting…':'Create Registration' }}</button>
+        <button class="rounded-full bg-amber-300 px-7 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="submitting||!form.activity_ids.length||!form.participation_categories.length||!form.looking_for.length||!form.preferred_countries.length||form.need_airport_pickup===null||form.need_official_invoice===null">{{ submitting?'Submitting…':'Create Registration' }}</button>
       </div>
     </form>
   </section>
@@ -68,13 +64,12 @@
 <script setup lang="ts">
 import {useEvent} from '~/composables/useEvent';
 import {useParticipant} from '~/composables/useParticipant';
-import {useRegistration} from '~/composables/useRegistration';
+import {useRegistration,type RegistrationPayload} from '~/composables/useRegistration';
 
 definePageMeta({ middleware: 'auth' });
 useSeoMeta({ title: 'Delegate Registration | IWBIF 2026', description: 'Complete the official IWBIF 2026 delegate registration.' });
 
-const route = useRoute();
-const { getEvents, getEventDelegatePackages, getEventActivities } = useEvent();
+const { getEvents, getEventActivities } = useEvent();
 const { upsertMyProfile } = useParticipant();
 const { createRegistration } = useRegistration();
 
@@ -119,7 +114,6 @@ const identityFields: IdentityField[] = [
 
 const form = reactive({
   event_id: '',
-  delegate_package_id: typeof route.query.package === 'string' ? route.query.package : '',
   full_name: '',
   job_title: '',
   company_organization: '',
@@ -163,13 +157,9 @@ const { data: options, pending, error: optionsError } = await useAsyncData('iwbi
   const response = await getEvents(1, 1);
   const event = response.data[0];
   if (!event) throw new Error('No IWBIF event is currently published.');
-  const [packageResponse, activityResponse] = await Promise.all([
-    getEventDelegatePackages(event.id),
-    getEventActivities(event.id)
-  ]);
+  const activityResponse = await getEventActivities(event.id);
   return {
     event,
-    packages: packageResponse.data.filter(item => item.is_active),
     activities: activityResponse.data.filter(item => item.is_active !== false)
   };
 });
@@ -178,24 +168,12 @@ watchEffect(() => {
   if (options.value?.event.id) form.event_id = options.value.event.id;
 });
 
-const packages = computed(() => options.value?.packages ?? []);
 const activities = computed(() => options.value?.activities ?? []);
-const purchasedPackageId = computed(() => {
-  const fromRoute = typeof route.query.package === 'string' ? route.query.package : '';
-  return fromRoute || sessionStorage.getItem('iwbif-last-delegate-package-id') || '';
-});
 const submitting = ref(false);
 const feedback = ref('');
 const success = ref(false);
 
 const nullable = (value: string) => value || null;
-const money = (amount: number, currency: string) => new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
-
-onMounted(() => {
-  if (purchasedPackageId.value && !form.delegate_package_id) {
-    form.delegate_package_id = purchasedPackageId.value;
-  }
-});
 
 const submit = async () => {
   submitting.value = true;
@@ -208,14 +186,6 @@ const submit = async () => {
       organization_name: form.company_organization,
       biography: form.business_objectives
     });
-
-    if (purchasedPackageId.value && form.delegate_package_id !== purchasedPackageId.value) {
-      throw new Error('The selected package does not match the package paid for in your cart. Please return to checkout and complete the correct purchase.');
-    }
-
-    if (!form.delegate_package_id) {
-      throw new Error('Please choose and pay for a delegate package before completing registration.');
-    }
 
     const payload = {
       ...form,
@@ -235,7 +205,7 @@ const submit = async () => {
       consent_version: '2026-08-14'
     };
 
-    const result = await createRegistration(payload as any);
+    const result = await createRegistration(payload as RegistrationPayload);
     success.value = true;
     feedback.value = `Registration ${result.data.registration_number} created successfully.`;
     await navigateTo('/dashboard');

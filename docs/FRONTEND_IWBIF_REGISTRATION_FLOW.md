@@ -55,9 +55,11 @@ Alur pembelian Delegate dimulai dari katalog store, bukan dari form registrasi:
 GET products -> add cart item -> checkout -> DOKU payment -> Delegate form
 ```
 
-Ambil `delegate_package_id` dari `metadata_json.delegate_package_id` pada
-product Delegate yang dibeli. Harga checkout ditentukan product store; jangan
-menghitung kurs atau mengirim harga dari form registrasi.
+Backend mengambil `delegate_package_id` dari `metadata_json` product Delegate
+pada order milik user dan menautkan order tersebut ke registration. Frontend
+tidak perlu menyimpan atau mengirim `delegate_package_id`, data package, harga,
+atau `order_id` dari form registrasi. Harga checkout tetap ditentukan product
+store.
 
 1. Buat draft dengan `POST /api/v1/events/{event_id}/registrations`.
 2. Simpan `registration.id` dari response sebagai ID proses, bukan sebagai

@@ -53,8 +53,8 @@ Untuk IWBIF Delegate, katalog menyediakan `DELEGATE_A`, `DELEGATE_B`, dan
 `DELEGATE_C`. Harga `price` dan `currency` adalah nominal yang ditagihkan
 (saat ini IDR). Tampilkan harga sumber dari `metadata_json.display_amount` dan
 `metadata_json.display_currency` bila UI perlu menampilkan harga package USD.
-`metadata_json.delegate_package_id` adalah ID package yang harus dipakai saat
-user mengisi form registrasi setelah pembelian. Jangan mengubah atau menebak
+`metadata_json.delegate_package_id` dipakai backend untuk menautkan package dan
+order ke registration. Frontend tidak perlu menyimpan, mengubah, atau mengirim
 nilai metadata tersebut.
 
 ## 2. Kelola cart
@@ -131,16 +131,16 @@ boleh membuat checkout kedua.
 ## 4a. Lanjutkan profil Delegate setelah pembayaran
 
 Setelah status payment `success`, arahkan user ke form Delegate. Isi
-`delegate_package_id` dari `metadata_json.delegate_package_id` product yang
-dibeli, lalu kirim seluruh form ke:
+data profil Delegate saja, lalu kirim form ke:
 
 ```http
 POST /api/v1/events/{event_id}/registrations
 ```
 
-Backend mencocokkan user, event, dan produk `DELEGATE_{code}`, lalu menautkan
-order pending atau paid yang sesuai ke registration baru. Frontend tidak boleh
-mengirim `order_id` atau nominal pada payload registration.
+Backend mengambil `delegate_package_id` dari metadata product pada order milik
+user, lalu menautkan order pending atau paid tersebut ke registration baru.
+Frontend tidak boleh mengirim `delegate_package_id`, data package, `order_id`,
+atau nominal pada payload registration.
 
 ## 5. Halaman hasil dan polling
 
@@ -224,5 +224,5 @@ untuk troubleshooting. Jangan menampilkan raw response atau secret DOKU.
 8. Payment cart dapat diambil melalui endpoint milik user tersebut.
 9. Webhook tidak pernah dipanggil dari browser.
 10. Secret DOKU tidak masuk bundle frontend.
-11. Delegate yang sudah paid diarahkan ke form profil dengan
-    `delegate_package_id` dari metadata product yang dibeli.
+11. Delegate yang sudah paid diarahkan ke form profil tanpa mengirim
+    `delegate_package_id`, data package, order, atau nominal.

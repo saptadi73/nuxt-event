@@ -98,8 +98,9 @@ const handleSuccess = async () => {
   }
   sessionStorage.removeItem(STORAGE_PAYMENT);
   sessionStorage.removeItem(LEGACY_STORAGE_PAYMENT);
-  const packageId = sessionStorage.getItem('iwbif-last-delegate-package-id');
-  if (packageId) await navigateTo(`/register/delegate?package=${encodeURIComponent(packageId)}`);
+  if (registrationFlow.profilePendingType.value) {
+    await navigateTo(`/register/${registrationFlow.profilePendingType.value}`);
+  }
 };
 const checkStatus = async () => {
   if (checking.value) return;

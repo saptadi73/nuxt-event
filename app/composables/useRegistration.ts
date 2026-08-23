@@ -1,8 +1,7 @@
-import { useApi, type ApiResponse } from '~/composables/useApi';
+import type { useApi, ApiResponse } from '~/composables/useApi';
 
 export interface RegistrationPayload {
   event_id: string;
-  delegate_package_id: string;
   full_name: string;
   job_title: string;
   company_organization: string;
