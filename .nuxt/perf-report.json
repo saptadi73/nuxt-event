@@ -1,147 +1,147 @@
 {
-  "totalDuration": 2321.55,
+  "totalDuration": 2378.37,
   "totalMemoryDelta": {
-    "rss": 118566912,
-    "heapUsed": 71304032
+    "rss": 111779840,
+    "heapUsed": 61806192
   },
   "hasGCSnapshots": false,
   "phases": [
     {
       "name": "init",
-      "duration": 4.52,
-      "ownDuration": 4.52,
+      "duration": 6.06,
+      "ownDuration": 6.06,
       "memoryBefore": {
-        "rss": 119656448,
-        "heapUsed": 33989872,
-        "heapTotal": 62545920
+        "rss": 120188928,
+        "heapUsed": 32682480,
+        "heapTotal": 63332352
       },
       "memoryAfter": {
-        "rss": 119848960,
-        "heapUsed": 34401656,
-        "heapTotal": 62808064
+        "rss": 120504320,
+        "heapUsed": 33093952,
+        "heapTotal": 63856640
       },
       "memoryDelta": {
-        "rss": 192512,
-        "heapUsed": 411784
+        "rss": 315392,
+        "heapUsed": 411472
       },
       "ownMemoryDelta": {
-        "rss": 192512,
-        "heapUsed": 411784
+        "rss": 315392,
+        "heapUsed": 411472
       }
     },
     {
       "name": "modules",
-      "duration": 457.31,
-      "ownDuration": 178.1,
+      "duration": 402.63,
+      "ownDuration": 164.77,
       "memoryBefore": {
-        "rss": 119848960,
-        "heapUsed": 34407488,
-        "heapTotal": 62808064
+        "rss": 120504320,
+        "heapUsed": 33099784,
+        "heapTotal": 63856640
       },
       "memoryAfter": {
-        "rss": 155713536,
-        "heapUsed": 47863312,
-        "heapTotal": 114069504
+        "rss": 153743360,
+        "heapUsed": 47620760,
+        "heapTotal": 79466496
       },
       "memoryDelta": {
-        "rss": 35864576,
-        "heapUsed": 13455824
+        "rss": 33239040,
+        "heapUsed": 14520976
       },
       "ownMemoryDelta": {
-        "rss": 13172736,
-        "heapUsed": -3867232
+        "rss": 13393920,
+        "heapUsed": 4172536
       }
     },
     {
       "name": "module:@nuxt/devtools",
-      "duration": 140.17,
-      "ownDuration": 140.17,
+      "duration": 142.87,
+      "ownDuration": 142.87,
       "memoryBefore": {
-        "rss": 132751360,
-        "heapUsed": 37841800,
-        "heapTotal": 68304896
+        "rss": 133652480,
+        "heapUsed": 36400888,
+        "heapTotal": 69091328
       },
       "memoryAfter": {
-        "rss": 153554944,
-        "heapUsed": 53141784,
-        "heapTotal": 72912896
+        "rss": 152506368,
+        "heapUsed": 51715792,
+        "heapTotal": 73961472
       },
       "memoryDelta": {
-        "rss": 20803584,
-        "heapUsed": 15299984
+        "rss": 18853888,
+        "heapUsed": 15314904
       },
       "ownMemoryDelta": {
-        "rss": 20803584,
-        "heapUsed": 15299984
+        "rss": 18853888,
+        "heapUsed": 15314904
       }
     },
     {
       "name": "module:nuxt:pages",
-      "duration": 22.14,
-      "ownDuration": 22.14,
+      "duration": 21.98,
+      "ownDuration": 21.98,
       "memoryBefore": {
-        "rss": 153726976,
-        "heapUsed": 45123888,
-        "heapTotal": 76058624
+        "rss": 152612864,
+        "heapUsed": 51873696,
+        "heapTotal": 73961472
       },
       "memoryAfter": {
-        "rss": 152506368,
-        "heapUsed": 42420640,
-        "heapTotal": 79728640
+        "rss": 150216704,
+        "heapUsed": 42404320,
+        "heapTotal": 77893632
       },
       "memoryDelta": {
-        "rss": -1220608,
-        "heapUsed": -2703248
+        "rss": -2396160,
+        "heapUsed": -9469376
       },
       "ownMemoryDelta": {
-        "rss": -1220608,
-        "heapUsed": -2703248
+        "rss": -2396160,
+        "heapUsed": -9469376
       }
     },
     {
       "name": "module:nuxt:meta",
-      "duration": 5.2,
-      "ownDuration": 5.2,
+      "duration": 3.79,
+      "ownDuration": 3.79,
       "memoryBefore": {
-        "rss": 152510464,
-        "heapUsed": 42460944,
-        "heapTotal": 79728640
+        "rss": 150253568,
+        "heapUsed": 42440672,
+        "heapTotal": 77893632
       },
       "memoryAfter": {
-        "rss": 153112576,
-        "heapUsed": 42865232,
-        "heapTotal": 79728640
+        "rss": 150929408,
+        "heapUsed": 42848392,
+        "heapTotal": 78155776
       },
       "memoryDelta": {
-        "rss": 602112,
-        "heapUsed": 404288
+        "rss": 675840,
+        "heapUsed": 407720
       },
       "ownMemoryDelta": {
-        "rss": 602112,
-        "heapUsed": 404288
+        "rss": 675840,
+        "heapUsed": 407720
       }
     },
     {
       "name": "module:nuxt:components",
-      "duration": 6.64,
-      "ownDuration": 6.64,
+      "duration": 7.04,
+      "ownDuration": 7.04,
       "memoryBefore": {
-        "rss": 153116672,
-        "heapUsed": 42899520,
-        "heapTotal": 79728640
+        "rss": 150929408,
+        "heapUsed": 42883472,
+        "heapTotal": 78155776
       },
       "memoryAfter": {
-        "rss": 153141248,
-        "heapUsed": 43514632,
-        "heapTotal": 79728640
+        "rss": 150966272,
+        "heapUsed": 43497792,
+        "heapTotal": 78155776
       },
       "memoryDelta": {
-        "rss": 24576,
-        "heapUsed": 615112
+        "rss": 36864,
+        "heapUsed": 614320
       },
       "ownMemoryDelta": {
-        "rss": 24576,
-        "heapUsed": 615112
+        "rss": 36864,
+        "heapUsed": 614320
       }
     },
     {
@@ -149,14 +149,14 @@
       "duration": 0.15,
       "ownDuration": 0.15,
       "memoryBefore": {
-        "rss": 153141248,
-        "heapUsed": 43537048,
-        "heapTotal": 79728640
+        "rss": 150978560,
+        "heapUsed": 43520208,
+        "heapTotal": 78155776
       },
       "memoryAfter": {
-        "rss": 153141248,
-        "heapUsed": 43543480,
-        "heapTotal": 79728640
+        "rss": 150978560,
+        "heapUsed": 43526640,
+        "heapTotal": 78155776
       },
       "memoryDelta": {
         "rss": 0,
@@ -169,17 +169,17 @@
     },
     {
       "name": "module:nuxt:imports",
-      "duration": 3.2,
-      "ownDuration": 3.2,
+      "duration": 2.1,
+      "ownDuration": 2.1,
       "memoryBefore": {
-        "rss": 153141248,
-        "heapUsed": 43587816,
-        "heapTotal": 79728640
+        "rss": 150990848,
+        "heapUsed": 43570976,
+        "heapTotal": 78155776
       },
       "memoryAfter": {
-        "rss": 153141248,
-        "heapUsed": 43866400,
-        "heapTotal": 79728640
+        "rss": 150990848,
+        "heapUsed": 43849560,
+        "heapTotal": 78155776
       },
       "memoryDelta": {
         "rss": 0,
@@ -192,278 +192,278 @@
     },
     {
       "name": "module:nuxt:nuxt-config-schema",
-      "duration": 0.7,
-      "ownDuration": 0.7,
+      "duration": 0.5,
+      "ownDuration": 0.5,
       "memoryBefore": {
-        "rss": 153145344,
-        "heapUsed": 43895752,
-        "heapTotal": 79728640
+        "rss": 150994944,
+        "heapUsed": 43879064,
+        "heapTotal": 78155776
       },
       "memoryAfter": {
-        "rss": 153214976,
-        "heapUsed": 43932048,
-        "heapTotal": 79728640
+        "rss": 150999040,
+        "heapUsed": 43915480,
+        "heapTotal": 78155776
       },
       "memoryDelta": {
-        "rss": 69632,
-        "heapUsed": 36296
+        "rss": 4096,
+        "heapUsed": 36416
       },
       "ownMemoryDelta": {
-        "rss": 69632,
-        "heapUsed": 36296
+        "rss": 4096,
+        "heapUsed": 36416
       }
     },
     {
       "name": "modules:done",
-      "duration": 101.01,
-      "ownDuration": 101.01,
+      "duration": 59.43,
+      "ownDuration": 59.43,
       "memoryBefore": {
-        "rss": 153300992,
-        "heapUsed": 44467608,
-        "heapTotal": 79990784
+        "rss": 151072768,
+        "heapUsed": 44451376,
+        "heapTotal": 78155776
       },
       "memoryAfter": {
-        "rss": 155713536,
-        "heapUsed": 47853216,
-        "heapTotal": 114069504
+        "rss": 153743360,
+        "heapUsed": 47610816,
+        "heapTotal": 79466496
       },
       "memoryDelta": {
-        "rss": 2412544,
-        "heapUsed": 3385608
+        "rss": 2670592,
+        "heapUsed": 3159440
       },
       "ownMemoryDelta": {
-        "rss": 2412544,
-        "heapUsed": 3385608
+        "rss": 2670592,
+        "heapUsed": 3159440
       }
     },
     {
       "name": "nitro:config",
-      "duration": 159.87,
-      "ownDuration": 159.87,
+      "duration": 158.45,
+      "ownDuration": 158.45,
       "memoryBefore": {
-        "rss": 191770624,
-        "heapUsed": 65417448,
-        "heapTotal": 125542400
+        "rss": 180281344,
+        "heapUsed": 71014000,
+        "heapTotal": 124174336
       },
       "memoryAfter": {
-        "rss": 197386240,
-        "heapUsed": 76888784,
-        "heapTotal": 125542400
+        "rss": 191107072,
+        "heapUsed": 82476496,
+        "heapTotal": 124436480
       },
       "memoryDelta": {
-        "rss": 5615616,
-        "heapUsed": 11471336
+        "rss": 10825728,
+        "heapUsed": 11462496
       },
       "ownMemoryDelta": {
-        "rss": 5615616,
-        "heapUsed": 11471336
+        "rss": 10825728,
+        "heapUsed": 11462496
       }
     },
     {
       "name": "nitro:createNitro",
-      "duration": 222.93,
-      "ownDuration": 222.93,
+      "duration": 235.15,
+      "ownDuration": 235.15,
       "memoryBefore": {
-        "rss": 197484544,
-        "heapUsed": 76960440,
-        "heapTotal": 125542400
+        "rss": 191172608,
+        "heapUsed": 82548120,
+        "heapTotal": 124436480
       },
       "memoryAfter": {
-        "rss": 219451392,
-        "heapUsed": 76348312,
-        "heapTotal": 135729152
+        "rss": 206323712,
+        "heapUsed": 78546736,
+        "heapTotal": 131272704
       },
       "memoryDelta": {
-        "rss": 21966848,
-        "heapUsed": -612128
+        "rss": 15151104,
+        "heapUsed": -4001384
       },
       "ownMemoryDelta": {
-        "rss": 21966848,
-        "heapUsed": -612128
+        "rss": 15151104,
+        "heapUsed": -4001384
       }
     },
     {
       "name": "nitro:init",
-      "duration": 66.97,
-      "ownDuration": 66.97,
+      "duration": 72.59,
+      "ownDuration": 72.59,
       "memoryBefore": {
-        "rss": 219357184,
-        "heapUsed": 76566464,
-        "heapTotal": 135729152
+        "rss": 206397440,
+        "heapUsed": 78764784,
+        "heapTotal": 131272704
       },
       "memoryAfter": {
-        "rss": 219521024,
-        "heapUsed": 76726344,
-        "heapTotal": 135729152
+        "rss": 206561280,
+        "heapUsed": 78949160,
+        "heapTotal": 131272704
       },
       "memoryDelta": {
         "rss": 163840,
-        "heapUsed": 159880
+        "heapUsed": 184376
       },
       "ownMemoryDelta": {
         "rss": 163840,
-        "heapUsed": 159880
+        "heapUsed": 184376
       }
     },
     {
       "name": "ready",
-      "duration": 3.02,
-      "ownDuration": 3.02,
+      "duration": 3.04,
+      "ownDuration": 3.04,
       "memoryBefore": {
-        "rss": 219254784,
-        "heapUsed": 77464784,
-        "heapTotal": 135892992
+        "rss": 207097856,
+        "heapUsed": 79687664,
+        "heapTotal": 131436544
       },
       "memoryAfter": {
-        "rss": 219398144,
-        "heapUsed": 77637952,
-        "heapTotal": 135892992
+        "rss": 207331328,
+        "heapUsed": 79859688,
+        "heapTotal": 131436544
       },
       "memoryDelta": {
-        "rss": 143360,
-        "heapUsed": 173168
+        "rss": 233472,
+        "heapUsed": 172024
       },
       "ownMemoryDelta": {
-        "rss": 143360,
-        "heapUsed": 173168
+        "rss": 233472,
+        "heapUsed": 172024
       }
     },
     {
       "name": "prepare:types",
-      "duration": 42.59,
-      "ownDuration": 42.59,
+      "duration": 56.72,
+      "ownDuration": 56.72,
       "memoryBefore": {
-        "rss": 219619328,
-        "heapUsed": 79785248,
-        "heapTotal": 136155136
+        "rss": 210202624,
+        "heapUsed": 82155992,
+        "heapTotal": 131960832
       },
       "memoryAfter": {
-        "rss": 220090368,
-        "heapUsed": 85331032,
-        "heapTotal": 136679424
+        "rss": 214843392,
+        "heapUsed": 87562592,
+        "heapTotal": 131960832
       },
       "memoryDelta": {
-        "rss": 471040,
-        "heapUsed": 5545784
+        "rss": 4640768,
+        "heapUsed": 5406600
       },
       "ownMemoryDelta": {
-        "rss": 471040,
-        "heapUsed": 5545784
+        "rss": 4640768,
+        "heapUsed": 5406600
       }
     },
     {
       "name": "app:generate",
-      "duration": 198.5,
-      "ownDuration": 102.77,
+      "duration": 346.82,
+      "ownDuration": 151.4,
       "memoryBefore": {
-        "rss": 220119040,
-        "heapUsed": 86408560,
-        "heapTotal": 136679424
+        "rss": 216023040,
+        "heapUsed": 88640016,
+        "heapTotal": 131960832
       },
       "memoryAfter": {
-        "rss": 237019136,
-        "heapUsed": 103507088,
-        "heapTotal": 209436672
+        "rss": 231579648,
+        "heapUsed": 92716000,
+        "heapTotal": 142901248
       },
       "memoryDelta": {
-        "rss": 16900096,
-        "heapUsed": 17098528
+        "rss": 15556608,
+        "heapUsed": 4075984
       },
       "ownMemoryDelta": {
-        "rss": 2281472,
-        "heapUsed": 10252528
+        "rss": 9879552,
+        "heapUsed": -7527040
       }
     },
     {
       "name": "app:templates",
-      "duration": 82.99,
-      "ownDuration": 63.9,
+      "duration": 175.57,
+      "ownDuration": 140.45,
       "memoryBefore": {
-        "rss": 220299264,
-        "heapUsed": 88457296,
-        "heapTotal": 136679424
+        "rss": 224489472,
+        "heapUsed": 72913480,
+        "heapTotal": 138514432
       },
       "memoryAfter": {
-        "rss": 233971712,
-        "heapUsed": 91797912,
-        "heapTotal": 208457728
+        "rss": 229216256,
+        "heapUsed": 80969376,
+        "heapTotal": 142446592
       },
       "memoryDelta": {
-        "rss": 13672448,
-        "heapUsed": 3340616
+        "rss": 4726784,
+        "heapUsed": 8055896
       },
       "ownMemoryDelta": {
-        "rss": 2945024,
-        "heapUsed": 8151464
+        "rss": 4702208,
+        "heapUsed": -11176376
       }
     },
     {
       "name": "pages:extend",
-      "duration": 19.09,
-      "ownDuration": 19.09,
+      "duration": 35.12,
+      "ownDuration": 35.12,
       "memoryBefore": {
-        "rss": 220536832,
-        "heapUsed": 89369288,
-        "heapTotal": 136941568
+        "rss": 224591872,
+        "heapUsed": 73823528,
+        "heapTotal": 138514432
       },
       "memoryAfter": {
-        "rss": 231264256,
-        "heapUsed": 84558440,
-        "heapTotal": 207196160
+        "rss": 224616448,
+        "heapUsed": 93055800,
+        "heapTotal": 138514432
       },
       "memoryDelta": {
-        "rss": 10727424,
-        "heapUsed": -4810848
+        "rss": 24576,
+        "heapUsed": 19232272
       },
       "ownMemoryDelta": {
-        "rss": 10727424,
-        "heapUsed": -4810848
+        "rss": 24576,
+        "heapUsed": 19232272
       }
     },
     {
       "name": "app:templatesGenerated",
-      "duration": 12.74,
-      "ownDuration": 12.74,
+      "duration": 19.85,
+      "ownDuration": 19.85,
       "memoryBefore": {
-        "rss": 236072960,
-        "heapUsed": 99989768,
-        "heapTotal": 209436672
+        "rss": 230629376,
+        "heapUsed": 89156936,
+        "heapTotal": 142901248
       },
       "memoryAfter": {
-        "rss": 237019136,
-        "heapUsed": 103495152,
-        "heapTotal": 209436672
+        "rss": 231579648,
+        "heapUsed": 92704064,
+        "heapTotal": 142901248
       },
       "memoryDelta": {
-        "rss": 946176,
-        "heapUsed": 3505384
+        "rss": 950272,
+        "heapUsed": 3547128
       },
       "ownMemoryDelta": {
-        "rss": 946176,
-        "heapUsed": 3505384
+        "rss": 950272,
+        "heapUsed": 3547128
       }
     },
     {
       "name": "build:before",
-      "duration": 9.3,
-      "ownDuration": 9.3,
+      "duration": 14.73,
+      "ownDuration": 14.73,
       "memoryBefore": {
-        "rss": 237019136,
-        "heapUsed": 103510304,
-        "heapTotal": 209436672
+        "rss": 231579648,
+        "heapUsed": 92719216,
+        "heapTotal": 142901248
       },
       "memoryAfter": {
-        "rss": 237498368,
-        "heapUsed": 104516488,
-        "heapTotal": 209436672
+        "rss": 231677952,
+        "heapUsed": 93722216,
+        "heapTotal": 143163392
       },
       "memoryDelta": {
-        "rss": 479232,
-        "heapUsed": 1006184
+        "rss": 98304,
+        "heapUsed": 1003000
       },
       "ownMemoryDelta": {
-        "rss": 479232,
-        "heapUsed": 1006184
+        "rss": 98304,
+        "heapUsed": 1003000
       }
     }
   ],
@@ -471,39 +471,39 @@
   "modules": [
     {
       "name": "@nuxt/devtools",
-      "setupTime": 140.18
+      "setupTime": 142.9
     },
     {
       "name": "@nuxtjs/tailwindcss",
-      "setupTime": 24.14
+      "setupTime": 30.09
     },
     {
       "name": "nuxt:pages",
-      "setupTime": 22.15
+      "setupTime": 21.98
     },
     {
       "name": "nuxt:components",
-      "setupTime": 6.64
-    },
-    {
-      "name": "nuxt:meta",
-      "setupTime": 5.22
+      "setupTime": 7.05
     },
     {
       "name": "pinia",
-      "setupTime": 4.69
+      "setupTime": 4.14
+    },
+    {
+      "name": "nuxt:meta",
+      "setupTime": 3.81
     },
     {
       "name": "nuxt:imports",
-      "setupTime": 3.2
+      "setupTime": 2.11
     },
     {
       "name": "nuxt:nuxt-config-schema",
-      "setupTime": 0.73
+      "setupTime": 0.51
     },
     {
       "name": "@nuxt/telemetry",
-      "setupTime": 0.33
+      "setupTime": 0.21
     },
     {
       "name": "nuxt:compiler",
@@ -511,5 +511,5 @@
     }
   ],
   "bundlerPlugins": [],
-  "timestamp": "2026-08-23T03:58:46.516Z"
+  "timestamp": "2026-08-23T05:01:14.182Z"
 }

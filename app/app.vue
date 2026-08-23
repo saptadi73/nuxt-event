@@ -108,21 +108,37 @@ const handleClickOutside = (event: MouseEvent) => {
   }
 };
 
+const refreshRegistrationFlow = async () => {
+  if (!isAuthenticated.value) return;
+  try {
+    await registrationFlow.loadFlow(true);
+  } catch {
+    // A temporary progress request failure must not break navigation or authentication.
+  }
+};
+
+const handleWindowFocus = () => { void refreshRegistrationFlow(); };
+const handleVisibilityChange = () => {
+  if (document.visibilityState === 'visible') void refreshRegistrationFlow();
+};
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('focus', handleWindowFocus);
 
-  if (isAuthenticated.value) {
-    registrationFlow.loadFlow();
-  }
+  void refreshRegistrationFlow();
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+  window.removeEventListener('focus', handleWindowFocus);
 });
 
 watch(isAuthenticated, (value) => {
   if (!value) return;
-  registrationFlow.loadFlow();
+  void refreshRegistrationFlow();
 });
 
 const handleLogout = async () => {

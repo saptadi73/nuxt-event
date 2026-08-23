@@ -53,7 +53,6 @@ const {getEvents}=useEvent();
 const {getProducts,addCartItem}=useStore();
 const authStore=useAuthStore();
 const isAuthenticated=computed(()=>authStore.isAuthenticated);
-const registrationFlow=useRegistrationFlow();
 const route=useRoute();
 const selectedType=computed<'delegate'|'exhibitor'>(()=>route.query.type==='exhibitor'?'exhibitor':'delegate');
 const eventId=ref('');
@@ -104,24 +103,19 @@ const addToCart=async(productId:string)=>{
   if(addingId.value){debugLog('blocked: another add operation is active',{addingId:addingId.value});return;}
   addingId.value=productId;notice.value='';
   try{
-    // Flow lookup improves routing, but a missing/incomplete user-flow record must not
-    // swallow the click. The cart endpoint remains the authoritative validation.
-    try{
-      debugLog('loading registration flow');
-      await registrationFlow.loadFlow(true);
-      debugLog('registration flow loaded',{status:registrationFlow.primaryStatus.value,type:registrationFlow.primaryType.value});
-      if(registrationFlow.primaryStatus.value!=='not_selected'){
-        debugLog('redirecting to active purchase',{to:registrationFlow.ctaTo.value});
-        await navigateTo(registrationFlow.ctaTo.value);
-        return;
-      }
-    }catch(error){debugLog('registration flow lookup failed; continuing',apiError(error));}
-
     debugLog('sending add-cart request',{eventId:currentEventId.value,productId});
-    await addCartItem(currentEventId.value,productId,1);
-    debugLog('add-cart request succeeded');
+    const updatedCart=await addCartItem(currentEventId.value,productId,1);
+    debugLog('add-cart request succeeded',{items:updatedCart.data.items?.length??0});
+    // A successful add starts a new checkout context. Remove only stale browser-side
+    // order/payment references; the server cart remains the source of truth.
+    sessionStorage.removeItem('iwbif-store-order-id');
+    sessionStorage.removeItem('iwbif-store-order');
+    sessionStorage.removeItem('iwbif-payment-id');
+    sessionStorage.removeItem('iwbif-doku-payment-id');
     rememberDelegatePackage(productId);
     noticeTone.value='success';notice.value='Package added to your cart.';
+    debugLog('navigating to cart');
+    await navigateTo('/dashboard/cart');
   }
   catch(error){noticeTone.value='error';notice.value=apiError(error);debugLog('add-cart request failed',notice.value);}
   finally{addingId.value='';debugLog('add operation finished');}
