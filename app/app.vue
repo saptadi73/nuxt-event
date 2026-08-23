@@ -682,4 +682,3 @@ summary::-webkit-details-marker {
   }
 }
 </style>
-

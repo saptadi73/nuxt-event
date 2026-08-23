@@ -738,6 +738,11 @@ POST /api/v1/admin/notifications/{notification_id}/read
 POST /api/v1/admin/notifications/read-all?event_id=<uuid>
 ```
 
+Endpoint gabungan `/inbox/unread-count` tersedia untuk semua akun yang telah
+login, termasuk admin/organizer tanpa participant profile. Untuk akun tersebut,
+`messages` bernilai `0`, sedangkan `notifications` tetap menghitung notifikasi
+admin dan `unread_count` tetap dapat digunakan sebagai badge ikon inbox.
+
 Contoh response `/api/v1/inbox/unread-count`:
 
 ```json
