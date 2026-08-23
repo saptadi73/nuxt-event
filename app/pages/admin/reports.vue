@@ -282,7 +282,6 @@
 <script setup lang="ts">
 import { useAdminReport, type PaymentReportResponse } from '~/composables/useAdminReport';
 import { useEvent, type DelegatePackageItem, type EventItem } from '~/composables/useEvent';
-import { getPaymentProviderConfig } from '~/config/payment';
 const route = useRoute();
 const router = useRouter();
 const config = useRuntimeConfig();
@@ -291,8 +290,7 @@ definePageMeta({ middleware: ['auth', 'admin'] });
 useSeoMeta({ title: 'Sales Report | IWBIF 2026' });
 
 const authStore = useAuthStore();
-const { getReport } = useAdminReport();
-const isMidtransReport = getPaymentProviderConfig().isMidtrans;
+const { getReport, isMidtransReport } = useAdminReport();
 const { getEvents, getEventDelegatePackages } = useEvent();
 const dateFrom = ref('');
 const dateTo = ref('');
@@ -489,7 +487,7 @@ const csvUrl = computed(() => {
   Object.entries(params).forEach(([key, value]) => {
     if (value) query.append(key, value);
   });
-  const path = '/admin/reports/payments.csv';
+  const path = isMidtransReport ? '/admin/reports/payments/midtrans.csv' : '/admin/reports/payments.csv';
   return query.toString() ? `${path}?${query.toString()}` : path;
 });
 

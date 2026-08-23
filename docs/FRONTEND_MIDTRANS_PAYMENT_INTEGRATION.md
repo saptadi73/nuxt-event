@@ -120,8 +120,12 @@ sebelum menandai capture berhasil. Keduanya tersimpan di
 Gunakan sandbox lebih dahulu dengan `MIDTRANS_IS_PRODUCTION=false`. Setelah uji
 berhasil, pasang production Server/Client Key dan ubah flag menjadi `true`.
 
-Laporan admin utama menggabungkan semua provider:
+Laporan admin dipisahkan berdasarkan provider:
 
-- Semua provider: `/api/v1/admin/reports/payments` dan `.csv`
-- Filter opsional: `?provider=doku` atau `?provider=midtrans`
-- Midtrans khusus: `/api/v1/admin/reports/payments/midtrans` dan `.csv`
+- DOKU: `/api/v1/admin/reports/payments` dan `.csv`
+- Midtrans: `/api/v1/admin/reports/payments/midtrans` dan `.csv`
+
+Frontend harus memberi label referensi sesuai provider. Jangan menampilkan
+`provider_order_id`/`provider_transaction_id` DOKU di kolom berjudul “Midtrans
+references”. Channel Midtrans memakai rail pembayaran; transaksi QRIS selalu
+ditampilkan sebagai `QRIS`, walaupun issuer atau acquirer payload adalah bank.

@@ -1276,12 +1276,12 @@ Untuk production, gunakan production Server/Client Key dan ubah
 
 ### Laporan pembayaran dan pendapatan organizer
 
-Endpoint utama menggabungkan seluruh provider. Endpoint Midtrans khusus tetap
-tersedia untuk rekonsiliasi provider. Semua endpoint berikut memerlukan Bearer
-token dengan role `admin` atau `organizer`:
+Laporan DOKU dan Midtrans dipisahkan agar referensi transaksi, channel, dan CSV
+tidak tercampur. Semua endpoint berikut memerlukan Bearer token dengan role
+`admin` atau `organizer`:
 
 ```http
-# Semua provider; gunakan ?provider=doku atau ?provider=midtrans untuk filter
+# DOKU (termasuk provider `doku_snap_*`)
 GET /api/v1/admin/reports/payments
 GET /api/v1/admin/reports/payments.csv
 
@@ -1299,8 +1299,6 @@ Query parameter opsional untuk seluruh endpoint laporan:
 - `status`: `created`, `pending`, `success`, `failed`, `expired`, atau `refunded`.
 - `channel_code`: contoh `BCA`, `BNI`, `BRI`, atau `MANDIRI`.
 - `package_id`: UUID delegate package/tiket.
-- `provider`: `doku` atau `midtrans`. Pada endpoint laporan utama, jika kosong,
-  seluruh provider digabungkan.
 - Khusus JSON: `limit` 1–500 dan `offset` untuk daftar transaksi.
 
 Response JSON memberikan `summary`, agregasi `by_status`, `by_channel`,
@@ -1310,6 +1308,12 @@ Pembayaran store-first tetap dihitung ketika form Delegate belum dibuat dan
 `order.registration_id` masih `null`. Pada tahap tersebut field registration,
 event, customer, serta package dapat bernilai `null` dan akan terisi setelah
 order ditautkan saat registration dibuat.
+
+Untuk Midtrans, `channel_code` menunjukkan payment rail (`QRIS`, `GOPAY`,
+`SHOPEEPAY`, `CREDIT_CARD`, atau bank VA), bukan issuer/acquirer QRIS. Nilai
+`gross_amount` berasal dari Status API Midtrans setelah nominal tersebut cocok
+dengan total order; ini adalah nominal tagihan gateway, bukan settlement net
+setelah biaya layanan provider.
 
 ```json
 {"total_transactions":12,"successful_transactions":8,"pending_transactions":2,"failed_transactions":1,"expired_transactions":1,"gross_revenue":64000000,"pending_amount":16000000,"currency":"IDR"}

@@ -1,4 +1,5 @@
 import type { useApi, ApiResponse } from '~/composables/useApi';
+import { getPaymentProviderConfig } from '~/config/payment';
 
 export interface PaymentReportSummary {
   total_transactions: number;
@@ -53,6 +54,7 @@ export interface ManualPaymentConfirmPayload {
 
 export function useAdminReport() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
+  const paymentProvider = getPaymentProviderConfig();
 
   const getReport = (params: Record<string, string | number | undefined> = {}) => {
     const query = new URLSearchParams();
@@ -63,9 +65,10 @@ export function useAdminReport() {
     });
 
     const suffix = query.toString() ? `?${query.toString()}` : '';
-    // The primary report aggregates every provider. It also accepts the
-    // optional provider query parameter described in API_REFERENCE.md.
-    return api<ApiResponse<PaymentReportResponse>>(`/admin/reports/payments${suffix}`);
+    const reportPath = paymentProvider.isMidtrans
+      ? '/admin/reports/payments/midtrans'
+      : '/admin/reports/payments';
+    return api<ApiResponse<PaymentReportResponse>>(`${reportPath}${suffix}`);
   };
 
   const confirmManualPayment = (orderId: string, payload: ManualPaymentConfirmPayload) =>
@@ -74,5 +77,5 @@ export function useAdminReport() {
       body: payload
     });
 
-  return { getReport, confirmManualPayment };
+  return { getReport, confirmManualPayment, isMidtransReport: paymentProvider.isMidtrans };
 }
