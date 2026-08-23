@@ -1,1 +1,0 @@
-import{c as e,u as t}from"./DbHcwTHG.js";import{t as n}from"./ClfyjCya.js";var r=e(()=>{let e=n();if(e.syncTokensFromCookies(),!e.isAuthenticated)return t(`/auth/login`)});export{r as default};
