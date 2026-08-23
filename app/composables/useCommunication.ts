@@ -3,7 +3,7 @@ import type { useApi, ApiResponse } from '~/composables/useApi';
 export interface ConversationCreatePayload { participant_id: string; initial_message?: string | null }
 export interface ConversationItem { id: string; event_id: string; archived_at?: string | null; unread_count?: number }
 export interface MessageItem { id: string; conversation_id: string; message?: string; body?: string; created_at?: string }
-export interface NotificationItem { id: string; title?: string; message?: string; body?: string; entity_type?: string; entity_id?: string; is_read?: boolean; created_at?: string; read_at?: string }
+export interface NotificationItem { id: string; type?: string; title?: string; message?: string; body?: string; entity_type?: string; entity_id?: string; is_read?: boolean; created_at?: string; read_at?: string }
 
 export function useCommunication() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;

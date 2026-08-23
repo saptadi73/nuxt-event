@@ -34,7 +34,7 @@
               type="button"
               class="inbox-trigger header-cta relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-amber-300/35 bg-amber-300/10 p-0 text-amber-100"
               :title="`Inbox${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`"
-              @click="showInbox = !showInbox"
+              @click="openInbox"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M22 5.5V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5.5L12 12Z"></path>
@@ -282,6 +282,11 @@ const refreshUnreadOnly = async () => {
 
 const handleRefreshInbox = async () => {
   await loadInboxNotifications();
+};
+
+const openInbox = async () => {
+  showInbox.value = false;
+  await navigateTo('/dashboard/inbox');
 };
 
 const handleMarkRead = async (notification: InboxNotification) => {
