@@ -7,6 +7,61 @@ type AuthUser = {
   roles?: string[];
 };
 
+const storageKeys = {
+  accessToken: 'iwbif_access_token',
+  refreshToken: 'iwbif_refresh_token'
+};
+
+const readStorageToken = (key: string): string => {
+  if (import.meta.server || typeof window === 'undefined') return '';
+  try {
+    return window.localStorage.getItem(key) || '';
+  } catch {
+    return '';
+  }
+};
+
+const writeStorageToken = (key: string, value: string) => {
+  if (import.meta.server || typeof window === 'undefined') return;
+  try {
+    if (value) window.localStorage.setItem(key, value);
+    else window.localStorage.removeItem(key);
+  } catch {
+    // Storage is optional; token state is still kept in memory/cookies.
+  }
+};
+
+const authCookieOptions = {
+  path: '/',
+  sameSite: 'lax' as const,
+  maxAge: 60 * 60 * 24 * 30,
+  secure: process.env.NODE_ENV === 'production'
+};
+
+const decodeJwtPayloadValue = (token: string): Record<string, unknown> | null => {
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
+    const binary = atob(padded);
+    const json = decodeURIComponent(
+      Array.from(binary).map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`).join('')
+    );
+    return JSON.parse(json) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+};
+
+const isJwtExpired = (token: string, clockSkewSeconds = 30): boolean => {
+  if (!token) return true;
+  const payload = decodeJwtPayloadValue(token);
+  if (!payload) return true;
+  if (typeof payload.exp !== 'number') return false;
+  return payload.exp <= Math.floor(Date.now() / 1000) + clockSkewSeconds;
+};
+
 const normalizeRole = (value?: string | string[] | null): string | undefined => {
   const list = Array.isArray(value) ? value : value ? [value] : [];
   const first = list.find((item) => typeof item === 'string' && item.trim()) as string | undefined;
@@ -15,12 +70,14 @@ const normalizeRole = (value?: string | string[] | null): string | undefined => 
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    accessToken: useCookie<string>('access_token', { default: () => '' }).value,
-    refreshToken: useCookie<string>('refresh_token', { default: () => '' }).value,
+    accessToken: useCookie<string>('access_token', { ...authCookieOptions, default: () => '' }).value || readStorageToken(storageKeys.accessToken),
+    refreshToken: useCookie<string>('refresh_token', { ...authCookieOptions, default: () => '' }).value || readStorageToken(storageKeys.refreshToken),
     user: null as AuthUser | null
   }),
   getters: {
-    isAuthenticated: (state) => Boolean(state.accessToken),
+    isAccessTokenExpired: (state) => isJwtExpired(state.accessToken),
+    isRefreshTokenExpired: (state) => isJwtExpired(state.refreshToken),
+    isAuthenticated: (state) => !isJwtExpired(state.accessToken) || !isJwtExpired(state.refreshToken),
     userRole: (state) => {
       const directRole = normalizeRole(state.user?.role);
       if (directRole) return directRole;
@@ -34,20 +91,29 @@ export const useAuthStore = defineStore('auth', {
     }
   },
   actions: {
-    decodeJwtPayload(token: string): Record<string, unknown> | null {
-      try {
-        const payload = token.split('.')[1];
-        if (!payload) return null;
-        const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-        const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
-        const binary = atob(padded);
-        const json = decodeURIComponent(
-          Array.from(binary).map((char) => `%${`00${char.charCodeAt(0).toString(16)}`.slice(-2)}`).join('')
-        );
-        return JSON.parse(json) as Record<string, unknown>;
-      } catch {
-        return null;
+    syncTokensFromCookies() {
+      // Public prerender payloads contain an anonymous Pinia snapshot. Restore
+      // the browser cookies after hydration before auth state is inspected.
+      const accessToken = useCookie<string>('access_token', { ...authCookieOptions, default: () => '' });
+      const refreshToken = useCookie<string>('refresh_token', { ...authCookieOptions, default: () => '' });
+      const persistedAccessToken = accessToken.value || readStorageToken(storageKeys.accessToken);
+      const persistedRefreshToken = refreshToken.value || readStorageToken(storageKeys.refreshToken);
+
+      this.accessToken = persistedAccessToken;
+      this.refreshToken = persistedRefreshToken;
+
+      if (isJwtExpired(this.accessToken) && isJwtExpired(this.refreshToken)) {
+        this.clearToken();
+        return;
       }
+
+      if (this.accessToken) writeStorageToken(storageKeys.accessToken, this.accessToken);
+      if (this.refreshToken) writeStorageToken(storageKeys.refreshToken, this.refreshToken);
+
+      this.hydrateUserFromToken();
+    },
+    decodeJwtPayload(token: string): Record<string, unknown> | null {
+      return decodeJwtPayloadValue(token);
     },
     resolveRoleFromPayload(payload: Record<string, unknown>): string | undefined {
       const fromRole = normalizeRole((payload.role as string | string[] | undefined) ?? undefined);
@@ -101,8 +167,10 @@ export const useAuthStore = defineStore('auth', {
     setTokens({ accessToken, refreshToken }: { accessToken: string; refreshToken: string }) {
       this.accessToken = accessToken;
       this.refreshToken = refreshToken;
-      useCookie<string>('access_token').value = accessToken;
-      useCookie<string>('refresh_token').value = refreshToken;
+      useCookie<string>('access_token', authCookieOptions).value = accessToken;
+      useCookie<string>('refresh_token', authCookieOptions).value = refreshToken;
+      writeStorageToken(storageKeys.accessToken, accessToken);
+      writeStorageToken(storageKeys.refreshToken, refreshToken);
       this.hydrateUserFromToken();
     },
     setUser(user: AuthUser | null) {
@@ -112,8 +180,10 @@ export const useAuthStore = defineStore('auth', {
       this.accessToken = '';
       this.refreshToken = '';
       this.user = null;
-      useCookie<string | null>('access_token').value = null;
-      useCookie<string | null>('refresh_token').value = null;
+      useCookie<string | null>('access_token', authCookieOptions).value = null;
+      useCookie<string | null>('refresh_token', authCookieOptions).value = null;
+      writeStorageToken(storageKeys.accessToken, '');
+      writeStorageToken(storageKeys.refreshToken, '');
     }
   }
 });

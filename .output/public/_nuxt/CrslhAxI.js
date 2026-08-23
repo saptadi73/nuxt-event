@@ -1,0 +1,1 @@
+import{a as e}from"./CxqhHpZd.js";function t(){let t=e();return{mediaUrl:e=>{if(!e)return``;if(/^(data:|blob:)/i.test(e))return e;let n=new URL(t.public.backendOrigin).origin;if(/^https?:/i.test(e)){let t=new URL(e);return[`127.0.0.1`,`localhost`,`0.0.0.0`].includes(t.hostname)?`${n}${t.pathname}${t.search}${t.hash}`:e}return`${n}${e.startsWith(`/`)?e:`/${e}`}`}}}export{t};

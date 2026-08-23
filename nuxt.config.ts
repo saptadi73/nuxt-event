@@ -1,17 +1,19 @@
-const localApiBaseUrl = 'http://127.0.0.1:8000/api/v1';
-const productionApiBaseUrl = 'https://api.iwbif.id/api/v1';
+const productionApiBaseUrl = 'https://api.iwbif.id';
 const productionSiteUrl = 'https://iwbif.id';
-const productionCommands = new Set(['build', 'generate']);
-const isProductionBuild = productionCommands.has(process.env.npm_lifecycle_event || '')
-  || process.argv.some((argument) => productionCommands.has(argument));
-const configuredApiBaseUrl = process.env.NUXT_PUBLIC_API_BASE_URL || localApiBaseUrl;
-const configuredSiteUrl = process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-const apiBaseUrl = isProductionBuild ? productionApiBaseUrl : configuredApiBaseUrl;
-const siteUrl = isProductionBuild ? productionSiteUrl : configuredSiteUrl;
+const isDevelopmentRuntime = process.env.npm_lifecycle_event === 'dev';
+// Production values are the unconditional fallback. Local development must opt
+// in through .env while running the explicit `npm run dev` script.
+const apiBaseUrl = isDevelopmentRuntime
+  ? process.env.NUXT_PUBLIC_API_BASE_URL || productionApiBaseUrl
+  : productionApiBaseUrl;
+const siteUrl = isDevelopmentRuntime
+  ? process.env.NUXT_PUBLIC_SITE_URL || productionSiteUrl
+  : productionSiteUrl;
+const apiBasePath = process.env.NUXT_PUBLIC_API_BASE_PATH || '/api/v1';
 
 export default defineNuxtConfig({
   experimental: {
-    appManifest: !isProductionBuild
+    appManifest: isDevelopmentRuntime
   },
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
   nitro: {
@@ -37,9 +39,10 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
     public: {
-      apiBaseUrl,
+      backendOrigin: apiBaseUrl,
+      apiBasePath,
       eventSlug: process.env.NUXT_PUBLIC_EVENT_SLUG || 'iwbif-2026',
-      siteUrl,
+      canonicalSiteUrl: siteUrl,
       appName: process.env.NUXT_PUBLIC_APP_NAME || 'IWBIF 2026',
       paymentProvider: (process.env.NUXT_PUBLIC_PAYMENT_PROVIDER || 'doku').toLowerCase()
     }

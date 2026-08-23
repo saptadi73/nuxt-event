@@ -11,11 +11,13 @@ import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRu
    },
   }
   interface SharedPublicRuntimeConfig {
-   apiBaseUrl: string,
+   backendOrigin: string,
+
+   apiBasePath: string,
 
    eventSlug: string,
 
-   siteUrl: string,
+   canonicalSiteUrl: string,
 
    appName: string,
 

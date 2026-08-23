@@ -5,7 +5,7 @@ export function useMediaUrl() {
     if (!url) return '';
     if (/^(data:|blob:)/i.test(url)) return url;
 
-    const backendOrigin = new URL(config.public.apiBaseUrl).origin;
+    const backendOrigin = new URL(config.public.backendOrigin).origin;
     if (/^https?:/i.test(url)) {
       const absoluteUrl = new URL(url);
       if (['127.0.0.1', 'localhost', '0.0.0.0'].includes(absoluteUrl.hostname)) {

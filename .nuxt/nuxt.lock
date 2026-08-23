@@ -1,0 +1,9 @@
+{
+  "pid": 24728,
+  "startedAt": 1787455531189,
+  "command": "dev",
+  "cwd": "C:/projek/nuxt-event",
+  "port": 3000,
+  "hostname": "0.0.0.0",
+  "url": "http://0.0.0.0:3000"
+}
