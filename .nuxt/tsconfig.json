@@ -110,7 +110,7 @@
         "./imports"
       ],
       "#app-manifest": [
-        "../node_modules/mocked-exports/lib/proxy.d.mts"
+        "./manifest/meta/dev.json"
       ],
       "#components": [
         "./components"

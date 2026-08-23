@@ -1,5 +1,19 @@
 <template>
   <section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+    <div
+      v-if="manualReviewToast"
+      class="manual-review-toast fixed right-4 top-4 z-50 max-w-[20rem] rounded-2xl border p-3 text-sm shadow-lg"
+      :class="manualReviewToastClass"
+      role="status"
+      aria-live="polite"
+      @click="closeManualReviewToast"
+    >
+      <div class="flex items-start justify-between gap-3">
+        <p>{{ manualReviewToast }}</p>
+        <button class="font-bold" type="button">x</button>
+      </div>
+    </div>
+
     <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <p class="text-xs uppercase tracking-[0.28em] text-amber-200">Organizer Panel</p>
@@ -7,7 +21,36 @@
         <p class="mt-2 text-xs text-slate-400">Last updated: {{ lastUpdatedLabel }}</p>
       </div>
       <div class="rounded-full border border-amber-300/30 bg-amber-300/10 px-4 py-2 text-sm font-medium text-amber-100">
-        Role: {{ authStore.userRole || 'unknown' }}
+        <div class="inline-flex items-center">
+          <span>Role: {{ authStore.userRole || 'unknown' }}</span>
+          <button
+            type="button"
+            class="user-login-badge ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-amber-100/40 relative"
+            :title="loggedInUserInfo"
+            @click="showLoggedInUserInfo = !showLoggedInUserInfo"
+          >
+            <span v-if="authStore.isAuthenticated" class="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" title="Session active"></span>
+            <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-300/20 text-xs text-amber-100 font-bold">
+              {{ loggedInUserInitial }}
+            </span>
+          </button>
+        </div>
+        <div
+          ref="loggedInUserPopoverRef"
+          v-if="showLoggedInUserInfo"
+          class="mt-2 rounded-lg border border-amber-200/40 bg-slate-900/90 px-3 py-2 text-xs text-amber-100"
+        >
+          <p class="font-semibold text-amber-50">Sesi login</p>
+          <p class="mt-1">{{ loggedInUserName }}</p>
+          <p class="text-amber-200/90">{{ loggedInUserEmail }}</p>
+          <button
+            type="button"
+            class="mt-2 rounded-full border border-amber-200/40 px-2 py-1 text-[11px] font-bold"
+            @click.stop="copyLoggedInUserInfo"
+          >
+            Salin nama & email
+          </button>
+        </div>
       </div>
     </div>
 
@@ -125,6 +168,20 @@
       </div>
 
       <article class="glass-card rounded-3xl p-5">
+        <div v-if="manualReviewNotifications.length" class="mb-4 rounded-2xl border border-amber-300/35 bg-amber-300/10 p-3 text-sm text-amber-100">
+          <p class="font-bold">Perlu verifikasi manual: {{ manualReviewNotifications.length }} transaksi</p>
+          <p class="mt-1 text-xs text-amber-200">
+            Deteksi kemungkinan sukses di gateway tapi status backend belum sinkron.
+          </p>
+          <ul class="mt-2 space-y-1 text-xs">
+            <li v-for="item in manualReviewNotifications" :key="`${item.payment_id || item.id}-alert`" class="truncate">
+              {{ item.order_number || item.id }} ({{ item.provider_order_id || 'no reference' }}) — backend: {{ item.transaction_status || item.status || 'N/A' }}, gateway: {{ item.order_status || 'unknown' }}
+            </li>
+          </ul>
+          <button class="mt-3 rounded-full border border-rose-300/35 px-3 py-2 text-xs font-bold text-rose-100" :disabled="!manualReviewTransactions.length" @click="copyManualReviewReferences">
+            Salin daftar referensi ({{ manualReviewTransactions.length }})
+          </button>
+        </div>
         <div class="mb-4 flex items-center justify-between gap-3">
           <h2 class="text-lg font-bold">Latest transactions</h2>
           <a :href="csvUrl" :download="csvFileName" class="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-100">Download CSV</a>
@@ -132,8 +189,13 @@
         <div class="mb-4">
           <label class="grid gap-2 text-sm">
             <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Cari transaksi</span>
-            <input v-model="searchTerm" type="text" placeholder="Cari order, participant, package, channel, status" class="rounded-full border border-white/15 bg-slate-900 px-4 py-2 text-sm text-white outline-none" />
+            <input v-model="searchTerm" type="text" placeholder="Cari order, referensi gateway, participant, package, channel, status" class="rounded-full border border-white/15 bg-slate-900 px-4 py-2 text-sm text-white outline-none" />
           </label>
+        </div>
+        <div v-if="isMidtransReport" class="mb-3">
+          <button type="button" class="rounded-full border border-rose-300/35 bg-rose-300/10 px-3 py-2 text-xs font-bold text-rose-100" @click="showManualReviewOnly = !showManualReviewOnly">
+            {{ showManualReviewOnly ? 'Tampilkan semua transaksi' : 'Tampilkan hanya perlu verifikasi' }}
+          </button>
         </div>
         <div class="mb-2 flex flex-wrap gap-2 text-xs">
           <span class="inline-flex rounded-full border border-emerald-300/30 px-2 py-1 text-emerald-200">Success: Lunas</span>
@@ -156,6 +218,7 @@
             <thead>
               <tr class="border-b border-white/10 text-xs uppercase tracking-[0.18em] text-slate-400">
                 <th class="py-3 pr-4">Order</th>
+                <th v-if="isMidtransReport" class="py-3 pr-4">Midtrans references</th>
                 <th class="py-3 pr-4">Participant</th>
                 <th class="py-3 pr-4">Package</th>
                 <th class="py-3 pr-4">Channel</th>
@@ -164,14 +227,28 @@
               </tr>
             </thead>
             <tbody>
-            <tr v-for="item in paginatedTransactions" :key="item.id" class="border-b border-white/5 last:border-0">
+            <tr v-for="item in paginatedTransactions" :key="item.payment_id || item.id" class="border-b border-white/5 last:border-0">
                 <td class="py-3 pr-4 text-white">{{ item.order_number || item.id }}</td>
+                <td v-if="isMidtransReport" class="py-3 pr-4">
+                  <div class="grid min-w-56 gap-2 text-xs">
+                    <button v-if="item.provider_order_id" type="button" class="reference-button" title="Salin Midtrans order ID" @click="copyReference(item.provider_order_id)">
+                      <span>Order ID</span><code>{{ item.provider_order_id }}</code>
+                    </button>
+                    <button v-if="item.provider_transaction_id" type="button" class="reference-button" title="Salin Midtrans transaction ID" @click="copyReference(item.provider_transaction_id)">
+                      <span>Transaction ID</span><code>{{ item.provider_transaction_id }}</code>
+                    </button>
+                    <span v-if="!item.provider_order_id && !item.provider_transaction_id" class="text-slate-500">N/A</span>
+                  </div>
+                </td>
                 <td class="py-3 pr-4">{{ item.participant_name || 'N/A' }}</td>
                 <td class="py-3 pr-4">{{ item.package_name || 'N/A' }}</td>
                 <td class="py-3 pr-4">{{ item.channel_code || item.provider || 'N/A' }}</td>
                 <td class="py-3 pr-4">
-                  <span :class="transactionStatusClass(item.transaction_status || item.status || '')" class="inline-flex rounded-full px-2 py-1 text-xs font-bold">
-                    {{ item.transaction_status || item.status || 'N/A' }}
+                  <span :class="transactionStatusClass(item)" class="inline-flex rounded-full px-2 py-1 text-xs font-bold">
+                    {{ transactionStatusLabel(item) }}
+                  </span>
+                  <span v-if="requiresManualReview(item)" class="ml-2 inline-flex rounded-full bg-rose-400/25 px-2 py-1 text-[10px] font-bold text-rose-100">
+                    Perlu cek
                   </span>
                 </td>
                 <td class="py-3 pr-4 text-right text-white">{{ formatCurrency(item.gross_amount || 0) }}</td>
@@ -211,7 +288,7 @@ definePageMeta({ middleware: ['auth', 'admin'] });
 useSeoMeta({ title: 'Sales Report | IWBIF 2026' });
 
 const authStore = useAuthStore();
-const { getReport } = useAdminReport();
+const { getReport, isMidtransReport } = useAdminReport();
 const { getEvents, getEventDelegatePackages } = useEvent();
 const dateFrom = ref('');
 const dateTo = ref('');
@@ -229,6 +306,67 @@ const autoReloadTimer = ref<ReturnType<typeof setTimeout> | null>(null);
 const events = ref<Array<EventItem>>([]);
 const packageOptions = ref<Array<{ id: string; name: string }>>([]);
 const routeReady = ref(false);
+const showManualReviewOnly = ref(false);
+const manualReviewToast = ref('');
+const manualReviewToastClass = ref('border-emerald-300/35 bg-emerald-300/10 text-emerald-100');
+let manualReviewToastTimer: ReturnType<typeof setTimeout> | null = null;
+const showLoggedInUserInfo = ref(false);
+const loggedInUserName = computed(() => authStore.user?.full_name || 'User');
+const loggedInUserEmail = computed(() => authStore.user?.email || 'Tidak ada email');
+const loggedInUserPopoverRef = ref<HTMLElement | null>(null);
+const loggedInUserInitial = computed(() => {
+  const source = authStore.user?.full_name || authStore.user?.email || 'U';
+  return source.trim().charAt(0).toUpperCase() || 'U';
+});
+const loggedInUserInfo = computed(() => `${loggedInUserName.value} (${loggedInUserEmail.value})`);
+const copyLoggedInUserInfo = async () => {
+  if (!import.meta.client) return;
+  const payload = `Name: ${loggedInUserName.value}\nEmail: ${loggedInUserEmail.value}`;
+  await navigator.clipboard.writeText(payload);
+};
+const closeLoggedInUserPopover = (event: MouseEvent) => {
+  if (!showLoggedInUserInfo.value) return;
+  const target = event.target as Element | null;
+  if (!target) return;
+  const popover = loggedInUserPopoverRef.value;
+  if (popover && (target === popover || popover.contains(target))) return;
+  if (target.closest('.user-login-badge')) return;
+  showLoggedInUserInfo.value = false;
+};
+const manualReviewScope = computed(() => {
+  const userKey = authStore.user?.id || authStore.user?.email || 'unknown';
+  return `user:${userKey}`;
+});
+const manualReviewStateKey = computed(() => {
+  if (!import.meta.client) return 'admin-reports-manual-review';
+  const params = buildReportParams();
+  return JSON.stringify({
+    scope: manualReviewScope.value,
+    event_id: params.event_id || '',
+    date_from: params.date_from || '',
+    date_to: params.date_to || '',
+    status: params.status || '',
+    channel_code: params.channel_code || '',
+    package_id: params.package_id || ''
+  });
+});
+
+const getStoredManualReviewCount = (key: string) => {
+  if (!import.meta.client) return -1;
+  return Number(localStorage.getItem(key) || '-1');
+};
+
+const setStoredManualReviewCount = (key: string, value: number) => {
+  if (!import.meta.client) return;
+  localStorage.setItem(key, String(value));
+};
+const closeManualReviewToast = () => {
+  manualReviewToast.value = '';
+  if (manualReviewToastTimer) {
+    clearTimeout(manualReviewToastTimer);
+    manualReviewToastTimer = null;
+  }
+};
 
 const errorMessage = ref('');
 const defaultReport: PaymentReportResponse = {
@@ -342,7 +480,8 @@ const csvUrl = computed(() => {
   Object.entries(params).forEach(([key, value]) => {
     if (value) query.append(key, value);
   });
-  return query.toString() ? `/admin/reports/payments.csv?${query.toString()}` : '/admin/reports/payments.csv';
+  const path = isMidtransReport ? '/admin/reports/payments/midtrans.csv' : '/admin/reports/payments.csv';
+  return query.toString() ? `${path}?${query.toString()}` : path;
 });
 
 const csvFileName = computed(() => {
@@ -357,6 +496,9 @@ const loadReport = async () => {
   if (loading.value) return;
   loading.value = true;
   errorMessage.value = '';
+  const storagePrefix = 'admin:manual-review-count:';
+  const storageKey = `${storagePrefix}${manualReviewStateKey.value}`;
+  const previousStoredManualReviewCount = getStoredManualReviewCount(storageKey);
   if (hasDateRangeInvalid.value) {
     errorMessage.value = 'Tanggal mulai tidak boleh lebih besar dari tanggal selesai.';
     loading.value = false;
@@ -367,6 +509,23 @@ const loadReport = async () => {
     const response = await getReport(buildReportParams());
     report.value = response.data || defaultReport;
     lastUpdated.value = new Date();
+    if (isMidtransReport) {
+      const nextManualReviewCount = response.data?.transactions
+        ? response.data.transactions.filter(requiresManualReview).length
+        : 0;
+
+      if (nextManualReviewCount !== previousStoredManualReviewCount) {
+        setStoredManualReviewCount(storageKey, nextManualReviewCount);
+      }
+
+      if (nextManualReviewCount > previousStoredManualReviewCount) {
+        showManualReviewAlert('Baru ada transaksi yang perlu verifikasi manual (ditandai Perlu cek).');
+      } else if (nextManualReviewCount < previousStoredManualReviewCount) {
+        showManualReviewAlert('Jumlah transaksi perlu verifikasi manual berkurang setelah sinkronisasi.');
+      } else if (nextManualReviewCount > 0) {
+        showManualReviewAlert('Masih ada transaksi yang perlu verifikasi manual. Silakan cek indikator Perlu cek.');
+      }
+    }
     if (currentPage.value !== 1) {
       currentPage.value = 1;
     }
@@ -489,12 +648,29 @@ const setDatePreset = (type: 'today' | 'last7' | 'last30' | 'month') => {
   }
 };
 
-const summaryCards = computed(() => [
-  { label: 'Total transactions', value: formatNumber(report.value.summary.total_transactions), note: 'All recorded orders' },
-  { label: 'Successful', value: formatNumber(report.value.summary.successful_transactions), note: 'Paid & validated' },
-  { label: 'Revenue', value: formatCurrency(report.value.summary.gross_revenue), note: report.value.summary.currency },
-  { label: 'Pending amount', value: formatCurrency(report.value.summary.pending_amount), note: 'Awaiting verification' }
-]);
+const manualReviewTransactions = computed(() => {
+  if (!isMidtransReport) return [];
+  return report.value.transactions.filter(requiresManualReview);
+});
+
+const summaryCards = computed(() => {
+  const cards = [
+    { label: 'Total transactions', value: formatNumber(report.value.summary.total_transactions), note: 'All recorded orders' },
+    { label: 'Successful', value: formatNumber(report.value.summary.successful_transactions), note: 'Paid & validated' },
+    { label: 'Revenue', value: formatCurrency(report.value.summary.gross_revenue), note: report.value.summary.currency },
+    { label: 'Pending amount', value: formatCurrency(report.value.summary.pending_amount), note: 'Awaiting verification' }
+  ];
+
+  if (isMidtransReport) {
+    cards.push({
+      label: 'Need manual review',
+      value: formatNumber(manualReviewTransactions.value.length),
+      note: 'Gateway/backend mismatch'
+    });
+  }
+
+  return cards;
+});
 
 const byStatus = computed(() => report.value.by_status ?? []);
 const byChannel = computed(() => report.value.by_channel ?? []);
@@ -506,11 +682,16 @@ const filteredTransactions = computed(() => {
   const q = searchTerm.value.trim().toLowerCase();
   if (!q) return transactions.value;
 
-  return transactions.value.filter((item) => {
+  const filtered = showManualReviewOnly ? transactions.value.filter(requiresManualReview) : transactions.value;
+  return filtered.filter((item) => {
     const haystack = [
       item.order_number,
       item.id,
+      item.payment_id,
+      item.provider_order_id,
+      item.provider_transaction_id,
       item.participant_name,
+      item.customer_email,
       item.package_name,
       item.channel_code,
       item.provider,
@@ -574,15 +755,71 @@ const lastUpdatedLabel = computed(() => {
   }).format(lastUpdated.value);
 });
 
-const transactionStatusClass = (status: string) => {
-  const value = (status || '').toLowerCase();
-  if (value === 'success') {
+const isSuccessfulTransaction = (item: PaymentReportResponse['transactions'][number]) => {
+  const paymentStatus = (item.transaction_status || item.status || '').toLowerCase();
+  if (!isMidtransReport) return paymentStatus === 'success';
+  return paymentStatus === 'success' && (item.order_status || '').toLowerCase() === 'paid';
+};
+
+const requiresManualReview = (item: PaymentReportResponse['transactions'][number]) => {
+  const paymentStatus = (item.transaction_status || item.status || '').toLowerCase();
+  const gatewayStatus = (item.order_status || '').toLowerCase();
+
+  if (!isMidtransReport) return false;
+  return (paymentStatus === 'success' && gatewayStatus !== 'paid') || (gatewayStatus === 'paid' && paymentStatus !== 'success');
+};
+
+const transactionStatusLabel = (item: PaymentReportResponse['transactions'][number]) => {
+  const status = item.transaction_status || item.status || 'N/A';
+  if (isMidtransReport && status.toLowerCase() === 'success' && !isSuccessfulTransaction(item)) {
+    return `${status} / order ${item.order_status || 'unknown'}`;
+  }
+  return status;
+};
+
+const transactionStatusClass = (item: PaymentReportResponse['transactions'][number]) => {
+  const value = (item.transaction_status || item.status || '').toLowerCase();
+  if (isSuccessfulTransaction(item)) {
     return 'status-success';
   }
   if (value === 'pending' || value === 'created') {
     return 'status-pending';
   }
   return 'status-danger';
+};
+
+const manualReviewNotifications = computed(() => {
+  return manualReviewTransactions.value.slice(0, 5);
+});
+
+const copyManualReviewReferences = async () => {
+  if (!manualReviewTransactions.value.length || !import.meta.client) return;
+  const lines = manualReviewTransactions.value.map((item) => {
+    const orderId = item.order_number || item.id || '';
+    const providerOrderId = item.provider_order_id || '';
+    const providerTxnId = item.provider_transaction_id || '';
+    return `${orderId}\t${providerOrderId}\t${providerTxnId}`;
+  });
+  await navigator.clipboard.writeText(lines.join('\n'));
+};
+
+const copyReference = async (value: string | null | undefined) => {
+  if (!value || !import.meta.client) return;
+  await navigator.clipboard.writeText(value);
+};
+
+const showManualReviewAlert = (message: string) => {
+  if (!import.meta.client) return;
+  manualReviewToast.value = message;
+  manualReviewToastClass.value = message.includes('berkurang')
+    ? 'border-cyan-300/35 bg-cyan-300/10 text-cyan-100'
+    : 'border-rose-300/35 bg-rose-300/10 text-rose-100';
+  if (manualReviewToastTimer) {
+    clearTimeout(manualReviewToastTimer);
+  }
+  manualReviewToastTimer = setTimeout(() => {
+    manualReviewToast.value = '';
+  }, 7000);
 };
 
 watch(eventFilter, async () => {
@@ -606,6 +843,18 @@ watch([searchTerm, itemsPerPage], () => {
 watch(currentPage, () => {
   syncFiltersToUrl();
 });
+
+onMounted(() => {
+  if (import.meta.client) {
+    window.addEventListener('click', closeLoggedInUserPopover);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (import.meta.client) {
+    window.removeEventListener('click', closeLoggedInUserPopover);
+  }
+});
 </script>
 
 <style scoped>
@@ -623,6 +872,10 @@ watch(currentPage, () => {
   border-radius: 9999px 9999px 0 0;
   min-height: 6px;
   width: 14px;
+}
+
+.manual-review-toast {
+  backdrop-filter: blur(8px);
 }
 
 .daily-chart-label {
@@ -647,4 +900,21 @@ watch(currentPage, () => {
   background: rgba(244, 63, 94, 0.18);
   color: rgb(254, 202, 202);
 }
+
+.reference-button {
+  display: grid;
+  gap: 0.15rem;
+  text-align: left;
+}
+
+.reference-button span {
+  color: rgb(148, 163, 184);
+}
+
+.reference-button code {
+  color: rgb(207, 250, 254);
+  overflow-wrap: anywhere;
+}
 </style>
+
+

@@ -152,6 +152,20 @@ terminal atau komponen dilepas.
 | `failed` | Pembayaran gagal | Izinkan payment ulang setelah order baru/valid |
 | `expired` | Pembayaran kedaluwarsa | Izinkan checkout ulang |
 
+Jika status terlihat `pending` sementara gateway mengirim success tapi backend belum
+menandai `success`, jangan ubah UI ke sukses sampai /payments/{payment_id} sudah
+`transaction_status=success` dan `order_status=paid`. Sambil menunggu:
+
+- Tampilkan pesan “Verifikasi admin/pembayaran sedang diproses”.
+- Sisakan tombol “Periksa lagi” untuk memicu ulang polling.
+- Jika user mengkonfirmasi ada mismatch yang berkepanjangan, sarankan admin
+  verifikasi manual lewat workflow admin.
+
+Khusus Midtrans, keberadaan `provider_order_id` atau
+`provider_transaction_id` tidak mengubah aturan UI di atas. Frontend tetap
+menentukan hasil dari `transaction_status`; ID gateway hanya ditampilkan sebagai
+referensi invoice, report admin, atau troubleshooting.
+
 ## 6. Error handling
 
 - `401`: token invalid/expired, arahkan login atau refresh token.

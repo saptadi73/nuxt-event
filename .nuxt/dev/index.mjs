@@ -772,10 +772,10 @@ const _inlineRuntimeConfig = {
     }
   },
   "public": {
-    "backendOrigin": "https://api.iwbif.id/api/v1",
+    "backendOrigin": "http://127.0.0.1:8000",
     "apiBasePath": "/api/v1",
     "eventSlug": "iwbif-2026",
-    "canonicalSiteUrl": "https://iwbif.id",
+    "canonicalSiteUrl": "http://localhost:3000",
     "appName": "IWBIF 2026",
     "paymentProvider": "midtrans"
   }

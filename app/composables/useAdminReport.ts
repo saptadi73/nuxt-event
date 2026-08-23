@@ -1,4 +1,5 @@
 import { useApi, type ApiResponse } from '~/composables/useApi';
+import { getPaymentProviderConfig } from '~/config/payment';
 
 export interface PaymentReportSummary {
   total_transactions: number;
@@ -18,14 +19,21 @@ export interface PaymentReportMetric {
 
 export interface PaymentReportTransaction {
   id: string;
+  payment_id?: string;
   order_number?: string;
+  order_status?: string;
   participant_name?: string;
+  customer_email?: string;
   package_name?: string;
   channel_code?: string;
   provider?: string;
+  provider_order_id?: string | null;
+  provider_transaction_id?: string | null;
   transaction_status?: string;
   status?: string;
   gross_amount?: number;
+  currency?: string;
+  paid_at?: string | null;
 }
 
 export interface PaymentReportResponse {
@@ -46,6 +54,7 @@ export interface ManualPaymentConfirmPayload {
 
 export function useAdminReport() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
+  const paymentProvider = getPaymentProviderConfig();
 
   const getReport = (params: Record<string, string | number | undefined> = {}) => {
     const query = new URLSearchParams();
@@ -56,7 +65,10 @@ export function useAdminReport() {
     });
 
     const suffix = query.toString() ? `?${query.toString()}` : '';
-    return api<ApiResponse<PaymentReportResponse>>(`/admin/reports/payments${suffix}`);
+    const reportPath = paymentProvider.isMidtrans
+      ? '/admin/reports/payments/midtrans'
+      : '/admin/reports/payments';
+    return api<ApiResponse<PaymentReportResponse>>(`${reportPath}${suffix}`);
   };
 
   const confirmManualPayment = (orderId: string, payload: ManualPaymentConfirmPayload) =>
@@ -65,5 +77,5 @@ export function useAdminReport() {
       body: payload
     });
 
-  return { getReport, confirmManualPayment };
+  return { getReport, confirmManualPayment, isMidtransReport: paymentProvider.isMidtrans };
 }
