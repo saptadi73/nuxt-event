@@ -1058,6 +1058,28 @@ Backend memverifikasi SHA-512 `signature_key`, mengambil ulang transaction
 status melalui Midtrans Status API, mencocokkan `order_id`, status dan nominal,
 lalu memproses event secara idempoten. Mapping status utamanya:
 
+Contoh inbound transaction notification (field metode pembayaran bersifat
+kondisional):
+
+```json
+{
+  "transaction_time": "2026-08-24 10:15:00",
+  "transaction_status": "settlement",
+  "transaction_id": "midtrans-transaction-uuid",
+  "status_message": "midtrans payment notification",
+  "status_code": "200",
+  "signature_key": "sha512-signature",
+  "settlement_time": "2026-08-24 10:16:00",
+  "payment_type": "bank_transfer",
+  "order_id": "ORD-...-MT-ABC12345",
+  "merchant_id": "merchant-id",
+  "gross_amount": "10000.00",
+  "fraud_status": "accept",
+  "currency": "IDR",
+  "va_numbers": [{"bank": "bca", "va_number": "1234567890"}]
+}
+```
+
 | Midtrans | Status payment backend |
 |---|---|
 | `settlement` | `success` |
@@ -1090,6 +1112,60 @@ event charge yang memiliki objek `subscription`, `transaction`, dan
 `event_name`. Minimal harus tersedia `subscription.id` dan
 `subscription.status`.
 
+Contoh inbound saat subscription dibuat:
+
+```json
+{
+  "id": "subscription-uuid",
+  "status": "active",
+  "name": "IWBIF-SUBSCRIPTION-001",
+  "amount": "10000",
+  "currency": "IDR",
+  "payment_type": "gopay",
+  "merchant_id": "merchant-id",
+  "token": "subscription-payment-token",
+  "schedule": {
+    "start_time": "2026-09-01T00:00:00Z",
+    "next_execution_at": "2026-09-01T00:00:00Z",
+    "interval_unit": "month",
+    "interval": 1,
+    "current_interval": 0
+  },
+  "gopay": {"account_id": "gopay-account-uuid"}
+}
+```
+
+Contoh inbound hasil recurring charge; untuk kegagalan, `status_code` dan
+`status_message` berubah, `transaction_id` dapat tidak tersedia, dan status
+subscription dapat menjadi `inactive`:
+
+```json
+{
+  "event_name": "subscription.charge",
+  "transaction": {
+    "transaction_status": "settlement",
+    "transaction_id": "midtrans-transaction-uuid",
+    "status_code": "200"
+  },
+  "subscription": {
+    "id": "subscription-uuid",
+    "status": "active",
+    "name": "IWBIF-SUBSCRIPTION-001",
+    "amount": "10000",
+    "currency": "IDR",
+    "payment_type": "gopay",
+    "merchant_id": "merchant-id",
+    "schedule": {
+      "start_time": "2026-09-01T00:00:00Z",
+      "next_execution_at": "2026-10-01T00:00:00Z",
+      "interval_unit": "month",
+      "interval": 1,
+      "current_interval": 1
+    }
+  }
+}
+```
+
 Notification disimpan dengan provider `midtrans_recurring`. Karena contoh
 notification Subscription API resmi tidak menyertakan `signature_key` dan
 aplikasi belum memiliki model subscription, endpoint hanya menyimpan dan
@@ -1118,6 +1194,23 @@ Field wajib untuk verifikasi adalah `account_id`, `account_status`,
 ```text
 SHA512(account_id + account_status + status_code + MIDTRANS_SERVER_KEY)
 ```
+
+Contoh inbound account linking/unlinking:
+
+```json
+{
+  "account_id": "gopay-account-uuid",
+  "merchant_id": "merchant-id",
+  "payment_type": "gopay",
+  "signature_key": "sha512-signature",
+  "status_code": "200",
+  "account_status": "ENABLED",
+  "status_message": "Midtrans account linked notification"
+}
+```
+
+Nilai `account_status` yang perlu ditangani meliputi `PENDING`, `EXPIRED`,
+`ENABLED`, dan `DISABLED`.
 
 Notification disimpan dengan provider `midtrans_account`. Endpoint ini
 memverifikasi dan mengaudit status linking/unlinking, tetapi belum memetakan
