@@ -54,7 +54,7 @@
       </div>
     </div>
 
-      <div class="mb-6 grid gap-3 rounded-3xl border border-amber-300/20 bg-white/5 p-4 sm:grid-cols-[1fr_1fr_1fr_auto]">
+      <div class="report-filters mb-6 grid gap-3 rounded-3xl border border-amber-300/20 bg-white/5 p-4 sm:grid-cols-[1fr_1fr_1fr_auto]">
         <label class="grid gap-2 text-sm">
           <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Event</span>
           <select v-model="eventFilter" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" :disabled="eventsLoading">
@@ -213,7 +213,7 @@
             </select>
           </label>
         </div>
-        <div class="overflow-x-auto">
+        <div class="report-table-shell overflow-x-auto">
           <table class="min-w-full text-left text-sm text-slate-300">
             <thead>
               <tr class="border-b border-white/10 text-xs uppercase tracking-[0.18em] text-slate-400">
@@ -228,8 +228,8 @@
             </thead>
             <tbody>
             <tr v-for="item in paginatedTransactions" :key="item.payment_id || item.id" class="border-b border-white/5 last:border-0">
-                <td class="py-3 pr-4 text-white">{{ item.order_number || item.id }}</td>
-                <td v-if="isMidtransReport" class="py-3 pr-4">
+                <td class="py-3 pr-4 text-white" data-label="Order">{{ item.order_number || item.id }}</td>
+                <td v-if="isMidtransReport" class="py-3 pr-4" data-label="Midtrans references">
                   <div class="grid min-w-56 gap-2 text-xs">
                     <button v-if="item.provider_order_id" type="button" class="reference-button" title="Salin Midtrans order ID" @click="copyReference(item.provider_order_id)">
                       <span>Order ID</span><code>{{ item.provider_order_id }}</code>
@@ -240,10 +240,10 @@
                     <span v-if="!item.provider_order_id && !item.provider_transaction_id" class="text-slate-500">N/A</span>
                   </div>
                 </td>
-                <td class="py-3 pr-4">{{ item.participant_name || 'N/A' }}</td>
-                <td class="py-3 pr-4">{{ item.package_name || 'N/A' }}</td>
-                <td class="py-3 pr-4">{{ item.channel_code || item.provider || 'N/A' }}</td>
-                <td class="py-3 pr-4">
+                <td class="py-3 pr-4" data-label="Participant">{{ item.participant_name || 'N/A' }}</td>
+                <td class="py-3 pr-4" data-label="Package">{{ item.package_name || 'N/A' }}</td>
+                <td class="py-3 pr-4" data-label="Channel">{{ item.channel_code || item.provider || 'N/A' }}</td>
+                <td class="py-3 pr-4" data-label="Status">
                   <span :class="transactionStatusClass(item)" class="inline-flex rounded-full px-2 py-1 text-xs font-bold">
                     {{ transactionStatusLabel(item) }}
                   </span>
@@ -251,7 +251,7 @@
                     Perlu cek
                   </span>
                 </td>
-                <td class="py-3 pr-4 text-right text-white">{{ formatCurrency(item.gross_amount || 0) }}</td>
+                <td class="py-3 pr-4 text-right text-white" data-label="Amount">{{ formatCurrency(item.gross_amount || 0) }}</td>
               </tr>
             </tbody>
           </table>
@@ -682,7 +682,7 @@ const filteredTransactions = computed(() => {
   const q = searchTerm.value.trim().toLowerCase();
   if (!q) return transactions.value;
 
-  const filtered = showManualReviewOnly ? transactions.value.filter(requiresManualReview) : transactions.value;
+  const filtered = showManualReviewOnly.value ? transactions.value.filter(requiresManualReview) : transactions.value;
   return filtered.filter((item) => {
     const haystack = [
       item.order_number,
@@ -708,9 +708,14 @@ const filteredTransactions = computed(() => {
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredTransactions.value.length / itemsPerPage.value)));
 const paginatedTransactions = computed(() => {
   const page = Math.max(1, Math.min(currentPage.value, totalPages.value));
-  currentPage.value = page;
   const start = (page - 1) * itemsPerPage.value;
   return filteredTransactions.value.slice(start, start + itemsPerPage.value);
+});
+
+watch(totalPages, () => {
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = totalPages.value;
+  }
 });
 
 await loadEvents();
@@ -858,6 +863,10 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+:global(html) {
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+}
+
 .daily-chart-column {
   align-items: flex-end;
   display: flex;
@@ -914,6 +923,98 @@ onBeforeUnmount(() => {
 .reference-button code {
   color: rgb(207, 250, 254);
   overflow-wrap: anywhere;
+}
+
+.report-table-shell {
+  border-radius: 1.5rem;
+}
+
+.report-filters {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 767px) {
+  .report-filters {
+    grid-template-columns: 1fr;
+    padding: 0.9rem;
+  }
+
+  .report-filters button,
+  .report-filters select,
+  .report-filters input {
+    width: 100%;
+  }
+
+  .report-filters > div:last-child,
+  .report-filters > .sm\:col-span-6 {
+    width: 100%;
+  }
+
+  .report-table-shell {
+    overflow: visible;
+  }
+
+  .report-table-shell table,
+  .report-table-shell thead,
+  .report-table-shell tbody,
+  .report-table-shell tr,
+  .report-table-shell th,
+  .report-table-shell td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .report-table-shell thead {
+    display: none;
+  }
+
+  .report-table-shell tbody {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .report-table-shell tr {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.25rem;
+    background: rgba(15, 23, 42, 0.75);
+    padding: 0.9rem;
+  }
+
+  .report-table-shell td {
+    border: 0;
+    padding: 0.3rem 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: rgb(203 213 225);
+    font-size: 0.82rem;
+  }
+
+  .report-table-shell td::before {
+    content: attr(data-label);
+    color: rgb(148 163 184);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    width: 36%;
+  }
+
+  .report-table-shell td:last-child {
+    text-align: left;
+    justify-content: space-between;
+  }
+
+  .report-table-shell td > * {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .daily-chart-column {
+    min-width: 44px;
+  }
 }
 </style>
 

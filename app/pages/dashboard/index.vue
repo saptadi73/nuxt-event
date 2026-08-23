@@ -26,17 +26,17 @@
           <p class="text-xs uppercase tracking-[.25em] text-amber-200">Organizer view</p>
           <h2 class="mt-2 text-2xl font-bold">Ticket sales & revenue report</h2>
         </div>
-        <div class="flex flex-wrap gap-3">
-          <NuxtLink to="/admin/packages" class="inline-flex items-center justify-center rounded-full bg-amber-300 px-5 py-3 text-sm font-bold text-slate-950 transition hover:brightness-110">Manage packages</NuxtLink>
-          <NuxtLink to="/admin/speakers" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-5 py-3 text-sm font-bold text-amber-100 transition hover:bg-amber-300/10">Manage speakers</NuxtLink>
-          <NuxtLink to="/admin/program" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-5 py-3 text-sm font-bold text-amber-100 transition hover:bg-amber-300/10">Program & agenda</NuxtLink>
-          <NuxtLink to="/admin/users" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-5 py-3 text-sm font-bold text-amber-100 transition hover:bg-amber-300/10">Manage users</NuxtLink>
-          <NuxtLink to="/admin/announcements" class="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-white transition hover:border-white/40">Announcements</NuxtLink>
-          <NuxtLink to="/admin/certificates" class="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-white transition hover:border-white/40">Certificates</NuxtLink>
-          <NuxtLink to="/admin/email-notifications" class="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-white transition hover:border-white/40">Email notifications</NuxtLink>
-          <NuxtLink to="/admin/attendance" class="inline-flex items-center justify-center rounded-full border border-cyan-300/40 bg-cyan-300/10 px-5 py-3 text-sm font-bold text-cyan-100 transition hover:bg-cyan-300/20">Attendance scanner</NuxtLink>
-          <NuxtLink to="/admin/reports" class="inline-flex items-center justify-center rounded-full border border-white/20 px-5 py-3 text-sm font-bold text-white transition hover:border-white/40">Payment report</NuxtLink>
-        </div>
+      </div>
+      <div class="organizer-actions mt-4 flex flex-wrap gap-2.5">
+        <NuxtLink to="/admin/packages" class="inline-flex items-center justify-center rounded-full bg-amber-300 px-4 py-2.5 text-xs font-bold text-slate-950 transition hover:brightness-110 sm:px-5 sm:text-sm">Manage packages</NuxtLink>
+        <NuxtLink to="/admin/speakers" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-4 py-2.5 text-xs font-bold text-amber-100 transition hover:bg-amber-300/10 sm:px-5 sm:text-sm">Manage speakers</NuxtLink>
+        <NuxtLink to="/admin/program" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-4 py-2.5 text-xs font-bold text-amber-100 transition hover:bg-amber-300/10 sm:px-5 sm:text-sm">Program & agenda</NuxtLink>
+        <NuxtLink to="/admin/users" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-4 py-2.5 text-xs font-bold text-amber-100 transition hover:bg-amber-300/10 sm:px-5 sm:text-sm">Manage users</NuxtLink>
+        <NuxtLink to="/admin/announcements" class="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2.5 text-xs font-bold text-white transition hover:border-white/40 sm:px-5 sm:text-sm">Announcements</NuxtLink>
+        <NuxtLink to="/admin/certificates" class="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2.5 text-xs font-bold text-white transition hover:border-white/40 sm:px-5 sm:text-sm">Certificates</NuxtLink>
+        <NuxtLink to="/admin/email-notifications" class="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2.5 text-xs font-bold text-white transition hover:border-white/40 sm:px-5 sm:text-sm">Email notifications</NuxtLink>
+        <NuxtLink to="/admin/attendance" class="inline-flex items-center justify-center rounded-full border border-cyan-300/40 bg-cyan-300/10 px-4 py-2.5 text-xs font-bold text-cyan-100 transition hover:bg-cyan-300/20 sm:px-5 sm:text-sm">Attendance scanner</NuxtLink>
+        <NuxtLink to="/admin/reports" class="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2.5 text-xs font-bold text-white transition hover:border-white/40 sm:px-5 sm:text-sm">Payment report</NuxtLink>
       </div>
     </div>
 
@@ -52,11 +52,50 @@
 </template>
 
 <style scoped>
-.dashboard-shell { padding-inline: 0.75rem; }
+.dashboard-shell {
+  padding-inline: 0.75rem;
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+}
+
+.organizer-actions {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.organizer-actions a {
+  min-width: fit-content;
+}
 
 @media (max-width: 639px) {
   .dashboard-shell {
     padding-top: 2.5rem;
+  }
+
+  .dashboard-shell h1 {
+    font-size: clamp(2rem, 8vw, 2.5rem);
+    line-height: 1.1;
+  }
+
+  .dashboard-shell h2 {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+
+  .dashboard-shell .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .organizer-actions {
+    gap: 0.6rem;
+  }
+
+  .organizer-actions a {
+    flex: 1 1 100%;
+    width: 100%;
+    min-height: 2.9rem;
+  }
+
+  .glass-card {
+    padding: 1rem;
   }
 }
 </style>

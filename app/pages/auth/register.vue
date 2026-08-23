@@ -132,6 +132,21 @@ const onSubmit = async () => {
 
   .auth-card {
     border-radius: 1.5rem;
+    padding: 1.1rem 1rem;
+  }
+
+  .auth-card h1 {
+    font-size: clamp(2rem, 9vw, 2.9rem);
+    line-height: 1.08;
+  }
+
+  .auth-card input,
+  .auth-card button {
+    font-size: 1rem;
+  }
+
+  .auth-card .grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

@@ -4,7 +4,7 @@
     <div class="ambient ambient-two"></div>
 
     <header class="sticky top-0 z-50 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl">
-      <div class="mx-auto flex w-full max-w-[1440px] flex-wrap items-center gap-3 px-3 py-3 sm:gap-4 sm:px-6 lg:px-8">
+      <div class="mx-auto flex w-full max-w-[1440px] items-center gap-2 px-3 py-3 sm:gap-4 sm:px-6 lg:px-8">
         <NuxtLink to="/" class="brand-block flex min-w-0 shrink-0 items-center gap-3">
           <span class="brand-mark flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-amber-300/40 bg-white/10 p-1.5 shadow-lg shadow-cyan-950/20 sm:h-14 sm:w-14">
             <img v-if="!logoHasError" :src="logoSrc" alt="IWBIF 2026" width="56" height="56" class="h-full w-full object-contain" @error="logoHasError = true" />
@@ -28,7 +28,7 @@
           </details>
         </nav>
 
-        <div class="ml-auto flex shrink-0 items-center gap-2 xl:ml-2">
+        <div class="header-actions ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:ml-2">
           <div v-if="isAuthenticated" class="relative">
             <button
               type="button"
@@ -585,6 +585,9 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
 .inbox-panel {
   position: absolute;
   z-index: 50;
+  right: 0;
+  width: min(22rem, calc(100vw - 1rem));
+  max-width: 22rem;
 }
 
 .nav-link {
@@ -605,6 +608,11 @@ summary.nav-link,
 .nav-link {
   display: inline-flex;
   align-items: center;
+}
+
+.header-actions {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .header-cta,
@@ -633,10 +641,44 @@ summary::-webkit-details-marker {
     display: none;
   }
 
+  .header-actions {
+    gap: 0.4rem;
+    max-width: 100%;
+    flex-shrink: 0;
+  }
+
   .header-cta,
   .header-signin {
-    padding-inline: 0.85rem;
-    letter-spacing: 0.12em;
+    padding-inline: 0.6rem;
+    letter-spacing: 0.08em;
+    font-size: 0.58rem;
+  }
+
+  .header-cta {
+    max-width: 100%;
+    white-space: nowrap;
+  }
+
+  .header-signin {
+    padding-inline: 0.7rem;
+  }
+
+  .inbox-trigger {
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+  }
+
+  .inbox-panel {
+    right: -0.25rem;
+    width: min(20rem, calc(100vw - 0.75rem));
+  }
+
+  .menu-button {
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    font-size: 0.54rem;
   }
 }
 </style>

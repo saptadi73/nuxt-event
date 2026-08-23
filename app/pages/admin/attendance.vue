@@ -158,7 +158,7 @@
           </article>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="data-table-shell overflow-x-auto">
           <table class="min-w-full text-left text-sm text-slate-300">
             <thead>
               <tr class="border-b border-white/10 text-[10px] uppercase tracking-[0.22em] text-slate-400">
@@ -172,22 +172,22 @@
             </thead>
             <tbody>
               <tr v-for="row in attendanceRows" :key="row.registration_id || row.ticket_id || row.participant_name || row.ticket_number || Math.random()" class="border-b border-white/5 last:border-0">
-                <td class="py-3 pr-4">
+                <td class="py-3 pr-4" data-label="Registrant">
                   <div class="font-semibold text-white">{{ row.participant_name || 'Unknown participant' }}</div>
                   <div class="text-xs text-slate-400">{{ row.registration_number || row.registration_id || 'N/A' }}</div>
                 </td>
-                <td class="py-3 pr-4">
+                <td class="py-3 pr-4" data-label="Ticket">
                   <div class="font-medium text-white">{{ row.ticket_number || 'No ticket' }}</div>
                   <div class="text-xs text-slate-400">{{ row.organization_name || 'No organization' }}</div>
                 </td>
-                <td class="py-3 pr-4">
+                <td class="py-3 pr-4" data-label="Status">
                   <span :class="attendanceStatusClass(row)" class="inline-flex rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em]">
                     {{ attendanceStatusLabel(row) }}
                   </span>
                 </td>
-                <td class="py-3 pr-4">{{ formatDateTime(row.check_in_at) }}</td>
-                <td class="py-3 pr-4">{{ row.gate_name || '—' }}</td>
-                <td class="py-3 pr-4">
+                <td class="py-3 pr-4" data-label="Check-in">{{ formatDateTime(row.check_in_at) }}</td>
+                <td class="py-3 pr-4" data-label="Gate">{{ row.gate_name || '—' }}</td>
+                <td class="py-3 pr-4" data-label="Action">
                   <button class="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-100" @click="lookupRow(row)">
                     Detail
                   </button>
@@ -206,7 +206,6 @@ import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser'
 import { useAttendance, type AttendanceRegistrant, type AttendanceScanResponse } from '~/composables/useAttendance';
 import { useEvent, type EventItem } from '~/composables/useEvent';
 
-const route = useRoute();
 const authStore = useAuthStore();
 
 const { getEvents } = useEvent();
@@ -472,3 +471,100 @@ if (!isOrganizer.value) {
   navigateTo('/dashboard');
 }
 </script>
+
+<style scoped>
+  .data-table-shell { overflow-x: auto; }
+  @media (max-width: 767px) {
+    .mx-auto.max-w-7xl {
+      padding-inline: 0.75rem;
+    }
+
+    .mb-8.flex.flex-col.gap-4.lg\:flex-row {
+      gap: 1rem;
+    }
+
+    .mb-8.flex.flex-col.gap-4.lg\:flex-row > div:last-child {
+      width: 100%;
+    }
+
+    .mb-8.flex.flex-col.gap-4.lg\:flex-row button {
+      flex: 1 1 100%;
+      justify-content: center;
+    }
+
+    .mb-6.grid.gap-4.xl\:grid-cols-\[1\.15fr_0\.85fr\] {
+      grid-template-columns: 1fr;
+    }
+
+    .mt-5.flex.flex-wrap.gap-3 {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+
+    .mt-5.flex.flex-wrap.gap-3 button {
+      width: 100%;
+    }
+
+    .data-table-shell {
+      overflow: visible;
+    }
+
+    .data-table-shell table,
+    .data-table-shell thead,
+    .data-table-shell tbody,
+    .data-table-shell tr,
+    .data-table-shell th,
+    .data-table-shell td {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .data-table-shell thead {
+      display: none;
+    }
+
+    .data-table-shell tbody {
+      display: grid;
+      gap: 0.75rem;
+      padding: 0.75rem;
+    }
+
+    .data-table-shell tr {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.15rem;
+      background: rgba(15, 23, 42, 0.72);
+      padding: 0.8rem;
+    }
+
+    .data-table-shell td {
+      border: 0;
+      padding: 0.35rem 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+    }
+
+    .data-table-shell td::before {
+      content: attr(data-label);
+      color: rgb(148 163 184);
+      font-size: 0.64rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      width: 36%;
+      flex-shrink: 0;
+    }
+
+    .data-table-shell td > * {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .data-table-shell td:last-child {
+      justify-content: space-between;
+      text-align: left;
+    }
+  }
+</style>

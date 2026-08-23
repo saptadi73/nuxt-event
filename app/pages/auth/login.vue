@@ -100,6 +100,17 @@ const onSubmit = async () => {
 
   .login-card {
     border-radius: 1.5rem;
+    padding: 1.1rem 1rem;
+  }
+
+  .login-card h1 {
+    font-size: clamp(2rem, 9vw, 2.9rem);
+    line-height: 1.08;
+  }
+
+  .login-card input,
+  .login-card button {
+    font-size: 1rem;
   }
 }
 </style>
