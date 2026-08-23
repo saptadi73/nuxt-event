@@ -7,8 +7,8 @@
     <div v-else-if="errorMessage" class="mt-8 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ errorMessage }}</div>
     <div v-else-if="!invoice" class="glass-card mt-8 rounded-[2rem] p-7">
       <p class="text-lg font-semibold">No invoice is available yet.</p>
-      <p class="mt-2 text-slate-400">Your invoice will appear after your payment has been confirmed.</p>
-      <NuxtLink to="/dashboard/payment" class="mt-6 inline-flex rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950">Go to payment</NuxtLink>
+      <p class="mt-2 text-slate-400">{{ emptyInvoiceMessage }}</p>
+      <NuxtLink :to="emptyInvoiceTo" class="mt-6 inline-flex rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950">{{ emptyInvoiceAction }}</NuxtLink>
     </div>
     <article v-else id="invoice" ref="invoiceElement" class="glass-card mt-8 rounded-[2rem] p-5 sm:p-7">
       <div class="flex flex-wrap justify-between gap-5 border-b border-white/10 pb-6">
@@ -36,6 +36,7 @@ definePageMeta({ middleware: 'auth' });
 useSeoMeta({ title: 'Invoice | IWBIF 2026' });
 
 const { getMyInvoices, getInvoiceByRegistration } = usePayment();
+const registrationFlow = useRegistrationFlow();
 const { getRegistration } = useRegistration();
 const { getMyTickets } = useTicket();
 const route = useRoute();
@@ -45,6 +46,12 @@ const currentInvoice = useState<Invoice | null>('current-invoice', () => null);
 const pending = ref(true);
 const downloading = ref(false);
 const errorMessage = ref('');
+const pendingProfileType = computed(() => registrationFlow.profilePendingType.value);
+const emptyInvoiceMessage = computed(() => pendingProfileType.value
+  ? 'Your payment is complete. Finish your profile so the backend can link this order to your registration and generate the invoice.'
+  : 'Your invoice will appear after your payment and registration have been confirmed.');
+const emptyInvoiceTo = computed(() => pendingProfileType.value ? `/register/${pendingProfileType.value}` : '/dashboard/payment');
+const emptyInvoiceAction = computed(() => pendingProfileType.value ? `Complete ${pendingProfileType.value === 'exhibitor' ? 'Exhibitor' : 'Delegate'} Profile` : 'Go to payment');
 const LAST_REGISTRATION_KEY = 'last-paid-registration-id';
 const getOrderIdFromQuery = () => {
   const queryValue = route.query.order_id ?? route.query.orderId ?? '';
@@ -88,6 +95,11 @@ const tryInvoiceByIdentifier = async (identifier: string) => {
 };
 
 onMounted(async () => {
+  try {
+    await registrationFlow.loadFlow(true);
+  } catch {
+    // Invoice lookup can still continue when progress bootstrap is unavailable.
+  }
   const queryRegistrationId = getRegistrationIdFromQuery();
   const queryOrderId = getOrderIdFromQuery() || sessionStorage.getItem('iwbif-store-order-id') || '';
   invoice.value = currentInvoice.value;
@@ -141,7 +153,7 @@ onMounted(async () => {
       sessionStorage.setItem('current-invoice', JSON.stringify(invoice.value));
       if (invoice.value.registration?.id) rememberRegistration(invoice.value.registration.id);
     }
-  } catch (error) {
+  } catch {
     if (!invoice.value) {
       errorMessage.value = 'Your invoice is not available yet. Please contact the event organizer if your payment has already been confirmed.';
     }
@@ -163,6 +175,7 @@ const downloadInvoice = async () => {
     if (!printWindow) throw new Error('Unable to open print window.');
 
     const invoiceMarkup = invoiceElement.value.outerHTML;
+    const closingScriptTag = '</scr' + 'ipt>';
     const invoiceTitle = `${invoice.value.registration.registration_number || invoice.value.order.order_number} Invoice`;
 
     printWindow.document.write(`
@@ -256,7 +269,7 @@ const downloadInvoice = async () => {
             window.onload = () => {
               window.print();
             };
-          <\/script>
+          ${closingScriptTag}
         </body>
       </html>
     `);
