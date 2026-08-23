@@ -73,16 +73,68 @@ Registrasi awal hanya membuat akun. `full_name` dan profile participant/delegate
 belum wajib pada tahap ini.
 
 Jika `EMAIL_ENABLED=true`, backend mengirim email konfirmasi registrasi dari
-`info@iwbif.id` melalui Titan Email SMTP. Email berisi konfirmasi
+alamat pada `EMAIL_FROM_ADDRESS` melalui Titan Email SMTP. Nilai tersebut harus
+sama dengan mailbox pada `EMAIL_SMTP_USERNAME`. Email berisi konfirmasi
 registrasi IWBIF 2026 dan `FRONTEND_LOGIN_URL` untuk melanjutkan login. Pengiriman
 dilakukan sebagai background task; kegagalan SMTP dicatat di log dan tidak
 membatalkan akun yang sudah berhasil dibuat.
 
-Admin dapat mengelola template notifikasi per event melalui
+Admin/organizer dapat mengelola template notifikasi per event melalui
 `/api/v1/admin/events/{event_id}/email-notifications`. Template mencakup
 registrasi, paket delegate/exhibitor, pembayaran, profil business matching, dan
 status meeting. Endpoint admin menyediakan preview, test-send, serta riwayat
 pengiriman; lihat `docs/EMAIL_REGISTRATION_NOTIFICATIONS.md`.
+
+### Pengaturan email notification oleh organizer
+
+Seluruh endpoint berikut membutuhkan role `admin` atau `organizer`:
+
+```http
+GET  /api/v1/admin/events/{event_id}/email-notifications
+PUT  /api/v1/admin/events/{event_id}/email-notifications/{trigger}
+POST /api/v1/admin/events/{event_id}/email-notifications/{trigger}/preview
+POST /api/v1/admin/events/{event_id}/email-notifications/{trigger}/test-send
+GET  /api/v1/admin/events/{event_id}/email-notifications/logs/history
+```
+
+Organizer juga dapat mengatur override notifikasi untuk satu akun:
+
+```http
+GET /api/v1/admin/events/{event_id}/email-notifications/accounts/{user_id}/preferences
+PUT /api/v1/admin/events/{event_id}/email-notifications/accounts/{user_id}/preferences/{trigger}
+```
+
+Respons `GET` memuat satu baris untuk setiap trigger:
+
+```json
+[
+  {
+    "event_id": "uuid",
+    "user_id": "uuid",
+    "trigger": "payment_confirmed",
+    "global_enabled": true,
+    "override_enabled": false,
+    "effective_enabled": false,
+    "updated_by": "organizer-user-uuid",
+    "updated_at": "2026-08-23T12:00:00Z"
+  }
+]
+```
+
+Body `PUT`:
+
+```json
+{"is_enabled":false}
+```
+
+- `false`: matikan trigger khusus akun tersebut.
+- `true`: aktifkan override akun selama template global aktif.
+- `null`: hapus override dan kembali mengikuti default event.
+
+Template event adalah master switch. Jika `global_enabled=false`, override akun
+tidak dapat memaksa pengiriman. Jika template global aktif, notifikasi dikirim
+ketika override bernilai `true` atau `null`. Pengaturan per akun tersedia setelah
+database mencapai Alembic revision `202608230028`.
 
 ```http
 POST /api/v1/auth/login

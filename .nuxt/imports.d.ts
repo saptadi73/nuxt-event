@@ -41,7 +41,7 @@ export { useAttendance, AttendanceCheckInType, AttendanceScanPayload, Attendance
 export { useAuth } from '../app/composables/useAuth';
 export { useBusinessMatching, BusinessMatchingProfile, MeetingItem, MeetingCreatePayload } from '../app/composables/useBusinessMatching';
 export { useCommunication, ConversationCreatePayload, ConversationItem, MessageItem, NotificationItem } from '../app/composables/useCommunication';
-export { useEmailNotifications, EmailNotificationTemplate, EmailDeliveryItem, EmailPreview, EmailTemplatePayload } from '../app/composables/useEmailNotifications';
+export { useEmailNotifications, EmailNotificationTemplate, EmailDeliveryItem, EmailPreview, EmailTestResult, EmailAccountPreference, EmailTemplatePayload } from '../app/composables/useEmailNotifications';
 export { useEvent, EventItem, SpeakerItem, SessionItem, WorkshopTrackItem, TicketTypeItem, DelegatePackageItem, ActivityItem, ExhibitorItem } from '../app/composables/useEvent';
 export { useEventUpdates, AnnouncementItem, CertificateItem } from '../app/composables/useEventUpdates';
 export { useExhibitor, ExhibitorCreatePayload, ExhibitorRecord } from '../app/composables/useExhibitor';
