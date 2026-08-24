@@ -1357,6 +1357,108 @@ payment, order, registrasi, event, peserta, paket, channel,
 `provider_order_id`, `provider_transaction_id`, reference gateway,
 nominal, dan waktu pembayaran sesuai filter yang sama.
 
+### Laporan participant, package, dan status pembayaran
+
+Laporan ini mengelompokkan pembelian berdasarkan participant. Satu participant
+tetap menjadi satu item pada response JSON dan seluruh package yang pernah
+diambil tersedia di dalam array `packages`. Dengan demikian, participant yang
+mengambil beberapa package dalam satu order maupun beberapa order berbeda tidak
+terpotong menjadi satu package saja.
+
+Semua endpoint memerlukan Bearer token dengan role `admin` atau `organizer`:
+
+```http
+GET /api/v1/admin/reports/participants
+GET /api/v1/admin/reports/participants.csv
+Authorization: Bearer <admin_access_token>
+```
+
+Query parameter opsional:
+
+- `event_id`: UUID event yang package-nya ingin ditampilkan.
+- `package_id`: UUID delegate package.
+- `payment_status`: `created`, `pending`, `success`, `failed`, `expired`, atau
+  `refunded`.
+- `search`: pencarian case-insensitive pada nama participant, email, atau nama
+  organisasi.
+- Khusus JSON: `page` mulai dari 1 dan `size` 1–200. Pagination dilakukan per
+  participant, bukan per package.
+
+Contoh request:
+
+```http
+GET /api/v1/admin/reports/participants?event_id=<event_uuid>&payment_status=success&page=1&size=20
+```
+
+Contoh response participant dengan lebih dari satu package:
+
+```json
+{
+  "participant_id": "participant-uuid",
+  "user_id": "user-uuid",
+  "full_name": "Participant Example",
+  "email": "participant@example.com",
+  "phone": "+628123456789",
+  "country": "Indonesia",
+  "organization_name": "Example Organization",
+  "registration_status": "paid",
+  "packages": [
+    {
+      "event_id": "event-uuid",
+      "package_id": "package-a-uuid",
+      "package_code": "A",
+      "package_name": "Package A",
+      "package_type": "delegate",
+      "quantity": 1,
+      "unit_price": 8000000,
+      "line_total": 8000000,
+      "currency": "IDR",
+      "order_id": "order-1-uuid",
+      "order_number": "ORD-001",
+      "order_status": "paid",
+      "payment_id": "payment-1-uuid",
+      "payment_status": "success",
+      "payment_provider": "midtrans",
+      "paid_at": "2026-08-24T10:00:00+00:00"
+    },
+    {
+      "event_id": "event-uuid",
+      "package_id": "package-c-uuid",
+      "package_code": "C",
+      "package_name": "Package C",
+      "package_type": "delegate",
+      "quantity": 1,
+      "unit_price": 5920000,
+      "line_total": 5920000,
+      "currency": "IDR",
+      "order_id": "order-2-uuid",
+      "order_number": "ORD-002",
+      "order_status": "pending",
+      "payment_id": "payment-2-uuid",
+      "payment_status": "pending",
+      "payment_provider": "midtrans",
+      "paid_at": null
+    }
+  ]
+}
+```
+
+`payment_status` melekat pada payment terakhir dari order package tersebut,
+bukan status global participant. Karena itu satu participant dapat mempunyai
+Package A berstatus `success` dan Package C berstatus `pending`. Jika order belum
+memiliki payment, field payment bernilai `null`.
+
+Tanpa filter event/package/payment, participant yang belum mengambil package
+tetap dikembalikan dengan `packages: []`. Jika salah satu filter tersebut
+digunakan, hanya participant yang memiliki package sesuai filter yang
+dikembalikan. Laporan mendukung pembelian store melalui `OrderItem` dan order
+registrasi langsung yang package-nya berasal dari detail registrasi.
+
+Export CSV memakai filter yang sama tetapi menghasilkan satu baris per package.
+Identitas participant diulang pada setiap baris agar pembelian multi-package
+dapat diproses di spreadsheet tanpa kehilangan relasi. Participant tanpa package
+tetap mendapat satu baris ketika laporan diekspor tanpa filter package/event/payment.
+
 ## 14. Tickets dan check-in
 
 ```http
@@ -1458,6 +1560,8 @@ POST|GET|PUT|DELETE /api/v1/admin/events/{event_id}/delegate-packages[/{item_id}
 POST|GET|PUT|DELETE /api/v1/admin/events/{event_id}/activities[/{item_id}]
 POST|GET|PUT|DELETE /api/v1/admin/events/{event_id}/business-matching-slots[/{item_id}]
 GET  /api/v1/admin/events/{event_id}/registrations
+GET  /api/v1/admin/reports/participants
+GET  /api/v1/admin/reports/participants.csv
 POST /api/v1/admin/registrations/{registration_id}/verify
 POST /api/v1/admin/registrations/{registration_id}/confirm
 POST /api/v1/admin/registrations/{registration_id}/reject

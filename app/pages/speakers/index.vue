@@ -72,16 +72,9 @@ const { data: response, pending: loading, error, refresh } = await useAsyncData(
 );
 
 const items = computed(() => response.value?.data ?? []);
-const displayItems = computed(() =>
-  [...items.value].sort((a, b) => {
-    const nameA = (a.full_name || '').toLowerCase();
-    const nameB = (b.full_name || '').toLowerCase();
-    if (nameA === nameB) {
-      return (a.id || '').localeCompare(b.id || '');
-    }
-    return nameA.localeCompare(nameB);
-  })
-);
+// Preserve the backend order so speakers appear in their configured/creation
+// sequence instead of being reordered alphabetically in the browser.
+const displayItems = computed(() => items.value);
 </script>
 
 <style scoped>

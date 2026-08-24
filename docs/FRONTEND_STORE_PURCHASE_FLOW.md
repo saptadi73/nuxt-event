@@ -28,10 +28,6 @@ redirect setelah pemilihan atau pembayaran. Status `paid_profile_incomplete`
 berarti user wajib diarahkan ke profile tipe tersebut sebelum fitur berikutnya
 dibuka.
 
-Status tersebut juga berarti invoice registration belum tersedia. Pada halaman
-payment/order paid, tampilkan **Complete Delegate/Exhibitor Profile** dan jangan
-menampilkan **View invoice** sampai backend menautkan order ke registration.
-
 ## State pembelian
 
 ```text
@@ -57,8 +53,8 @@ Untuk IWBIF Delegate, katalog menyediakan `DELEGATE_A`, `DELEGATE_B`, dan
 `DELEGATE_C`. Harga `price` dan `currency` adalah nominal yang ditagihkan
 (saat ini IDR). Tampilkan harga sumber dari `metadata_json.display_amount` dan
 `metadata_json.display_currency` bila UI perlu menampilkan harga package USD.
-`metadata_json.delegate_package_id` dipakai backend untuk menautkan package dan
-order ke registration. Frontend tidak perlu menyimpan, mengubah, atau mengirim
+`metadata_json.delegate_package_id` adalah ID package yang harus dipakai saat
+user mengisi form registrasi setelah pembelian. Jangan mengubah atau menebak
 nilai metadata tersebut.
 
 ## 2. Kelola cart
@@ -146,10 +142,6 @@ user, lalu menautkan order pending atau paid tersebut ke registration baru.
 Frontend tidak boleh mengirim `delegate_package_id`, data package, `order_id`,
 atau nominal pada payload registration.
 
-Setelah create registration berhasil, ambil ulang invoice. Endpoint invoice
-berbasis registration tidak menghasilkan data untuk order paid yang belum
-ditautkan ke registration.
-
 ## 5. Halaman hasil dan polling
 
 Redirect kembali dari DOKU bukan bukti pembayaran. Setelah halaman hasil dibuka:
@@ -165,7 +157,7 @@ terminal atau komponen dilepas.
 | Payment status | UI | Aksi |
 |---|---|---|
 | `created`, `pending` | Menunggu pembayaran | Lanjutkan polling |
-| `success` | Pembayaran berhasil | Jika `paid_profile_incomplete`, arahkan ke form profil; tampilkan invoice setelah registration tertaut |
+| `success` | Pembayaran berhasil | Tampilkan invoice dan langkah berikutnya |
 | `failed` | Pembayaran gagal | Izinkan payment ulang setelah order baru/valid |
 | `expired` | Pembayaran kedaluwarsa | Izinkan checkout ulang |
 
@@ -207,6 +199,30 @@ Khusus Midtrans, keberadaan `provider_order_id` atau
 menentukan hasil dari `transaction_status`; ID gateway hanya ditampilkan sebagai
 referensi invoice, report admin, atau troubleshooting.
 
+## 5b. Laporan participant untuk admin/organizer
+
+Panel admin dapat mengambil laporan participant lengkap dengan semua package dan
+status pembayaran melalui:
+
+```http
+GET /api/v1/admin/reports/participants
+GET /api/v1/admin/reports/participants.csv
+Authorization: Bearer <admin_or_organizer_access_token>
+```
+
+Filter opsional yang didukung adalah `event_id`, `package_id`,
+`payment_status`, dan `search`. Endpoint JSON juga menerima `page` dan `size`.
+
+Response JSON menggunakan satu item per participant. Jangan mengasumsikan field
+`packages` hanya berisi satu item: participant dapat membeli beberapa package
+dalam satu order atau order yang berbeda. Render status pembayaran pada setiap
+package berdasarkan `payment_status`, karena sebagian package dapat sudah
+`success` sementara package lain masih `pending`.
+
+CSV menggunakan satu baris per package dan mengulang identitas participant pada
+setiap baris. Format ini sengaja berbeda dari pengelompokan JSON agar mudah
+difilter dan dipivot di spreadsheet.
+
 ## 6. Error handling
 
 - `401`: token invalid/expired, arahkan login atau refresh token.
@@ -232,5 +248,5 @@ untuk troubleshooting. Jangan menampilkan raw response atau secret DOKU.
 8. Payment cart dapat diambil melalui endpoint milik user tersebut.
 9. Webhook tidak pernah dipanggil dari browser.
 10. Secret DOKU tidak masuk bundle frontend.
-11. Delegate yang sudah paid diarahkan ke form profil tanpa mengirim
-    `delegate_package_id`, data package, order, atau nominal.
+11. Delegate yang sudah paid diarahkan ke form profil dengan
+    `delegate_package_id` dari metadata product yang dibeli.

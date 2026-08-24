@@ -52,6 +52,37 @@ export interface ManualPaymentConfirmPayload {
   paid_at?: string | null;
 }
 
+export interface ParticipantReportPackage {
+  event_id: string;
+  package_id: string;
+  package_code?: string;
+  package_name?: string;
+  package_type?: string;
+  quantity?: number;
+  unit_price?: number;
+  line_total?: number;
+  currency?: string;
+  order_id?: string;
+  order_number?: string;
+  order_status?: string;
+  payment_id?: string | null;
+  payment_status?: string | null;
+  payment_provider?: string | null;
+  paid_at?: string | null;
+}
+
+export interface ParticipantReportItem {
+  participant_id: string;
+  user_id?: string;
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  country?: string;
+  organization_name?: string;
+  registration_status?: string;
+  packages: ParticipantReportPackage[];
+}
+
 export function useAdminReport() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
   const paymentProvider = getPaymentProviderConfig();
@@ -77,5 +108,22 @@ export function useAdminReport() {
       body: payload
     });
 
-  return { getReport, confirmManualPayment, isMidtransReport: paymentProvider.isMidtrans };
+  const getParticipantReport = (params: Record<string, string | number | undefined> = {}) => {
+    const query = new URLSearchParams();
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === '') return;
+      query.append(key, String(value));
+    });
+
+    const suffix = query.toString() ? `?${query.toString()}` : '';
+    return api<ApiResponse<ParticipantReportItem[]>>(`/admin/reports/participants${suffix}`);
+  };
+
+  return {
+    getReport,
+    confirmManualPayment,
+    getParticipantReport,
+    isMidtransReport: paymentProvider.isMidtrans
+  };
 }

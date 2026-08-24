@@ -499,6 +499,7 @@ const secondaryNav = computed<NavItem[]>(() => {
     items.push({ to: '/admin/packages', label: 'Manage Packages' });
     items.push({ to: '/admin/manual-payments', label: 'Manual Payments' });
     items.push({ to: '/admin/reports', label: 'Sales Report' });
+    items.push({ to: '/admin/participants-report', label: 'Participants Report' });
     items.push({ to: '/admin/speakers', label: 'Manage Speakers' });
     items.push({ to: '/admin/program', label: 'Manage Program' });
     items.push({ to: '/admin/users', label: 'Manage Users' });
