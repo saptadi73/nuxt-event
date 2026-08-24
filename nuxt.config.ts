@@ -51,7 +51,9 @@ export default defineNuxtConfig({
     '/': { prerender: true },
     '/about': { prerender: true },
     '/workshops': { prerender: true },
-    '/tickets': { prerender: true },
+    // Package prices can be updated at any time. Fetch them in the browser
+    // instead of embedding the API response into the production build.
+    '/tickets': { ssr: false },
     '/partners': { prerender: true },
     '/business-matching': { ssr: false },
     '/deal-room': { prerender: true },
