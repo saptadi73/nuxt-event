@@ -193,6 +193,9 @@
                   </button>
                 </td>
               </tr>
+              <tr v-if="!attendanceRows.length">
+                <td colspan="6" class="py-6 text-center text-sm text-slate-400">No attendance rows were returned for this event.</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -209,7 +212,7 @@ import { useEvent, type EventItem } from '~/composables/useEvent';
 const authStore = useAuthStore();
 
 const { getEvents } = useEvent();
-const { scanAttendance, manualCheckIn, getEventAttendanceReport } = useAttendance();
+const { scanAttendance, manualCheckIn, getEventAttendanceReport, getRegistrationRoster } = useAttendance();
 
 const selectedEventId = ref('');
 const gateName = ref('Main Gate');
@@ -258,13 +261,18 @@ const attendanceStatusLabel = (row: AttendanceRegistrant) => {
 const normalizeAttendanceRows = (payload: unknown): AttendanceRegistrant[] => {
   if (!payload || typeof payload !== 'object') return [];
   const source = payload as Record<string, unknown>;
-  const list = Array.isArray(source.registrants)
-    ? source.registrants
-    : Array.isArray(source.rows)
-      ? source.rows
-      : Array.isArray(source.items)
-        ? source.items
-        : [];
+  const nested = source.data && typeof source.data === 'object' ? source.data as Record<string, unknown> : source;
+  const list = Array.isArray(nested.registrants)
+    ? nested.registrants
+    : Array.isArray(nested.registrations)
+      ? nested.registrations
+    : Array.isArray(nested.rows)
+      ? nested.rows
+      : Array.isArray(nested.items)
+        ? nested.items
+        : Array.isArray(nested.attendance)
+          ? nested.attendance
+          : [];
 
   return list as AttendanceRegistrant[];
 };
@@ -284,7 +292,7 @@ const refreshReport = async () => {
     const attendanceRate = Number(summary?.attendance_rate ?? summary?.total_checked_in ?? 0);
 
     summaryCards.value = [
-      { label: 'Total', value: String(summary?.total_registrations ?? rows.length ?? 0), note: 'Registered guests' },
+      { label: 'Total', value: String(summary?.total_registrations ?? summary?.total_participants ?? summary?.total ?? rows.length), note: 'Registered guests' },
       { label: 'Checked in', value: String(summary?.checked_in ?? summary?.total_checked_in ?? rows.filter((item) => item.is_checked_in || item.status === 'checked_in').length), note: 'Present today' },
       { label: 'Pending', value: String(summary?.pending ?? rows.filter((item) => !(item.is_checked_in || item.status === 'checked_in')).length), note: 'Waiting to scan' },
       { label: 'Attendance rate', value: `${Number.isFinite(attendanceRate) ? attendanceRate : 0}%`, note: 'Overall attendance' }
@@ -353,7 +361,14 @@ watch(includeWithoutTicket, () => {
 });
 
 const submitManualCheckIn = async () => {
-  if (!selectedEventId.value || !manualTicketNumber.value.trim()) return;
+  if (!selectedEventId.value) {
+    scannerError.value = 'Select an event before checking in a ticket.';
+    return;
+  }
+  if (!manualTicketNumber.value.trim()) {
+    scannerError.value = 'Enter the ticket number for manual check-in.';
+    return;
+  }
   manualBusy.value = true;
   scannerError.value = '';
 
