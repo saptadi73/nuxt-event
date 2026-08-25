@@ -1,5 +1,5 @@
-import { useApi, type ApiResponse } from '~/composables/useApi';
-import type { SessionItem, SpeakerItem } from '~/composables/useEvent';
+import type { useApi, ApiResponse } from '~/composables/useApi';
+import type { DelegatePackageCatalog, DelegatePackageFacility, DelegatePackageRate, SessionItem, SpeakerItem } from '~/composables/useEvent';
 import type { StoreProduct } from '~/composables/useStore';
 
 export interface DelegatePackageMutationPayload {
@@ -9,6 +9,21 @@ export interface DelegatePackageMutationPayload {
   amount: number;
   payment_amount_idr?: number | null;
   is_active: boolean;
+  package_type?: 'main' | 'additional';
+  selection_mode?: 'required_one' | 'optional';
+  description?: string | null;
+  display_order?: number;
+}
+
+export interface DelegatePackageRatePayload {
+  occupancy_type: 'sharing' | 'single'; name: string; amount: number; currency: string;
+  payment_amount_idr: number | null; is_default: boolean; is_active: boolean;
+  valid_from?: string | null; valid_until?: string | null;
+}
+export interface DelegatePackageFacilityPayload {
+  name: string; description?: string | null; quantity?: number | null; unit?: string | null;
+  pricing_mode: 'included' | 'separately_priced'; sharing_amount?: number | null;
+  single_amount?: number | null; currency: string; display_order: number; is_active: boolean;
 }
 
 export interface ProductMutationPayload {
@@ -58,6 +73,13 @@ export function useAdminContent() {
   const createDelegatePackage = (eventId: string, payload: DelegatePackageMutationPayload) => api(`/admin/events/${eventId}/delegate-packages`, { method: 'POST', body: payload });
   const updateDelegatePackage = (eventId: string, packageId: string, payload: DelegatePackageMutationPayload) => api(`/admin/events/${eventId}/delegate-packages/${packageId}`, { method: 'PUT', body: payload });
   const deleteDelegatePackage = (eventId: string, packageId: string) => api(`/admin/events/${eventId}/delegate-packages/${packageId}`, { method: 'DELETE' });
+  const getDelegatePackageCatalog = (eventId: string) => api<ApiResponse<DelegatePackageCatalog>>(`/admin/events/${eventId}/delegate-package-catalog`);
+  const createDelegatePackageRate = (eventId: string, packageId: string, payload: DelegatePackageRatePayload) => api<ApiResponse<DelegatePackageRate>>(`/admin/events/${eventId}/delegate-packages/${packageId}/rates`, { method: 'POST', body: payload });
+  const updateDelegatePackageRate = (rateId: string, payload: DelegatePackageRatePayload) => api<ApiResponse<DelegatePackageRate>>(`/admin/delegate-package-rates/${rateId}`, { method: 'PUT', body: payload });
+  const deleteDelegatePackageRate = (rateId: string) => api(`/admin/delegate-package-rates/${rateId}`, { method: 'DELETE' });
+  const createDelegatePackageFacility = (eventId: string, packageId: string, payload: DelegatePackageFacilityPayload) => api<ApiResponse<DelegatePackageFacility>>(`/admin/events/${eventId}/delegate-packages/${packageId}/facilities`, { method: 'POST', body: payload });
+  const updateDelegatePackageFacility = (facilityId: string, payload: DelegatePackageFacilityPayload) => api<ApiResponse<DelegatePackageFacility>>(`/admin/delegate-package-facilities/${facilityId}`, { method: 'PUT', body: payload });
+  const deleteDelegatePackageFacility = (facilityId: string) => api(`/admin/delegate-package-facilities/${facilityId}`, { method: 'DELETE' });
   const getSessions = (eventSlug: string) => api<ApiResponse<SessionItem[]>>(`/events/${eventSlug}/sessions`);
   const createSession = (payload: SessionMutationPayload & { event_id: string }) => api<ApiResponse<SessionItem>>('/sessions', { method: 'POST', body: payload });
   const updateSession = (sessionId: string, payload: SessionMutationPayload) => api<ApiResponse<SessionItem>>(`/sessions/${sessionId}`, { method: 'PUT', body: payload });
@@ -67,5 +89,5 @@ export function useAdminContent() {
   const deleteSpeaker = (speakerId: string) => api(`/speakers/${speakerId}`, { method: 'DELETE' });
   const attachSpeakerToEvent = (speakerId: string, eventId: string) => api(`/speakers/${speakerId}/events`, { method: 'POST', body: { event_id: eventId } });
 
-  return { getProducts, createProduct, updateProduct, createDelegatePackage, updateDelegatePackage, deleteDelegatePackage, getSessions, createSession, updateSession, deleteSession, createSpeaker, updateSpeaker, deleteSpeaker, attachSpeakerToEvent };
+  return { getProducts, createProduct, updateProduct, createDelegatePackage, updateDelegatePackage, deleteDelegatePackage, getDelegatePackageCatalog, createDelegatePackageRate, updateDelegatePackageRate, deleteDelegatePackageRate, createDelegatePackageFacility, updateDelegatePackageFacility, deleteDelegatePackageFacility, getSessions, createSession, updateSession, deleteSession, createSpeaker, updateSpeaker, deleteSpeaker, attachSpeakerToEvent };
 }

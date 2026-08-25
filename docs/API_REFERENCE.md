@@ -309,6 +309,7 @@ GET /api/v1/master/business-sectors
 GET /api/v1/master/countries
 GET /api/v1/master/iwbif-options
 GET /api/v1/events/{event_id}/delegate-packages
+GET /api/v1/events/{event_id}/delegate-package-catalog
 GET /api/v1/events/{event_id}/activities
 GET /api/v1/events/{event_id}/business-matching-slots
 ```
@@ -316,16 +317,66 @@ GET /api/v1/events/{event_id}/business-matching-slots
 Jangan hard-code pilihan. `iwbif-options` memuat participation categories,
 looking-for, preferred countries, room preferences, airports, dan booth sizes.
 
-Package response:
+Endpoint `delegate-packages` mempertahankan response flat untuk kompatibilitas.
+Gunakan `delegate-package-catalog` untuk UI baru; response dikelompokkan menjadi
+Main wajib dan Additional opsional:
 
 ```json
-{"id":"uuid","event_id":"uuid","code":"A","name":"Package A - USD500","currency":"USD","amount":500,"payment_amount_idr":8000000,"is_active":true}
+{
+  "main_packages": [{
+    "id":"uuid-a","code":"A","name":"Main Package A","package_type":"main",
+    "selection_mode":"required_one","rates":[
+      {"id":"rate-sharing","product_id":"product-sharing","occupancy_type":"sharing","name":"Twin Sharing Basis","amount":500,"currency":"USD","is_default":true,"is_active":true},
+      {"id":"rate-single","product_id":"product-single","occupancy_type":"single","name":"Single Room","amount":700,"currency":"USD","is_default":false,"is_active":true}
+    ],
+    "facilities":[{"id":"uuid","name":"Airport Transfers","pricing_mode":"included","display_order":2,"is_active":true}]
+  }],
+  "additional_packages": [{
+    "id":"uuid-bandung","code":"TRIP_BANDUNG","name":"Additional Trip to Bandung","package_type":"additional",
+    "selection_mode":"optional","rates":[
+      {"product_id":"product-bandung-sharing","occupancy_type":"sharing","amount":200,"currency":"USD","is_default":true},
+      {"product_id":"product-bandung-single","occupancy_type":"single","amount":300,"currency":"USD","is_default":false}
+    ],
+    "facilities":[]
+  }]
+}
 ```
 
-`amount/currency` untuk display; `payment_amount_idr` untuk charge DOKU.
+Tarif Excel: A sharing/single USD 500/700, B USD 400/550, dan Bandung
+USD 200/300. Single diperlakukan sebagai tarif final berbeda, bukan penjumlahan
+sharing + supplement. `amount/currency` untuk display; `payment_amount_idr`
+untuk charge payment rail Indonesia. Frontend menambahkan `product_id` milik
+rate terpilih ke cart dan tidak pernah mengirim nominal.
 
-Untuk pembelian awal Delegate, gunakan katalog store pada bagian 6. Endpoint
-`delegate-packages` adalah master form registration dan bukan endpoint cart.
+Contoh rate lengkap untuk integrasi frontend/admin:
+
+```json
+{
+  "id":"rate-single-uuid",
+  "delegate_package_id":"package-a-uuid",
+  "product_id":"product-a-single-uuid",
+  "occupancy_type":"single",
+  "name":"Single Room",
+  "amount":700,
+  "currency":"USD",
+  "payment_amount_idr":11200000,
+  "is_default":false,
+  "is_active":true,
+  "valid_from":null,
+  "valid_until":null
+}
+```
+
+`payment_amount_idr` adalah input manual organizer dan nominal final untuk payment
+gateway, bukan hasil kurs otomatis backend. Saat field tersedia, product terkait
+memakai harga IDR. Jika null, product memakai `amount/currency` display; frontend
+harus menghindari checkout payment rail IDR sampai seluruh rate terpilih memiliki
+nilai IDR. Backend tetap menolak cart mixed-currency.
+
+Main wajib tepat satu dan default occupancy adalah rate `is_default=true`
+(`sharing`). Bandung berupa checkbox; ketika dicentang default-nya sharing dan
+participant boleh mengganti ke single. Menambahkan rate lain pada group yang
+sama otomatis mengganti item cart sebelumnya.
 
 ## 4. Participant profile
 
@@ -1665,6 +1716,13 @@ Role admin/organizer:
 
 ```http
 POST|GET|PUT|DELETE /api/v1/admin/events/{event_id}/delegate-packages[/{item_id}]
+GET  /api/v1/admin/events/{event_id}/delegate-package-catalog
+POST /api/v1/admin/events/{event_id}/delegate-packages/{package_id}/rates
+PUT  /api/v1/admin/delegate-package-rates/{rate_id}
+DELETE /api/v1/admin/delegate-package-rates/{rate_id}
+POST /api/v1/admin/events/{event_id}/delegate-packages/{package_id}/facilities
+PUT  /api/v1/admin/delegate-package-facilities/{facility_id}
+DELETE /api/v1/admin/delegate-package-facilities/{facility_id}
 POST|GET|PUT|DELETE /api/v1/admin/events/{event_id}/activities[/{item_id}]
 POST|GET|PUT|DELETE /api/v1/admin/events/{event_id}/business-matching-slots[/{item_id}]
 GET  /api/v1/admin/events/{event_id}/registrations
@@ -1675,6 +1733,17 @@ POST /api/v1/admin/registrations/{registration_id}/confirm
 POST /api/v1/admin/registrations/{registration_id}/reject
 POST /api/v1/admin/orders/{order_id}/confirm-manual-payment
 ```
+
+Delete package, rate, dan facility bersifat nonaktif/soft-delete agar order lama
+tetap dapat diaudit. Satu package hanya boleh mempunyai satu rate per occupancy
+dan satu default aktif. Perubahan rate otomatis disinkronkan ke product checkout;
+order dan registration menyimpan snapshot nama, occupancy, serta harga.
+
+Facility mendukung `pricing_mode=included|separately_priced`, breakdown
+`sharing_amount`/`single_amount`, currency, quantity/unit, urutan, dan status.
+Pada implementasi saat ini total package tetap berasal dari rate package;
+breakdown facility tidak dijumlahkan ulang ke checkout. Ini mencegah perubahan
+rincian facility mengubah invoice tanpa perubahan tarif package yang eksplisit.
 
 Konfirmasi transfer manual memerlukan role `admin` atau `organizer`:
 

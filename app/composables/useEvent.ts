@@ -1,4 +1,4 @@
-import { useApi, type ApiResponse } from '~/composables/useApi';
+import type { useApi, ApiResponse } from '~/composables/useApi';
 
 export interface EventItem {
   id: string;
@@ -74,6 +74,51 @@ export interface DelegatePackageItem extends TicketTypeItem {
   accommodation_nights?: number;
 }
 
+export type PackageOccupancy = 'sharing' | 'single';
+export interface DelegatePackageRate {
+  id: string;
+  delegate_package_id?: string;
+  product_id: string;
+  occupancy_type: PackageOccupancy;
+  name?: string;
+  amount: number;
+  currency: string;
+  payment_amount_idr?: number | null;
+  is_default: boolean;
+  is_active: boolean;
+  valid_from?: string | null;
+  valid_until?: string | null;
+}
+export interface DelegatePackageFacility {
+  id: string;
+  name: string;
+  description?: string | null;
+  quantity?: number | null;
+  unit?: string | null;
+  pricing_mode?: 'included' | 'separately_priced' | string;
+  sharing_amount?: number | null;
+  single_amount?: number | null;
+  currency?: string;
+  display_order?: number;
+  is_active: boolean;
+}
+export interface DelegatePackageCatalogItem {
+  id: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  package_type: 'main' | 'additional';
+  selection_mode: 'required_one' | 'optional';
+  display_order?: number;
+  is_active?: boolean;
+  rates: DelegatePackageRate[];
+  facilities: DelegatePackageFacility[];
+}
+export interface DelegatePackageCatalog {
+  main_packages: DelegatePackageCatalogItem[];
+  additional_packages: DelegatePackageCatalogItem[];
+}
+
 export interface ActivityItem extends WorkshopTrackItem {
   is_active?: boolean;
   activity_type?: string;
@@ -121,6 +166,9 @@ export function useEvent() {
   const getEventDelegatePackages = (eventId: string) =>
     api<ApiResponse<DelegatePackageItem[]>>(`/events/${eventId}/delegate-packages`);
 
+  const getDelegatePackageCatalog = (eventId: string) =>
+    api<ApiResponse<DelegatePackageCatalog>>(`/events/${eventId}/delegate-package-catalog`);
+
   const getEventActivities = (eventId: string) =>
     api<ApiResponse<ActivityItem[]>>(`/events/${eventId}/activities`);
 
@@ -136,6 +184,7 @@ export function useEvent() {
     getEventWorkshopTracks,
     getEventTicketTypes,
     getEventDelegatePackages,
+    getDelegatePackageCatalog,
     getEventActivities,
     getEventExhibitors
   };

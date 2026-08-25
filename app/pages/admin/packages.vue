@@ -4,7 +4,7 @@
       <div>
         <p class="text-sm uppercase tracking-[.3em] text-amber-200">Organizer catalog</p>
         <h1 class="mt-3 text-3xl font-black sm:text-4xl">Manage Delegate Packages</h1>
-        <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-300">Create, update, activate, or remove Delegate packages. Set the USD price and the corresponding DOKU payment amount in IDR.</p>
+        <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-300">Manage Main and Additional packages. Prices are configured per Sharing/Single rate; facilities are informational breakdowns.</p>
       </div>
       <NuxtLink to="/dashboard" class="rounded-full border border-white/20 px-5 py-3 text-sm font-semibold">Back to dashboard</NuxtLink>
     </div>
@@ -20,8 +20,10 @@
           <article v-for="item in packages" :key="item.id" class="glass-card rounded-3xl p-5">
             <div class="flex items-center justify-between gap-3"><span class="text-xs font-bold uppercase tracking-[.2em] text-amber-200">{{ item.code }}</span><span class="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[.16em]" :class="item.is_active ? 'bg-emerald-300/10 text-emerald-200' : 'bg-white/10 text-slate-400'">{{ item.is_active ? 'Active' : 'Inactive' }}</span></div>
             <h2 class="mt-4 text-xl font-bold">{{ item.name }}</h2>
-            <div class="mt-4 flex flex-wrap items-end justify-between gap-3"><p class="text-2xl font-black text-amber-100">{{ money(item.amount, item.currency) }}</p><p v-if="item.payment_amount_idr" class="text-sm text-slate-400">Payment: {{ money(item.payment_amount_idr, 'IDR') }}</p></div>
-            <div class="mt-5 flex flex-wrap gap-3"><button class="rounded-full border border-amber-300/40 px-5 py-2 text-sm font-semibold text-amber-100" @click="editPackage(item)">Edit</button><button class="rounded-full border border-red-300/30 px-5 py-2 text-sm font-semibold text-red-200 disabled:opacity-50" :disabled="deletingId === item.id" @click="removePackage(item)">{{ deletingId === item.id ? 'Removing...' : 'Remove' }}</button></div>
+            <p class="mt-2 text-xs uppercase tracking-wider text-slate-400">{{ item.package_type }} · {{ item.selection_mode }}</p>
+            <div class="mt-4 grid gap-2"><div v-for="rate in item.rates" :key="rate.id" class="rounded-xl border border-white/10 bg-slate-950/40 p-3"><div class="flex justify-between gap-2"><b class="capitalize">{{ rate.occupancy_type }} <span v-if="rate.is_default" class="text-xs text-amber-200">(default)</span></b><span>{{ money(rate.amount, rate.currency) }}</span></div><p class="mt-1 text-xs text-slate-400">{{ rate.payment_amount_idr ? `Payment ${money(rate.payment_amount_idr, 'IDR')}` : 'IDR payment not configured' }}</p><div class="mt-2 flex gap-3"><button class="text-xs font-semibold text-amber-200" @click="editRate(item.id, rate)">Edit</button><button class="text-xs font-semibold text-rose-200" @click="removeRate(rate)">Deactivate</button></div></div></div>
+            <ul class="mt-4 space-y-2 text-xs text-slate-400"><li v-for="facility in item.facilities" :key="facility.id" class="flex items-center justify-between gap-2"><span>• {{ facility.name }}</span><span class="flex gap-2"><button class="text-amber-200" @click="editFacility(item.id, facility)">Edit</button><button class="text-rose-200" @click="removeFacility(facility)">Deactivate</button></span></li></ul>
+            <div class="mt-5 flex flex-wrap gap-3"><button class="rounded-full bg-amber-300 px-5 py-2 text-sm font-semibold text-slate-950" @click="selectedPackageId = item.id">Rates & facilities</button><button class="rounded-full border border-amber-300/40 px-5 py-2 text-sm font-semibold text-amber-100" @click="editPackage(item)">Edit</button><button class="rounded-full border border-red-300/30 px-5 py-2 text-sm font-semibold text-red-200 disabled:opacity-50" :disabled="deletingId === item.id" @click="removePackage(item)">{{ deletingId === item.id ? 'Removing...' : 'Remove' }}</button></div>
           </article>
         </div>
       </div>
@@ -31,6 +33,8 @@
         <div class="mt-5 space-y-4">
           <label class="field"><span>Package name</span><input v-model.trim="form.name" required placeholder="Package A - USD500" /></label>
           <label class="field"><span>Code</span><input v-model.trim="form.code" required maxlength="30" placeholder="A" /></label>
+          <div class="grid grid-cols-2 gap-3"><label class="field"><span>Package type</span><select v-model="form.package_type"><option value="main">Main</option><option value="additional">Additional</option></select></label><label class="field"><span>Selection</span><select v-model="form.selection_mode"><option value="required_one">Required one</option><option value="optional">Optional</option></select></label></div>
+          <label class="field"><span>Description</span><input v-model.trim="form.description" placeholder="Package description" /></label>
           <div class="grid grid-cols-2 gap-3"><label class="field"><span>Price</span><input v-model.number="form.amount" type="number" min="0.01" step="0.01" required /></label><label class="field"><span>Currency</span><input v-model.trim="form.currency" maxlength="3" required /></label></div>
           <label class="field"><span>Payment amount (IDR)</span><input v-model.number="form.payment_amount_idr" type="number" min="1" step="1" placeholder="8000000" /></label>
           <label class="flex items-center gap-3 text-sm text-slate-300"><input v-model="form.is_active" type="checkbox" class="h-4 w-4 accent-amber-300" />Available for purchase</label>
@@ -38,29 +42,40 @@
         </div>
       </form>
     </div>
+
+    <section v-if="selectedPackage" class="mt-8 grid gap-6 lg:grid-cols-2">
+      <article class="glass-card rounded-3xl p-5"><div class="flex justify-between"><h2 class="text-xl font-bold">{{ editingRateId ? 'Edit rate' : 'Add rate' }} · {{ selectedPackage.name }}</h2><button v-if="editingRateId" class="text-sm text-slate-400" @click="resetRateForm">Cancel</button></div><p class="mt-2 text-xs text-slate-400">Sharing and Single are final package tariffs. Only one rate may be the default.</p><form class="mt-5 space-y-3" @submit.prevent="saveRate"><div class="grid grid-cols-2 gap-3"><label class="field"><span>Occupancy</span><select v-model="rateForm.occupancy_type"><option value="sharing">Sharing</option><option value="single">Single</option></select></label><label class="field"><span>Rate name</span><input v-model="rateForm.name" required></label></div><div class="grid grid-cols-2 gap-3"><label class="field"><span>Display USD</span><input v-model.number="rateForm.amount" type="number" min="0" required></label><label class="field"><span>Payment IDR</span><input v-model.number="rateForm.payment_amount_idr" type="number" min="1"></label></div><div class="flex gap-5 text-sm"><label><input v-model="rateForm.is_default" type="checkbox" class="accent-amber-300"> Default</label><label><input v-model="rateForm.is_active" type="checkbox" class="accent-amber-300"> Active</label></div><button class="w-full rounded-full bg-amber-300 px-5 py-3 font-bold text-slate-950" :disabled="saving">{{ editingRateId ? 'Update rate' : 'Add rate' }}</button></form></article>
+      <article class="glass-card rounded-3xl p-5"><div class="flex justify-between"><h2 class="text-xl font-bold">{{ editingFacilityId ? 'Edit facility' : 'Add facility' }}</h2><button v-if="editingFacilityId" class="text-sm text-slate-400" @click="resetFacilityForm">Cancel</button></div><p class="mt-2 text-xs text-slate-400">Facility prices are breakdown information and are not added to checkout totals.</p><form class="mt-5 space-y-3" @submit.prevent="saveFacility"><label class="field"><span>Facility name</span><input v-model="facilityForm.name" required></label><div class="grid grid-cols-2 gap-3"><label class="field"><span>Quantity</span><input v-model.number="facilityForm.quantity" type="number" min="0"></label><label class="field"><span>Unit</span><input v-model="facilityForm.unit" placeholder="night"></label></div><label class="field"><span>Pricing</span><select v-model="facilityForm.pricing_mode"><option value="included">Included</option><option value="separately_priced">Separately priced</option></select></label><div v-if="facilityForm.pricing_mode === 'separately_priced'" class="grid grid-cols-2 gap-3"><label class="field"><span>Sharing USD</span><input v-model.number="facilityForm.sharing_amount" type="number" min="0"></label><label class="field"><span>Single USD</span><input v-model.number="facilityForm.single_amount" type="number" min="0"></label></div><button class="w-full rounded-full bg-cyan-300 px-5 py-3 font-bold text-slate-950" :disabled="saving">{{ editingFacilityId ? 'Update facility' : 'Add facility' }}</button></form></article>
+    </section>
   </section>
 </template>
 
 <script setup lang="ts">
-import { useAdminContent, type DelegatePackageMutationPayload } from '~/composables/useAdminContent';
-import { useEvent, type DelegatePackageItem, type EventItem } from '~/composables/useEvent';
+import { useAdminContent, type DelegatePackageFacilityPayload, type DelegatePackageMutationPayload, type DelegatePackageRatePayload } from '~/composables/useAdminContent';
+import { useEvent, type DelegatePackageCatalogItem, type DelegatePackageFacility, type DelegatePackageRate, type EventItem } from '~/composables/useEvent';
 
 definePageMeta({ middleware: ['auth', 'admin'] });
 useSeoMeta({ title: 'Manage Delegate Packages | IWBIF 2026' });
 
-const { getEvents, getEventDelegatePackages } = useEvent();
+const { getEvents } = useEvent();
 const adminApi = useAdminContent();
 const { data: eventResponse } = await useAsyncData('admin-package-events', () => getEvents(1, 100));
 const events = computed<EventItem[]>(() => eventResponse.value?.data || []);
 const selectedEventId = ref(events.value[0]?.id || '');
-const packages = ref<DelegatePackageItem[]>([]);
+const packages = ref<DelegatePackageCatalogItem[]>([]);
 const loading = ref(false);
 const saving = ref(false);
 const deletingId = ref('');
 const editingId = ref('');
 const feedback = ref('');
 const feedbackTone = ref<'success' | 'error'>('success');
-const emptyForm = (): DelegatePackageMutationPayload => ({ code: '', name: '', currency: 'USD', amount: 0, payment_amount_idr: null, is_active: true });
+const selectedPackageId = ref('');
+const editingRateId = ref('');
+const editingFacilityId = ref('');
+const selectedPackage = computed(() => packages.value.find(item => item.id === selectedPackageId.value));
+const rateForm = reactive<DelegatePackageRatePayload>({ occupancy_type: 'sharing', name: 'Twin Sharing Basis', amount: 0, currency: 'USD', payment_amount_idr: null, is_default: true, is_active: true, valid_from: null, valid_until: null });
+const facilityForm = reactive<DelegatePackageFacilityPayload>({ name: '', description: null, quantity: null, unit: null, pricing_mode: 'included', sharing_amount: null, single_amount: null, currency: 'USD', display_order: 1, is_active: true });
+const emptyForm = (): DelegatePackageMutationPayload => ({ code: '', name: '', package_type: 'main', selection_mode: 'required_one', description: '', display_order: 1, currency: 'USD', amount: 0, payment_amount_idr: null, is_active: true });
 const form = reactive<DelegatePackageMutationPayload>(emptyForm());
 
 const apiError = (error: unknown) => {
@@ -70,14 +85,15 @@ const apiError = (error: unknown) => {
 const loadPackages = async () => {
   if (!selectedEventId.value) { packages.value = []; return; }
   loading.value = true; feedback.value = '';
-  try { packages.value = (await getEventDelegatePackages(selectedEventId.value)).data || []; }
+  try { const catalog = (await adminApi.getDelegatePackageCatalog(selectedEventId.value)).data; packages.value = [...(catalog.main_packages || []), ...(catalog.additional_packages || [])]; }
   catch (error) { feedbackTone.value = 'error'; feedback.value = apiError(error); }
   finally { loading.value = false; }
 };
 const resetForm = () => { editingId.value = ''; Object.assign(form, emptyForm()); };
-const editPackage = (item: DelegatePackageItem) => {
+const editPackage = (item: DelegatePackageCatalogItem) => {
   editingId.value = item.id;
-  Object.assign(form, { code: item.code, name: item.name, currency: item.currency, amount: item.amount, payment_amount_idr: item.payment_amount_idr ?? null, is_active: item.is_active });
+  const rate = item.rates.find(value => value.is_default) || item.rates[0];
+  Object.assign(form, { code: item.code, name: item.name, package_type: item.package_type, selection_mode: item.selection_mode, description: item.description || '', display_order: item.display_order || 1, currency: rate?.currency || 'USD', amount: rate?.amount || 0, payment_amount_idr: rate?.payment_amount_idr ?? null, is_active: item.is_active !== false });
 };
 const savePackage = async () => {
   if (!selectedEventId.value || saving.value) return;
@@ -91,13 +107,21 @@ const savePackage = async () => {
   } catch (error) { feedbackTone.value = 'error'; feedback.value = apiError(error); }
   finally { saving.value = false; }
 };
-const removePackage = async (item: DelegatePackageItem) => {
+const removePackage = async (item: DelegatePackageCatalogItem) => {
   if (!selectedEventId.value || deletingId.value || !confirm(`Remove ${item.name}?`)) return;
   deletingId.value = item.id; feedback.value = '';
   try { await adminApi.deleteDelegatePackage(selectedEventId.value, item.id); feedbackTone.value = 'success'; feedback.value = 'Delegate package removed.'; await loadPackages(); }
   catch (error) { feedbackTone.value = 'error'; feedback.value = apiError(error); }
   finally { deletingId.value = ''; }
 };
+const resetRateForm = () => { editingRateId.value = ''; Object.assign(rateForm, { occupancy_type: 'sharing', name: 'Twin Sharing Basis', amount: 0, currency: 'USD', payment_amount_idr: null, is_default: false, is_active: true, valid_from: null, valid_until: null }); };
+const resetFacilityForm = () => { editingFacilityId.value = ''; Object.assign(facilityForm, { name: '', description: null, quantity: null, unit: null, pricing_mode: 'included', sharing_amount: null, single_amount: null, currency: 'USD', display_order: 1, is_active: true }); };
+const editRate = (packageId: string, rate: DelegatePackageRate) => { selectedPackageId.value = packageId; editingRateId.value = rate.id; Object.assign(rateForm, { occupancy_type: rate.occupancy_type, name: rate.name || (rate.occupancy_type === 'sharing' ? 'Twin Sharing Basis' : 'Single Room'), amount: rate.amount, currency: rate.currency, payment_amount_idr: rate.payment_amount_idr ?? null, is_default: rate.is_default, is_active: rate.is_active, valid_from: rate.valid_from || null, valid_until: rate.valid_until || null }); };
+const editFacility = (packageId: string, facility: DelegatePackageFacility) => { selectedPackageId.value = packageId; editingFacilityId.value = facility.id; Object.assign(facilityForm, { name: facility.name, description: facility.description || null, quantity: facility.quantity ?? null, unit: facility.unit || null, pricing_mode: facility.pricing_mode === 'separately_priced' ? 'separately_priced' : 'included', sharing_amount: facility.sharing_amount ?? null, single_amount: facility.single_amount ?? null, currency: facility.currency || 'USD', display_order: facility.display_order || 1, is_active: facility.is_active }); };
+const saveRate = async () => { if (!selectedPackage.value || saving.value) return; saving.value = true; feedback.value = ''; try { const payload = { ...rateForm, payment_amount_idr: rateForm.payment_amount_idr || null }; if (editingRateId.value) await adminApi.updateDelegatePackageRate(editingRateId.value, payload); else await adminApi.createDelegatePackageRate(selectedEventId.value, selectedPackage.value.id, payload); feedbackTone.value = 'success'; feedback.value = editingRateId.value ? 'Package rate updated.' : 'Package rate added and checkout product synchronized.'; resetRateForm(); await loadPackages(); } catch (error) { feedbackTone.value = 'error'; feedback.value = apiError(error); } finally { saving.value = false; } };
+const saveFacility = async () => { if (!selectedPackage.value || saving.value) return; saving.value = true; feedback.value = ''; try { const payload = { ...facilityForm, sharing_amount: facilityForm.sharing_amount || null, single_amount: facilityForm.single_amount || null }; if (editingFacilityId.value) await adminApi.updateDelegatePackageFacility(editingFacilityId.value, payload); else await adminApi.createDelegatePackageFacility(selectedEventId.value, selectedPackage.value.id, payload); feedbackTone.value = 'success'; feedback.value = editingFacilityId.value ? 'Facility updated.' : 'Facility added.'; resetFacilityForm(); await loadPackages(); } catch (error) { feedbackTone.value = 'error'; feedback.value = apiError(error); } finally { saving.value = false; } };
+const removeRate = async (rate: DelegatePackageRate) => { if (!confirm(`Deactivate ${rate.name || rate.occupancy_type} rate?`)) return; try { await adminApi.deleteDelegatePackageRate(rate.id); feedbackTone.value = 'success'; feedback.value = 'Rate deactivated.'; await loadPackages(); } catch (error) { feedbackTone.value = 'error'; feedback.value = apiError(error); } };
+const removeFacility = async (facility: DelegatePackageFacility) => { if (!confirm(`Deactivate ${facility.name}?`)) return; try { await adminApi.deleteDelegatePackageFacility(facility.id); feedbackTone.value = 'success'; feedback.value = 'Facility deactivated.'; await loadPackages(); } catch (error) { feedbackTone.value = 'error'; feedback.value = apiError(error); } };
 
 watch(selectedEventId, async () => { resetForm(); await loadPackages(); });
 if (selectedEventId.value) await loadPackages();
@@ -107,6 +131,6 @@ const money = (amount: number, currency: string) => new Intl.NumberFormat('en-US
 <style scoped>
 .field { display:block; font-size:.875rem; color:#cbd5e1; }
 .field span { display:block; margin-bottom:.5rem; }
-.field input { width:100%; border:1px solid rgba(255,255,255,.1); border-radius:1rem; background:rgba(2,6,23,.78); padding:.75rem 1rem; color:white; outline:none; }
-.field input:focus { border-color:rgba(252,211,77,.55); }
+.field input,.field select { width:100%; border:1px solid rgba(255,255,255,.1); border-radius:1rem; background:rgba(2,6,23,.78); padding:.75rem 1rem; color:white; outline:none; }
+.field input:focus,.field select:focus { border-color:rgba(252,211,77,.55); }
 </style>
