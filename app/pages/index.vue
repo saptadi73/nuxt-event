@@ -7,11 +7,11 @@
 
       <div class="hero-frame">
         <img
-          src="/images/iwbif-2026-hero-01.png"
+          src="/images/iwbif-2026-hero.jpg"
           alt="IWBIF 2026 Jakarta featuring women business leaders, international collaboration, business matching, and investment opportunities"
           class="hero-image"
-          width="1829"
-          height="860"
+          width="1672"
+          height="941"
           loading="eager"
           fetchpriority="high"
         />
@@ -141,7 +141,7 @@ useSeoMeta({
   description: 'Join IWBIF 2026 in Jakarta for global collaboration, women-led investment and market access, and curated business matching.',
   ogTitle: 'International Women Business & Investment Forum 2026',
   ogDescription: 'Empowering Women Entrepreneurs Through Finance, Global Collaboration, and Digital Transformation.',
-  ogImage: '/images/iwbif-2026-hero-01.png'
+  ogImage: '/images/iwbif-2026-hero.jpg'
 })
 
 const featuredStats = [
@@ -222,7 +222,7 @@ onMounted(() => {
 
 <style scoped>
 .hero-stage { position: relative; margin-inline: auto; max-width: 1600px; padding: clamp(1rem, 2.5vw, 2.5rem); }
-  .hero-frame { position: relative; isolation: isolate; overflow: hidden; aspect-ratio: 1829 / 860; border: 1px solid rgba(216, 172, 89, .22); border-radius: clamp(1.25rem, 3vw, 3rem); background: #04152d; box-shadow: 0 45px 120px rgba(2, 10, 24, .68), 0 0 80px rgba(224, 177, 98, .08); }
+  .hero-frame { position: relative; isolation: isolate; overflow: hidden; aspect-ratio: 1672 / 941; border: 1px solid rgba(216, 172, 89, .22); border-radius: clamp(1.25rem, 3vw, 3rem); background: #04152d; box-shadow: 0 45px 120px rgba(2, 10, 24, .68), 0 0 80px rgba(224, 177, 98, .08); }
 .hero-image { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(.2, .7, .2, 1); }
 .hero-frame:hover .hero-image { transform: scale(1.012); }
 .hero-vignette { position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(2, 10, 24, .08), transparent 22%, transparent 78%, rgba(2, 10, 24, .08)); box-shadow: inset 0 0 55px rgba(1, 8, 20, .18); pointer-events: none; }
