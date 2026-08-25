@@ -1553,6 +1553,114 @@ atau data belum sinkron.
 
 ## 15. Organizer/admin
 
+### Organizer Business Matching Operations
+
+Organizer memiliki workflow assisted matching terpisah dari chat privat peserta.
+Usulan baru meminta respons kedua peserta; ketika keduanya memilih `interested`,
+backend otomatis membuat meeting dengan `source=organizer_recommendation` dan
+status `scheduling`.
+
+```text
+POST /api/v1/admin/events/{event_id}/business-matching/recommendations
+GET  /api/v1/admin/events/{event_id}/business-matching/recommendations?status=awaiting_responses
+GET  /api/v1/events/{event_id}/business-matching/organizer-recommendations
+POST /api/v1/business-matching/organizer-recommendations/{recommendation_id}/respond
+GET  /api/v1/admin/events/{event_id}/business-matching/report?status=requested&source=participant_request&search=company&page=1&size=20
+POST /api/v1/admin/meetings/{meeting_id}/action
+GET  /api/v1/admin/events/{event_id}/business-matching/settings
+PUT  /api/v1/admin/events/{event_id}/business-matching/settings
+```
+
+Payload usulan organizer:
+
+```json
+{
+  "participant_a_id": "uuid",
+  "participant_b_id": "uuid",
+  "reason": "Kebutuhan distributor sesuai dengan penawaran produsen",
+  "topic": "Regional distribution partnership",
+  "purpose": "Explore partnership",
+  "proposed_slot_ids": ["uuid"],
+  "expires_at": "2026-08-30T12:00:00Z"
+}
+```
+
+Respons peserta adalah `{ "response": "interested" }` atau
+`{ "response": "not_interested" }`. Status usulan: `awaiting_responses`,
+`mutually_interested`, `declined`, `expired`, `converted_to_meeting`, dan
+`cancelled`.
+
+Tindakan operasional organizer menggunakan payload berikut. `slot_id` dan
+`resource_id` wajib untuk action `confirm`; alasan selalu wajib agar setiap
+override dapat diaudit.
+
+```json
+{
+  "action": "confirm",
+  "slot_id": "uuid",
+  "resource_id": "uuid",
+  "reason": "Confirmed by matching desk after both parties agreed"
+}
+```
+
+Action yang tersedia: `confirm`, `cancel`, `complete`, dan `no_show`. Laporan
+menyediakan summary seluruh status, `needs_attention`, detail kedua pihak,
+sumber meeting, dan pagination. Organizer hanya menerima metadata operasional;
+endpoint ini tidak membuka isi conversation privat.
+
+Pengaturan per event mencakup aktivasi assisted matching, mutual consent,
+auto-create meeting, organizer override, masa berlaku usulan, reminder sebelum
+usulan kedaluwarsa, dan jadwal reminder meeting.
+
+Contoh PUT settings:
+
+```json
+{
+  "assisted_matching_enabled": true,
+  "require_mutual_consent": true,
+  "auto_create_meeting": true,
+  "organizer_override_enabled": true,
+  "recommendation_expiry_hours": 72,
+  "reminder_hours_before_expiry": 24,
+  "meeting_reminder_hours": [24, 1]
+}
+```
+
+`require_mutual_consent` wajib `true`. Rentang expiry adalah 1–720 jam,
+reminder recommendation 1–168 jam, dan maksimal lima meeting reminder. GET
+settings membuat default aman jika event belum mempunyai pengaturan.
+
+Struktur utama response report:
+
+```json
+{
+  "summary": {
+    "total": 24,
+    "requested": 3,
+    "accepted": 2,
+    "scheduling": 4,
+    "confirmed": 8,
+    "completed": 5,
+    "declined": 1,
+    "cancelled": 1,
+    "reschedule_requested": 0,
+    "no_show": 0,
+    "needs_attention": 9
+  },
+  "items": [
+    {
+      "meeting": {"id":"uuid","status":"scheduling","source":"organizer_recommendation"},
+      "requester": {"id":"uuid","name":"Buyer A","organization":"Company A"},
+      "recipient": {"id":"uuid","name":"Supplier B","organization":"Company B"}
+    }
+  ],
+  "pagination": {"page":1,"size":20,"total":24,"pages":2}
+}
+```
+
+`needs_attention` menjumlahkan meeting `requested`, `accepted`, `scheduling`,
+dan `reschedule_requested`. Gunakan nilai ini untuk work-queue badge organizer.
+
 Role admin/organizer:
 
 ```http

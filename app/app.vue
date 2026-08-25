@@ -506,6 +506,7 @@ const secondaryNav = computed<NavItem[]>(() => {
     items.push({ to: '/admin/announcements', label: 'Announcements' });
     items.push({ to: '/admin/certificates', label: 'Certificates' });
     items.push({ to: '/admin/email-notifications', label: 'Email Notifications' });
+    items.push({ to: '/admin/business-matching', label: 'Matching Operations' });
   }
 
   return items;

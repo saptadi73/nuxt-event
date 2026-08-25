@@ -17,15 +17,34 @@
             <input v-model.trim="form.email" type="email" autocomplete="email" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="you@example.com" required />
           </label>
 
-          <div class="grid gap-4 sm:grid-cols-2">
+          <div class="space-y-4">
             <label class="block">
               <span class="mb-2 block text-sm text-slate-300">Country</span>
-              <input v-model.trim="form.country" autocomplete="country-name" minlength="2" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="Indonesia" required />
+              <select v-model="form.country" autocomplete="country-name" class="registration-field w-full" required>
+                <optgroup label="Most selected">
+                  <option v-for="country in priorityCountries" :key="country.iso" :value="country.name">{{ country.name }}</option>
+                </optgroup>
+                <optgroup label="──────────">
+                  <option v-for="country in otherCountries" :key="country.iso" :value="country.name">{{ country.name }}</option>
+                </optgroup>
+              </select>
             </label>
 
             <label class="block">
               <span class="mb-2 block text-sm text-slate-300">Mobile phone</span>
-              <input v-model.trim="form.phone" type="tel" autocomplete="tel" minlength="5" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="+62 812 3456 7890" required />
+              <div class="phone-field flex overflow-hidden rounded-2xl border border-white/10 bg-slate-950/80 transition focus-within:border-amber-300/60 focus-within:ring-2 focus-within:ring-amber-300/20">
+                <select v-model="form.phoneCountryIso" aria-label="Phone country code" class="phone-country min-w-32 border-r border-white/10 bg-slate-950 px-3 py-3 text-white focus:outline-none">
+                  <optgroup label="Most selected">
+                    <option v-for="country in priorityCountries" :key="country.iso" :value="country.iso">{{ countryFlag(country.iso) }} {{ country.iso }} {{ country.dialCode }}</option>
+                  </optgroup>
+                  <optgroup label="──────────">
+                    <option v-for="country in otherCountries" :key="country.iso" :value="country.iso">{{ countryFlag(country.iso) }} {{ country.iso }} {{ country.dialCode }}</option>
+                  </optgroup>
+                </select>
+                <span class="flex items-center pl-3 text-sm font-semibold text-slate-300">{{ selectedPhoneCountry.dialCode }}</span>
+                <input v-model.trim="form.phoneLocal" type="tel" inputmode="numeric" autocomplete="tel-national" minlength="5" class="min-w-0 flex-1 bg-transparent px-3 py-3 text-white placeholder:text-slate-500 focus:outline-none" placeholder="812 3456 7890" required />
+              </div>
+              <span class="mt-1.5 block text-xs text-slate-500">Enter the number without the country code.</span>
             </label>
           </div>
 
@@ -56,11 +75,14 @@
 </template>
 
 <script setup lang="ts">
+import { countryFlag, countryOptions, otherCountries, priorityCountries } from '~/config/countries';
+
 const form = reactive({
   full_name: '',
   email: '',
-  country: '',
-  phone: '',
+  country: 'Indonesia',
+  phoneCountryIso: 'ID',
+  phoneLocal: '',
   password: '',
   confirmPassword: ''
 });
@@ -69,6 +91,18 @@ const flow = useRegistrationFlow();
 const submitting = ref(false);
 const message = ref('');
 const messageTone = ref<'neutral' | 'success' | 'error'>('neutral');
+const selectedPhoneCountry = computed(() => countryOptions.find(country => country.iso === form.phoneCountryIso) || countryOptions[0]!);
+const internationalPhone = computed(() => {
+  const dialDigits = selectedPhoneCountry.value.dialCode.replace(/\D/g, '');
+  let localNumber = form.phoneLocal.replace(/\D/g, '').replace(/^0+/, '');
+  if (localNumber.startsWith(dialDigits)) localNumber = localNumber.slice(dialDigits.length);
+  return `${selectedPhoneCountry.value.dialCode}${localNumber}`;
+});
+
+watch(() => form.country, (countryName) => {
+  const country = countryOptions.find(option => option.name === countryName);
+  if (country) form.phoneCountryIso = country.iso;
+});
 
 const onSubmit = async () => {
   if (form.password.length < 8) {
@@ -92,7 +126,7 @@ const onSubmit = async () => {
       email: form.email,
       full_name: form.full_name,
       country: form.country,
-      phone: form.phone,
+      phone: internationalPhone.value,
       password: form.password
     });
 
@@ -123,6 +157,26 @@ const onSubmit = async () => {
 .auth-card {
   backdrop-filter: blur(18px);
   box-shadow: 0 28px 60px rgba(0, 0, 0, 0.35), inset 0 1px rgba(255, 255, 255, 0.04);
+}
+.registration-field {
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 1rem;
+  background: rgb(2 6 23 / 80%);
+  padding: .75rem 1rem;
+  color: white;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.registration-field:focus {
+  border-color: rgb(252 211 77 / 60%);
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(252 211 77 / 20%);
+}
+.registration-field option,
+.registration-field optgroup,
+.phone-country option,
+.phone-country optgroup {
+  background: #020617;
+  color: white;
 }
 
 @media (max-width: 767px) {

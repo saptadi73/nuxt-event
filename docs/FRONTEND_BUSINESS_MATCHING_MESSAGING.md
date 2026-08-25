@@ -4,6 +4,98 @@
 
 Semua endpoint membutuhkan `Authorization: Bearer <access-token>`.
 
+## Organizer-assisted matching
+
+Pisahkan UI menjadi dua pengalaman:
+
+- participant: halaman **Usulan Organizer** berisi alasan, topik, batas respons,
+  identitas counterpart, serta tombol `Tertarik` dan `Tidak tertarik`;
+- organizer: **Matching Operations Center** berisi KPI, work queue, recommendation
+  composer, jadwal/resource, settings, dan audit-aware action dialog.
+
+### Flow participant
+
+```text
+GET /api/v1/events/{event_id}/business-matching/organizer-recommendations
+POST /api/v1/business-matching/organizer-recommendations/{id}/respond
+```
+
+Payload respons:
+
+```json
+{"response":"interested"}
+```
+
+Nilai lain yang valid adalah `not_interested`. Setelah submit, disable tombol
+hingga response selesai. Jika response mengandung `meeting_id`, arahkan user ke
+detail meeting/penjadwalan. Tampilkan countdown dari `expires_at`; respons dengan
+HTTP `409` berarti recommendation sudah ditutup atau kedaluwarsa.
+
+### Flow organizer
+
+```text
+GET  /api/v1/admin/events/{event_id}/business-matching/report?page=1&size=20
+POST /api/v1/admin/events/{event_id}/business-matching/recommendations
+GET  /api/v1/admin/events/{event_id}/business-matching/recommendations
+POST /api/v1/admin/meetings/{meeting_id}/action
+GET  /api/v1/admin/events/{event_id}/business-matching/settings
+PUT  /api/v1/admin/events/{event_id}/business-matching/settings
+```
+
+Query report mendukung `status`, `source`, `search`, `page`, dan `size`. Gunakan
+`summary.needs_attention` sebagai badge work queue. `source` bernilai
+`participant_request` atau `organizer_recommendation`.
+
+Contoh recommendation composer:
+
+```json
+{
+  "participant_a_id":"uuid-a",
+  "participant_b_id":"uuid-b",
+  "reason":"Buyer membutuhkan produk yang ditawarkan supplier",
+  "topic":"ASEAN distribution partnership",
+  "purpose":"Explore commercial partnership",
+  "proposed_slot_ids":["uuid-slot"],
+  "expires_at":null
+}
+```
+
+Jika `expires_at=null`, backend memakai tenggat dari settings event. Jangan
+menampilkan isi private conversation di dashboard organizer.
+
+### Action dialog organizer
+
+Semua action wajib meminta alasan. Untuk `confirm`, wajib pilih slot dan resource:
+
+```json
+{
+  "action":"confirm",
+  "slot_id":"uuid-slot",
+  "resource_id":"uuid-table",
+  "reason":"Both participants approved this schedule"
+}
+```
+
+Action lain adalah `cancel`, `complete`, dan `no_show`; kirim `slot_id` serta
+`resource_id` sebagai `null`. Pada HTTP `409`, refresh availability dan detail
+meeting karena status atau resource mungkin sudah berubah.
+
+### Komponen dashboard yang disarankan
+
+- KPI: total, requested, scheduling, confirmed, completed, declined, cancelled,
+  no-show, dan needs-attention;
+- work queue diurutkan berdasarkan usia request dan recommendation mendekati
+  expiry;
+- filter chips untuk status dan source, plus search participant/perusahaan/topik;
+- split-panel detail agar operator tidak kehilangan posisi tabel;
+- status timeline dari audit metadata;
+- action confirmation modal yang selalu menampilkan kedua pihak, jadwal, meja,
+  dan alasan perubahan.
+
+Polling report setiap 30–60 detik cukup untuk dashboard. Setelah mutation,
+invalidate cache report, recommendation list, availability, notifications, dan
+detail meeting.
+
 - `POST /api/v1/events/{event_id}/conversations` membuka atau menggunakan kembali conversation dengan participant tujuan.
 - `GET /api/v1/events/{event_id}/conversations` mengembalikan counterpart, last message, dan unread count.
 - `GET /api/v1/conversations/{id}/messages?limit=50&before=<ISO-8601>` mengambil histori secara cursor pagination.

@@ -13,6 +13,25 @@
   </section>
   <main v-else class="business-page">
     <section class="mx-auto max-w-7xl px-3 pb-14 pt-6 sm:px-6 sm:pt-12 lg:px-8">
+      <section v-if="organizerRecommendations.length || recommendationsLoading" class="mb-8 rounded-3xl border border-amber-300/25 bg-amber-300/10 p-5 sm:p-7">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div><p class="text-xs font-semibold uppercase tracking-[.3em] text-amber-200">Usulan Organizer</p><h2 class="mt-2 text-2xl font-black">Potential business partners selected for you</h2></div>
+          <span class="text-xs text-slate-300">Your response remains private until both parties respond.</span>
+        </div>
+        <div v-if="recommendationsLoading" class="mt-5 h-36 animate-pulse rounded-2xl bg-white/5" />
+        <div v-else class="mt-5 grid gap-4 lg:grid-cols-2">
+          <article v-for="item in organizerRecommendations" :key="item.id" class="rounded-2xl border border-white/10 bg-slate-950/55 p-5">
+            <div class="flex items-start justify-between gap-3"><div><h3 class="font-bold text-white">{{ partyName(item) }}</h3><p class="text-sm text-slate-400">{{ partyCompany(item) }}</p></div><span class="rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase tracking-wider text-slate-300">{{ item.status.replaceAll('_', ' ') }}</span></div>
+            <dl class="mt-4 space-y-3 text-sm"><div><dt class="text-xs uppercase tracking-wider text-slate-500">Why this match</dt><dd class="mt-1 text-slate-200">{{ item.reason }}</dd></div><div><dt class="text-xs uppercase tracking-wider text-slate-500">Topic</dt><dd class="mt-1 text-slate-200">{{ item.topic }}</dd></div></dl>
+            <p v-if="item.expires_at" class="mt-4 text-xs text-amber-200">Respond by {{ formatDate(item.expires_at) }} · {{ countdown(item.expires_at) }}</p>
+            <div v-if="item.status === 'awaiting_responses'" class="mt-5 flex flex-wrap gap-2">
+              <button :disabled="respondingId === item.id" class="rounded-full bg-amber-300 px-4 py-2 text-xs font-bold text-slate-950 disabled:opacity-50" @click="respond(item.id, 'interested')">Tertarik</button>
+              <button :disabled="respondingId === item.id" class="rounded-full border border-white/20 px-4 py-2 text-xs font-bold disabled:opacity-50" @click="respond(item.id, 'not_interested')">Tidak tertarik</button>
+            </div>
+          </article>
+        </div>
+        <p v-if="recommendationsError" class="mt-4 text-sm text-rose-200">{{ recommendationsError }}</p>
+      </section>
       <div class="business-hero">
         <img src="/images/business-matching.png" alt="Women business leaders meeting and building international partnerships" class="business-hero__image">
         <div class="business-hero__shade" aria-hidden="true" />
@@ -51,12 +70,21 @@
 
 <script setup lang="ts">
 import { useRegistrationFlow } from '~/composables/useRegistrationFlow';
+import { useBusinessMatching, type OrganizerRecommendation } from '~/composables/useBusinessMatching';
+import { useEvent } from '~/composables/useEvent';
 
 definePageMeta({ middleware: 'auth' });
 useSeoMeta({ title: 'Business Matching | IWBIF 2026', description: 'Curated cross-border business matching for IWBIF 2026 delegates.' })
 
 const registrationFlow = useRegistrationFlow();
+const { getEvents } = useEvent();
+const { getOrganizerRecommendations, respondToOrganizerRecommendation } = useBusinessMatching();
 const accessMessage = ref('Checking your registration progress...');
+const organizerRecommendations = ref<OrganizerRecommendation[]>([]);
+const recommendationsLoading = ref(false);
+const recommendationsError = ref('');
+const respondingId = ref('');
+const currentEventId = ref('');
 
 const canAccessMatching = computed(() => {
   return registrationFlow.canEnterBusinessMatching.value;
@@ -83,6 +111,39 @@ if (!canAccessMatching.value) {
   }
 }
 const sectors = ['Creative Economy', 'Healthcare & Wellness', 'Food & Beverage', 'Fashion & Style', 'Industrial Estate', 'Cross-sector Opportunities']
+
+const formatDate = (value: string) => new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+const countdown = (value: string) => {
+  const hours = Math.ceil((new Date(value).getTime() - Date.now()) / 3600000);
+  return hours <= 0 ? 'Kedaluwarsa' : `${hours} jam tersisa`;
+};
+const partyName = (item: OrganizerRecommendation) => item.counterpart?.name || item.counterpart?.full_name || item.participant_b?.name || item.participant_b?.full_name || 'Business participant';
+const partyCompany = (item: OrganizerRecommendation) => item.counterpart?.organization || item.counterpart?.company_name || item.participant_b?.organization || item.participant_b?.company_name || 'Organization not listed';
+const loadOrganizerRecommendations = async () => {
+  if (!currentEventId.value) return;
+  recommendationsLoading.value = true;
+  try { organizerRecommendations.value = (await getOrganizerRecommendations(currentEventId.value)).data || []; }
+  catch { recommendationsError.value = 'Usulan organizer belum dapat dimuat.'; }
+  finally { recommendationsLoading.value = false; }
+};
+const respond = async (id: string, response: 'interested' | 'not_interested') => {
+  respondingId.value = id;
+  recommendationsError.value = '';
+  try {
+    const result = await respondToOrganizerRecommendation(id, response);
+    if (result.data?.meeting_id) await navigateTo(`/dashboard/schedule?meeting_id=${encodeURIComponent(result.data.meeting_id)}`);
+    else await loadOrganizerRecommendations();
+  } catch (error) {
+    const value = error as { status?: number; response?: { status?: number }; data?: { message?: string } };
+    recommendationsError.value = (value.response?.status || value.status) === 409 ? 'Usulan ini sudah ditutup atau kedaluwarsa.' : value.data?.message || 'Respons gagal dikirim.';
+    await loadOrganizerRecommendations();
+  } finally { respondingId.value = ''; }
+};
+
+onMounted(async () => {
+  if (!canAccessMatching.value) return;
+  try { currentEventId.value = (await getEvents(1, 20)).data?.[0]?.id || ''; await loadOrganizerRecommendations(); } catch { /* marketing content remains available */ }
+});
 </script>
 
 <style scoped>
