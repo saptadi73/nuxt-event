@@ -16,8 +16,8 @@
             <label class="flex cursor-pointer items-start gap-3"><input type="radio" name="main-package" :checked="selection.mainPackageId === pkg.id" class="mt-1 h-5 w-5 shrink-0 accent-amber-300" @change="selectMainPackage(pkg)"><span class="min-w-0"><span class="text-xs font-bold uppercase tracking-[.25em] text-amber-200">Package {{ pkg.code }}</span><span class="mt-1 block break-words text-2xl font-bold">{{ pkg.name }}</span><span v-if="pkg.description" class="mt-2 block break-words text-sm text-slate-400">{{ pkg.description }}</span></span></label>
             <button type="button" class="mt-4 inline-flex items-center gap-2 rounded-full border border-amber-300/35 bg-amber-300/10 px-4 py-2 text-xs font-bold text-amber-100 transition hover:bg-amber-300/20" @click="openSchedule('main')">View Jakarta itinerary <span aria-hidden="true">→</span></button>
             <div class="mt-5 grid gap-3 sm:grid-cols-2">
-              <label v-for="rate in activeRates(pkg)" :key="rate.id" class="cursor-pointer rounded-2xl border p-4" :class="selection.mainRateId === rate.id ? 'border-amber-300/70 bg-slate-950/70' : 'border-white/10 bg-slate-950/35'">
-                <input type="radio" :name="`rate-${pkg.id}`" :disabled="selection.mainPackageId !== pkg.id || mutating" :checked="selection.mainRateId === rate.id" class="accent-amber-300" @change="selectMainRate(pkg, rate)"><span class="ml-2 font-semibold capitalize">{{ rate.occupancy_type }}</span><strong class="mt-2 block text-2xl">{{ usd(rate.amount) }}</strong><span class="mt-1 block text-xs text-slate-400">{{ rate.payment_amount_idr == null ? 'IDR payment unavailable' : `Paid as ${idr(rate.payment_amount_idr)}` }}</span>
+              <label v-for="rate in activeRates(pkg)" :key="rate.id" class="cursor-pointer rounded-2xl border p-4" :class="isRatePreviewSelected(pkg, rate) ? 'border-amber-300/70 bg-slate-950/70' : 'border-white/10 bg-slate-950/35'">
+                <input type="radio" :name="`rate-${pkg.id}`" :disabled="selection.mainPackageId !== pkg.id || mutating" :checked="isRatePreviewSelected(pkg, rate)" class="accent-amber-300" @change="selectMainRate(pkg, rate)"><span class="ml-2 font-semibold capitalize">{{ rate.occupancy_type }}</span><strong class="mt-2 block text-2xl">{{ usd(rate.amount) }}</strong><span class="mt-1 block text-xs text-slate-400">{{ rate.payment_amount_idr == null ? 'IDR payment unavailable' : `Paid as ${idr(rate.payment_amount_idr)}` }}</span>
               </label>
             </div>
             <ul class="mt-5 grid gap-2 text-sm text-slate-300 sm:grid-cols-2"><li v-for="facility in activeFacilities(pkg)" :key="facility.id" class="flex gap-2"><span class="text-amber-300">✓</span><span>{{ facility.name }}</span></li></ul>
@@ -33,7 +33,7 @@
           <ul v-if="selection.bandungSelected" class="mt-5 grid gap-2 text-sm text-slate-300 sm:grid-cols-2"><li v-for="facility in activeFacilities(pkg)" :key="facility.id" class="flex gap-2"><span class="text-cyan-300">✓</span><span>{{ facility.name }}</span></li></ul>
         </article>
       </section>
-      <div class="sticky bottom-4 mt-8 flex flex-col gap-3 rounded-2xl border border-white/10 bg-slate-950/90 p-4 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:justify-between"><p class="text-sm text-slate-300">{{ selection.mainProductId ? 'Main package selected. Review the official total in your cart.' : 'Select Package A or B to continue.' }}</p><NuxtLink to="/dashboard/cart" class="rounded-full bg-amber-300 px-6 py-3 text-center font-bold text-slate-950" :class="!selection.mainProductId || mutating ? 'pointer-events-none opacity-50' : ''">{{ mutating ? 'Updating cart...' : 'Review cart' }}</NuxtLink></div>
+      <div class="sticky bottom-4 mt-8 flex flex-col gap-3 rounded-2xl border border-white/10 bg-slate-950/90 p-4 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:justify-between"><p class="text-sm" :class="paymentConfigurationReady ? 'text-slate-300' : 'text-rose-200'">{{ selectionMessage }}</p><NuxtLink to="/dashboard/cart" class="rounded-full bg-amber-300 px-6 py-3 text-center font-bold text-slate-950" :class="!selection.mainProductId || mutating || !paymentConfigurationReady ? 'pointer-events-none opacity-50' : ''">{{ mutating ? 'Updating cart...' : 'Review cart' }}</NuxtLink></div>
     </template>
     <div v-else class="mt-9 rounded-3xl border border-white/10 bg-white/5 p-6 text-slate-300">Exhibitor package purchasing is not available yet.</div>
 
@@ -72,12 +72,43 @@ const eventId = ref(''), cart = ref<StoreCart | null>(null), mutating = ref(fals
 const activeSchedule = ref<PackageScheduleDetail | null>(null);
 const emptyCatalog: DelegatePackageCatalog = { main_packages: [], additional_packages: [] };
 const selection = reactive({ mainPackageId: null as string | null, mainRateId: null as string | null, mainProductId: null as string | null, bandungSelected: false, bandungRateId: null as string | null, bandungProductId: null as string | null });
-const { data, pending, error } = await useAsyncData('delegate-package-selector', async () => { const event = (await getEvents(1, 1)).data[0]; if (!event) throw new Error('No event is currently published.'); eventId.value = event.id; return getDelegatePackageCatalog(event.id); });
+const { data, pending, error } = await useAsyncData('delegate-package-selector', async () => {
+  const event = (await getEvents(1, 1)).data[0];
+  if (!event) throw new Error('No event is currently published.');
+  eventId.value = event.id;
+  const [catalogResponse, productsResponse] = await Promise.all([
+    getDelegatePackageCatalog(event.id),
+    store.getProducts(event.id)
+  ]);
+  const productsById = new Map(productsResponse.data.map(product => [product.id, product]));
+  const packages = [...catalogResponse.data.main_packages, ...catalogResponse.data.additional_packages];
+  for (const pkg of packages) {
+    for (const rate of pkg.rates) {
+      if (rate.payment_amount_idr != null) continue;
+      const product = productsById.get(rate.product_id);
+      if (product?.currency?.toUpperCase() !== 'IDR') continue;
+      const paymentAmount = product.amount ?? product.price;
+      if (paymentAmount != null) rate.payment_amount_idr = Number(paymentAmount);
+    }
+  }
+  return catalogResponse;
+});
 const catalog = computed(() => data.value?.data || emptyCatalog);
 const activeRates = (pkg: DelegatePackageCatalogItem) => pkg.rates.filter(rate => rate.is_active);
 const activeFacilities = (pkg: DelegatePackageCatalogItem) => pkg.facilities.filter(item => item.is_active).sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
 const defaultRate = (pkg: DelegatePackageCatalogItem) => activeRates(pkg).find(rate => rate.is_default) || activeRates(pkg)[0];
+const isRatePreviewSelected = (pkg: DelegatePackageCatalogItem, rate: DelegatePackageRate) => {
+  if (selection.mainPackageId === pkg.id) return selection.mainRateId === rate.id;
+  return defaultRate(pkg)?.id === rate.id;
+};
 const findRateByProduct = (productId: string) => [...catalog.value.main_packages, ...catalog.value.additional_packages].flatMap(pkg => pkg.rates.map(rate => ({ pkg, rate }))).find(item => item.rate.product_id === productId);
+const selectedRates = computed(() => [selection.mainProductId, selection.bandungProductId].filter(Boolean).map(productId => findRateByProduct(productId!)?.rate).filter((rate): rate is DelegatePackageRate => Boolean(rate)));
+const paymentConfigurationReady = computed(() => selectedRates.value.every(rate => rate.payment_amount_idr != null));
+const selectionMessage = computed(() => {
+  if (!selection.mainProductId) return 'Select Package A or B to continue.';
+  if (!paymentConfigurationReady.value) return 'The selected rate does not yet have an IDR payment amount. Please contact the organizer.';
+  return 'Main package selected. Review the official total in your cart.';
+});
 const syncFromCart = (value: StoreCart) => { Object.assign(selection, { mainPackageId: null, mainRateId: null, mainProductId: null, bandungSelected: false, bandungRateId: null, bandungProductId: null }); for (const item of value.items || []) { const found = findRateByProduct(item.product_id); if (!found) continue; if (found.pkg.package_type === 'main') Object.assign(selection, { mainPackageId: found.pkg.id, mainRateId: found.rate.id, mainProductId: found.rate.product_id }); else Object.assign(selection, { bandungSelected: true, bandungRateId: found.rate.id, bandungProductId: found.rate.product_id }); } };
 const apiError = (error: unknown) => { const value = error as { data?: { message?: string; errors?: Array<{ message?: string }> } }; return value.data?.errors?.[0]?.message || value.data?.message || 'Package selection could not be updated.'; };
 const addRate = async (rate: DelegatePackageRate) => { if (!auth.isAuthenticated) { await navigateTo('/auth/register'); return false; } if (!eventId.value || mutating.value) return false; mutating.value = true; notice.value = ''; try { cart.value = (await store.addCartItem(eventId.value, rate.product_id, 1)).data; syncFromCart(cart.value); noticeTone.value = 'success'; notice.value = 'Your package selection has been saved.'; return true; } catch (error) { noticeTone.value = 'error'; notice.value = apiError(error); return false; } finally { mutating.value = false; } };

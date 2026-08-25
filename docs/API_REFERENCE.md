@@ -85,6 +85,11 @@ registrasi, paket delegate/exhibitor, pembayaran, profil business matching, dan
 status meeting. Endpoint admin menyediakan preview, test-send, serta riwayat
 pengiriman; lihat `docs/EMAIL_REGISTRATION_NOTIFICATIONS.md`.
 
+Template default dan seed IWBIF menggunakan bahasa Inggris. Menjalankan ulang
+`scripts/seed_iwbif_2026.py` memperbarui subject/body template event seed ke copy
+bahasa Inggris yang canonical. Setelah seed, organizer tetap dapat mengubahnya
+melalui endpoint admin. Placeholder `{{ variable_name }}` tidak diterjemahkan.
+
 ### Pengaturan email notification oleh organizer
 
 Seluruh endpoint berikut membutuhkan role `admin` atau `organizer`:
@@ -347,6 +352,20 @@ USD 200/300. Single diperlakukan sebagai tarif final berbeda, bukan penjumlahan
 sharing + supplement. `amount/currency` untuk display; `payment_amount_idr`
 untuk charge payment rail Indonesia. Frontend menambahkan `product_id` milik
 rate terpilih ke cart dan tidak pernah mengirim nominal.
+
+Seed memakai kurs tetap yang disetujui organizer: **1 USD = IDR 18.000**.
+
+| Package | Occupancy | Display USD | Payment IDR |
+|---|---|---:|---:|
+| A | Sharing | 500 | 9.000.000 |
+| A | Single | 700 | 12.600.000 |
+| B | Sharing | 400 | 7.200.000 |
+| B | Single | 550 | 9.900.000 |
+| Bandung | Sharing | 200 | 3.600.000 |
+| Bandung | Single | 300 | 5.400.000 |
+
+Nilai IDR tetap dapat diubah organizer melalui rate editor dan tidak dihitung
+ulang otomatis mengikuti kurs.
 
 Contoh rate lengkap untuk integrasi frontend/admin:
 
