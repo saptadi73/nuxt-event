@@ -203,7 +203,7 @@
           <span class="inline-flex rounded-full border border-amber-300/30 px-2 py-1 text-amber-200">Pending/Created</span>
           <span class="inline-flex rounded-full border border-rose-300/30 px-2 py-1 text-rose-200">Failed/Expired</span>
         </div>
-        <div class="flex items-center justify-between text-sm text-slate-400 mb-3">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-400">
           <span>{{ paginatedTransactions.length }} dari {{ filteredTransactions.length }} transaksi</span>
           <label class="flex items-center gap-2">
             <span class="text-xs uppercase tracking-[0.16em] text-slate-500">Per halaman</span>
@@ -230,8 +230,8 @@
             <tbody>
             <tr v-for="item in paginatedTransactions" :key="item.payment_id || item.id" class="border-b border-white/5 last:border-0">
                 <td class="py-3 pr-4 text-white" data-label="Order">{{ item.order_number || item.id }}</td>
-                <td v-if="isMidtransReport" class="py-3 pr-4" data-label="Midtrans references">
-                  <div class="grid min-w-56 gap-2 text-xs">
+                <td v-if="isMidtransReport" class="cell-references py-3 pr-4" data-label="Midtrans references">
+                  <div class="grid min-w-0 gap-2 text-xs sm:min-w-56">
                     <button v-if="item.provider_order_id" type="button" class="reference-button" title="Salin Midtrans order ID" @click="copyReference(item.provider_order_id)">
                       <span>Order ID</span><code>{{ item.provider_order_id }}</code>
                     </button>
@@ -242,7 +242,7 @@
                   </div>
                 </td>
                 <td class="py-3 pr-4" data-label="Participant">{{ item.participant_name || 'N/A' }}</td>
-                <td class="py-3 pr-4" data-label="Package">{{ item.package_name || 'N/A' }}</td>
+                <td class="py-3 pr-4 break-words" data-label="Package">{{ item.package_name || 'N/A' }}</td>
                 <td class="py-3 pr-4" data-label="Channel">{{ item.channel_code || item.provider || 'N/A' }}</td>
                 <td class="py-3 pr-4" data-label="Status">
                   <span :class="transactionStatusClass(item)" class="inline-flex rounded-full px-2 py-1 text-xs font-bold">
@@ -257,7 +257,7 @@
             </tbody>
           </table>
         </div>
-        <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between">
+        <div v-if="totalPages > 1" class="mt-4 flex flex-wrap items-center justify-between gap-2">
           <button :disabled="currentPage <= 1" class="rounded-full border border-white/20 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50" @click="currentPage = 1">
             Awal
           </button>
@@ -1039,6 +1039,20 @@ onBeforeUnmount(() => {
   .report-table-shell td > * {
     flex: 1;
     min-width: 0;
+  }
+
+  .report-table-shell td.cell-references {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .report-table-shell td.cell-references::before {
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+
+  .report-table-shell td code {
+    overflow-wrap: anywhere;
   }
 
   .daily-chart-column {

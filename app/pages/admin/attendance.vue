@@ -173,21 +173,21 @@
             <tbody>
               <tr v-for="row in attendanceRows" :key="row.registration_id || row.ticket_id || row.participant_name || row.ticket_number || Math.random()" class="border-b border-white/5 last:border-0">
                 <td class="py-3 pr-4" data-label="Registrant">
-                  <div class="font-semibold text-white">{{ row.participant_name || 'Unknown participant' }}</div>
-                  <div class="text-xs text-slate-400">{{ row.registration_number || row.registration_id || 'N/A' }}</div>
+                  <div class="break-words font-semibold text-white">{{ row.participant_name || 'Unknown participant' }}</div>
+                  <div class="break-words text-xs text-slate-400">{{ row.registration_number || row.registration_id || 'N/A' }}</div>
                 </td>
                 <td class="py-3 pr-4" data-label="Ticket">
-                  <div class="font-medium text-white">{{ row.ticket_number || 'No ticket' }}</div>
-                  <div class="text-xs text-slate-400">{{ row.organization_name || 'No organization' }}</div>
+                  <div class="break-words font-medium text-white">{{ row.ticket_number || 'No ticket' }}</div>
+                  <div class="break-words text-xs text-slate-400">{{ row.organization_name || 'No organization' }}</div>
                 </td>
                 <td class="py-3 pr-4" data-label="Status">
                   <span :class="attendanceStatusClass(row)" class="inline-flex rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em]">
                     {{ attendanceStatusLabel(row) }}
                   </span>
                 </td>
-                <td class="py-3 pr-4" data-label="Check-in">{{ formatDateTime(row.check_in_at) }}</td>
-                <td class="py-3 pr-4" data-label="Gate">{{ row.gate_name || '—' }}</td>
-                <td class="py-3 pr-4" data-label="Action">
+                <td class="py-3 pr-4 break-words" data-label="Check-in">{{ formatDateTime(row.check_in_at) }}</td>
+                <td class="py-3 pr-4 break-words" data-label="Gate">{{ row.gate_name || '—' }}</td>
+                <td class="cell-action py-3 pr-4" data-label="Action">
                   <button class="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-100" @click="lookupRow(row)">
                     Detail
                   </button>
@@ -580,6 +580,20 @@ if (!isOrganizer.value) {
     .data-table-shell td:last-child {
       justify-content: space-between;
       text-align: left;
+    }
+
+    .data-table-shell td.cell-action {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .data-table-shell td.cell-action::before {
+      width: 100%;
+      margin-bottom: 0.25rem;
+    }
+
+    .data-table-shell td.cell-action button {
+      width: 100%;
     }
   }
 </style>

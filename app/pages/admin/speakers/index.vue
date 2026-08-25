@@ -12,14 +12,14 @@
     </div>
 
     <div class="mt-6 overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950/45 shadow-2xl shadow-slate-950/30"><div class="data-table-shell overflow-x-auto">
-      <table class="w-full min-w-[900px] text-left"><thead class="border-b border-white/10 bg-white/[.045] text-[11px] uppercase tracking-[.18em] text-slate-400"><tr><th class="px-5 py-4">Speaker</th><th class="px-5 py-4">Organization</th><th class="px-5 py-4">Country</th><th class="px-5 py-4">Expertise</th><th class="px-5 py-4">Status</th><th class="px-5 py-4 text-right">Actions</th></tr></thead>
+      <table class="w-full min-w-full text-left md:min-w-[900px]"><thead class="border-b border-white/10 bg-white/[.045] text-[11px] uppercase tracking-[.18em] text-slate-400"><tr><th class="px-5 py-4">Speaker</th><th class="px-5 py-4">Organization</th><th class="px-5 py-4">Country</th><th class="px-5 py-4">Expertise</th><th class="px-5 py-4">Status</th><th class="px-5 py-4 text-right">Actions</th></tr></thead>
         <tbody class="divide-y divide-white/[.07]">
           <tr v-if="pending"><td colspan="6" class="px-5 py-12 text-center text-slate-400">Loading speakers...</td></tr><tr v-else-if="!filteredSpeakers.length"><td colspan="6" class="px-5 py-12 text-center text-slate-400">No speakers found.</td></tr>
           <tr v-for="speaker in filteredSpeakers" v-else :key="speaker.id" class="transition hover:bg-cyan-300/[.035]">
-            <td class="px-5 py-4" data-label="Speaker"><div class="flex items-center gap-3"><img v-if="speaker.profile_photo_url" :src="mediaUrl(speaker.profile_photo_url)" :alt="speaker.full_name" class="h-12 w-12 rounded-xl object-cover ring-1 ring-white/10" /><div v-else class="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-300/10 font-bold text-cyan-200">{{ initials(speaker.full_name) }}</div><div><p class="font-bold text-white">{{ speaker.full_name }}</p><p class="mt-1 text-xs text-slate-400">{{ speaker.professional_title || 'Speaker' }}</p></div></div></td>
-            <td class="px-5 py-4 text-sm text-slate-300" data-label="Organization">{{ speaker.organization_name || '—' }}</td><td class="px-5 py-4 text-sm uppercase text-slate-300" data-label="Country">{{ speaker.country_code || '—' }}</td><td class="px-5 py-4" data-label="Expertise"><div class="flex max-w-xs flex-wrap gap-1"><span v-for="tag in (speaker.expertise_tags || []).slice(0,2)" :key="tag" class="rounded-full bg-white/[.07] px-2 py-1 text-[10px] text-slate-300">{{ tag }}</span><span v-if="(speaker.expertise_tags || []).length > 2" class="text-xs text-slate-500">+{{ speaker.expertise_tags!.length - 2 }}</span></div></td>
+            <td class="px-5 py-4" data-label="Speaker"><div class="flex items-center gap-3"><img v-if="speaker.profile_photo_url" :src="mediaUrl(speaker.profile_photo_url)" :alt="speaker.full_name" class="h-12 w-12 rounded-xl object-cover ring-1 ring-white/10" /><div v-else class="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-300/10 font-bold text-cyan-200">{{ initials(speaker.full_name) }}</div><div class="min-w-0"><p class="break-words font-bold text-white">{{ speaker.full_name }}</p><p class="mt-1 break-words text-xs text-slate-400">{{ speaker.professional_title || 'Speaker' }}</p></div></div></td>
+            <td class="px-5 py-4 text-sm text-slate-300 break-words" data-label="Organization">{{ speaker.organization_name || '—' }}</td><td class="px-5 py-4 text-sm uppercase text-slate-300" data-label="Country">{{ speaker.country_code || '—' }}</td><td class="px-5 py-4" data-label="Expertise"><div class="flex max-w-xs flex-wrap gap-1"><span v-for="tag in (speaker.expertise_tags || []).slice(0,2)" :key="tag" class="rounded-full bg-white/[.07] px-2 py-1 text-[10px] text-slate-300">{{ tag }}</span><span v-if="(speaker.expertise_tags || []).length > 2" class="text-xs text-slate-500">+{{ speaker.expertise_tags!.length - 2 }}</span></div></td>
             <td class="px-5 py-4" data-label="Status"><span class="status-pill" :class="speaker.status === 'published' ? 'status-live' : 'status-draft'">{{ speaker.status || 'published' }}</span><span v-if="speaker.is_featured" class="ml-2 text-amber-200" title="Featured">★</span></td>
-            <td class="px-5 py-4" data-label="Actions"><div class="flex justify-end gap-2"><button class="table-button" @click="openEdit(speaker)">Edit</button><button class="table-button border-red-300/20 text-red-200 hover:border-red-300/50" @click="removeSpeaker(speaker)">Delete</button></div></td>
+            <td class="px-5 py-4 cell-actions" data-label="Actions"><div class="flex flex-wrap justify-end gap-2"><button class="table-button" @click="openEdit(speaker)">Edit</button><button class="table-button border-red-300/20 text-red-200 hover:border-red-300/50" @click="removeSpeaker(speaker)">Delete</button></div></td>
           </tr>
         </tbody>
       </table>
@@ -74,6 +74,9 @@ section { font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; }
   .data-table-shell td { border: 0; padding: 0.35rem 0; display: flex; justify-content: space-between; gap: 0.75rem; font-size: .8rem; }
   .data-table-shell td::before { content: attr(data-label); color: #94a3b8; font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; width: 36%; flex-shrink: 0; }
   .data-table-shell td > * { flex: 1; min-width: 0; }
-  .data-table-shell td[data-label="Actions"] > * { justify-content: flex-start; }
+  .data-table-shell td.cell-actions { flex-direction: column; align-items: stretch; }
+  .data-table-shell td.cell-actions::before { width: 100%; margin-bottom: 0.25rem; }
+  .data-table-shell td.cell-actions > div { justify-content: stretch; }
+  .data-table-shell td.cell-actions .table-button { width: 100%; }
 }
 </style>

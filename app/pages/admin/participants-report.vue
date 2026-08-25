@@ -85,7 +85,7 @@
           <a :href="csvUrl" :download="csvFileName" class="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-100">Download CSV</a>
         </div>
 
-        <div class="flex items-center justify-between text-sm text-slate-400 mb-3">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-400">
           <span>{{ filteredParticipants.length }} dari {{ totalParticipants }} participant (halaman {{ currentPage }})</span>
           <label class="flex items-center gap-2">
             <span class="text-xs uppercase tracking-[0.16em] text-slate-500">Per halaman</span>
@@ -119,12 +119,12 @@
                 <td class="py-3 pr-4" data-label="Registrasi">
                   <span class="inline-flex rounded-full border border-white/15 px-2 py-1 text-xs">{{ item.registration_status || 'N/A' }}</span>
                 </td>
-                <td class="py-3 pr-4" data-label="Packages">
+                <td class="cell-packages py-3 pr-4" data-label="Packages">
                   <div v-if="visiblePackages(item).length" class="grid gap-2">
                     <div v-for="pkg in visiblePackages(item)" :key="`${item.participant_id}-${pkg.package_id}-${pkg.order_id}`" class="rounded-2xl border border-white/10 bg-slate-950/50 p-2 text-xs">
-                      <div class="flex items-center justify-between gap-2">
-                        <span class="font-semibold text-white">{{ pkg.package_name || pkg.package_code || 'Package' }}</span>
-                        <span :class="paymentStatusClass(pkg.payment_status)" class="inline-flex rounded-full px-2 py-0.5 font-bold">
+                      <div class="flex items-start justify-between gap-2">
+                        <span class="min-w-0 break-words font-semibold text-white">{{ pkg.package_name || pkg.package_code || 'Package' }}</span>
+                        <span :class="paymentStatusClass(pkg.payment_status)" class="inline-flex shrink-0 rounded-full px-2 py-0.5 font-bold">
                           {{ pkg.payment_status || 'N/A' }}
                         </span>
                       </div>
@@ -142,7 +142,7 @@
           </table>
         </div>
 
-        <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between">
+        <div v-if="totalPages > 1" class="mt-4 flex flex-wrap items-center justify-between gap-2">
           <button :disabled="currentPage <= 1" class="rounded-full border border-white/20 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50" @click="currentPage = 1">
             Awal
           </button>
@@ -558,6 +558,16 @@ watch(currentPage, () => {
   .report-table-shell td > * {
     flex: 1;
     min-width: 0;
+  }
+
+  .report-table-shell td.cell-packages {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .report-table-shell td.cell-packages::before {
+    width: 100%;
+    margin-bottom: 0.25rem;
   }
 }
 </style>

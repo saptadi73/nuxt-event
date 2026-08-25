@@ -13,16 +13,16 @@
     </div>
     <article v-else id="invoice" ref="invoiceElement" class="glass-card mt-8 rounded-[2rem] p-5 sm:p-7">
       <div class="flex flex-wrap justify-between gap-5 border-b border-white/10 pb-6">
-        <div><p class="text-sm text-slate-400">{{ invoice.registration.event_name }}</p><p class="mt-1 font-semibold">Invoice {{ invoice.order.order_number }}</p></div>
+        <div class="min-w-0"><p class="break-words text-sm text-slate-400">{{ invoice.registration.event_name }}</p><p class="mt-1 break-words font-semibold">Invoice {{ invoice.order.order_number }}</p></div>
         <span class="h-fit rounded-full bg-emerald-300/10 px-4 py-2 text-xs font-semibold uppercase tracking-[.2em] text-emerald-200">Paid</span>
       </div>
       <dl class="mt-6 grid gap-5 sm:grid-cols-2">
-        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Registration number</dt><dd class="mt-2 text-lg font-semibold">{{ invoice.registration.registration_number }}</dd></div>
-        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Participant</dt><dd class="mt-2 text-lg font-semibold">{{ invoice.participant.full_name }}</dd><p class="text-sm text-slate-400">{{ invoice.participant.email }}</p></div>
+        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Registration number</dt><dd class="mt-2 break-words text-lg font-semibold">{{ invoice.registration.registration_number }}</dd></div>
+        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Participant</dt><dd class="mt-2 break-words text-lg font-semibold">{{ invoice.participant.full_name }}</dd><p class="break-words text-sm text-slate-400">{{ invoice.participant.email }}</p></div>
         <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Delegate package</dt><dd class="mt-2 text-lg font-semibold">{{ invoice.registration.delegate_package_name || invoice.registration.ticket_type_name || '-' }}</dd></div>
         <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Payment status</dt><dd class="mt-2 text-lg font-semibold text-emerald-300">Paid</dd><p class="text-sm text-slate-400">{{ formatDate(invoice.payment.paid_at) }}</p></div>
       </dl>
-      <div class="mt-7 flex items-center justify-between border-t border-white/10 pt-6"><span class="text-slate-400">Total paid</span><strong class="text-2xl text-cyan-200">{{ formatCurrency(invoice.order.total_amount, invoice.order.currency) }}</strong></div>
+      <div class="mt-7 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-6"><span class="text-slate-400">Total paid</span><strong class="break-words text-2xl text-cyan-200">{{ formatCurrency(invoice.order.total_amount, invoice.order.currency) }}</strong></div>
       <button class="mt-7 w-full rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 print:hidden sm:w-auto" :disabled="downloading" @click="downloadInvoice">{{ downloading ? 'Preparing PDF...' : 'Download invoice PDF' }}</button>
     </article>
   </section>

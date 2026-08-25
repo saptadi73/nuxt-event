@@ -11,8 +11,16 @@
             <span v-else class="brand-fallback text-sm font-black">IWBIF</span>
           </span>
           <span class="hidden sm:block">
-            <span class="brand-kicker block whitespace-nowrap text-[10px] uppercase tracking-[0.35em] text-amber-200/75">IWAPI presents</span>
+            <span class="brand-kicker block whitespace-nowrap text-[10px] uppercase tracking-[0.24em] text-amber-200/75">AWEC &amp; IWAPI PRESENTS</span>
             <span class="brand-name block whitespace-nowrap text-base font-semibold tracking-[0.08em] text-white">IWBIF 2026</span>
+          </span>
+          <span class="partner-logos flex shrink-0 items-center gap-1.5 border-l border-white/10 pl-2 sm:gap-2 sm:pl-3" aria-label="Presented by AWEC and IWAPI">
+            <span class="partner-logo partner-logo--awec" title="Asian Women Entrepreneurs Council">
+              <img src="/images/logo-awec.webp" alt="AWEC" width="44" height="44" />
+            </span>
+            <span class="partner-logo partner-logo--iwapi" title="IWAPI">
+              <img src="/images/logo-iwapi-icon.png" alt="IWAPI" width="44" height="44" />
+            </span>
           </span>
         </NuxtLink>
 
@@ -531,6 +539,27 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
   height: 3rem;
 }
 
+.partner-logo {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgb(252 211 77 / 18%);
+  border-radius: .8rem;
+  background: rgb(255 255 255 / 5%);
+  padding: .2rem;
+}
+
+.partner-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.partner-logo--awec img { transform: scale(1.08); }
+.partner-logo--iwapi img { transform: scale(1.1); }
+
 @media (min-width: 640px) {
   .brand-mark {
     width: 3.5rem;
@@ -638,6 +667,12 @@ summary::-webkit-details-marker {
 }
 
 @media (max-width: 639px) {
+  .partner-logo {
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: .65rem;
+  }
+
   .brand-block .brand-mark {
     width: 2rem;
     height: 2rem;

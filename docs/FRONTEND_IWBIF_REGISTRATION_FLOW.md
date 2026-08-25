@@ -378,3 +378,53 @@ Frontend harus memakai `code` dan `message` dari error envelope backend serta
 tidak menyimpulkan status bisnis hanya dari keberhasilan navigasi browser.
 Untuk dashboard organizer, `409 REGISTRATION_PAYMENT_REQUIRED` berarti
 registration belum boleh dikonfirmasi karena order tertaut belum paid.
+
+## 8. Mobile responsiveness QA checklist
+
+Checklist ini dipakai untuk regression test UI setelah perubahan responsive pada
+flow package, checkout, invoice, dan halaman admin terkait.
+
+### 8.1 Viewport target
+
+- 320x568
+- 360x800
+- 390x844
+- 430x932
+
+### 8.2 Halaman prioritas
+
+- [app/pages/tickets.vue](../app/pages/tickets.vue)
+- [app/pages/dashboard/cart.vue](../app/pages/dashboard/cart.vue)
+- [app/pages/dashboard/payment.vue](../app/pages/dashboard/payment.vue)
+- [app/pages/dashboard/invoice.vue](../app/pages/dashboard/invoice.vue)
+- [app/pages/register/delegate.vue](../app/pages/register/delegate.vue)
+- [app/pages/admin/packages.vue](../app/pages/admin/packages.vue)
+- [app/pages/admin/participants-report.vue](../app/pages/admin/participants-report.vue)
+- [app/pages/admin/reports.vue](../app/pages/admin/reports.vue)
+- [app/pages/admin/manual-payments.vue](../app/pages/admin/manual-payments.vue)
+- [app/pages/admin/attendance.vue](../app/pages/admin/attendance.vue)
+- [app/pages/admin/certificates.vue](../app/pages/admin/certificates.vue)
+- [app/pages/admin/announcements.vue](../app/pages/admin/announcements.vue)
+
+### 8.3 Acceptance criteria
+
+- Tidak ada horizontal overflow pada card utama, tabel mobile card, dan modal.
+- Tombol aksi utama dapat ditap nyaman di mobile (target sentuh minimal terasa
+  cukup besar, tidak saling menempel).
+- Teks panjang (order number, package name, reference ID, email) tidak merusak
+  layout dan tetap terbaca.
+- Bagian filter admin tetap bisa dioperasikan satu tangan, dengan input yang
+  turun ke satu kolom pada lebar kecil.
+- Pagination admin tetap terbaca dan tidak terpotong pada viewport 320.
+- Status badge tetap terlihat penuh, tidak overlap dengan elemen lain.
+
+### 8.4 Skenario uji cepat
+
+1. Pilih package delegate + ubah occupancy + aktif/nonaktif additional trip.
+2. Buka cart, cek nama package panjang dan total order.
+3. Lanjut ke payment, cek kondisi pending/paid dan tombol CTA.
+4. Buka invoice dengan order context dan pastikan data panjang tetap wrap.
+5. Uji admin packages: create/update package, rate, facility pada viewport 320.
+6. Uji admin reports dan participants-report dengan data panjang + pagination.
+7. Uji admin attendance scan/manual dan cek tabel hasil check-in.
+8. Uji admin certificates dan announcements untuk modal + tabel actions.

@@ -13,17 +13,17 @@
 
     <div class="mt-6 overflow-hidden rounded-[2rem] border border-white/10 bg-slate-950/45 shadow-2xl shadow-slate-950/30">
       <div class="data-table-shell overflow-x-auto">
-        <table class="w-full min-w-[900px] text-left">
+        <table class="w-full min-w-full text-left md:min-w-[900px]">
           <thead class="border-b border-white/10 bg-white/[.045] text-[11px] uppercase tracking-[.18em] text-slate-400"><tr><th class="px-5 py-4">Session</th><th class="px-5 py-4">Schedule</th><th class="px-5 py-4">Room</th><th class="px-5 py-4">Capacity</th><th class="px-5 py-4">Status</th><th class="px-5 py-4 text-right">Actions</th></tr></thead>
           <tbody class="divide-y divide-white/[.07]">
             <tr v-if="loading"><td colspan="6" class="px-5 py-12 text-center text-slate-400">Loading program...</td></tr>
             <tr v-else-if="!sessions.length"><td colspan="6" class="px-5 py-12 text-center text-slate-400">No sessions are available for this event.</td></tr>
             <tr v-for="session in sessions" v-else :key="session.id" class="transition hover:bg-cyan-300/[.035]">
-              <td class="px-5 py-4" data-label="Session"><p class="font-bold text-white">{{ session.title }}</p><p class="mt-1 text-xs capitalize text-cyan-200">{{ session.session_type || 'session' }}</p></td>
-              <td class="px-5 py-4 text-sm text-slate-300" data-label="Schedule"><p>{{ formatDay(session.start_at) }}</p><p class="mt-1 text-xs text-slate-500">{{ formatTime(session.start_at) }}–{{ formatTime(session.end_at) }}</p></td>
-              <td class="px-5 py-4 text-sm text-slate-300" data-label="Room">{{ session.room_name || 'TBA' }}</td><td class="px-5 py-4 text-sm text-slate-300" data-label="Capacity">{{ session.capacity || '—' }}</td>
+              <td class="px-5 py-4" data-label="Session"><p class="break-words font-bold text-white">{{ session.title }}</p><p class="mt-1 text-xs capitalize text-cyan-200">{{ session.session_type || 'session' }}</p></td>
+              <td class="px-5 py-4 text-sm text-slate-300" data-label="Schedule"><p class="break-words">{{ formatDay(session.start_at) }}</p><p class="mt-1 break-words text-xs text-slate-500">{{ formatTime(session.start_at) }}–{{ formatTime(session.end_at) }}</p></td>
+              <td class="px-5 py-4 text-sm text-slate-300 break-words" data-label="Room">{{ session.room_name || 'TBA' }}</td><td class="px-5 py-4 text-sm text-slate-300" data-label="Capacity">{{ session.capacity || '—' }}</td>
               <td class="px-5 py-4" data-label="Status"><span class="status-pill" :class="session.status === 'published' ? 'status-live' : session.status === 'canceled' ? 'status-off' : 'status-draft'">{{ session.status || 'published' }}</span></td>
-              <td class="px-5 py-4" data-label="Actions"><div class="flex justify-end gap-2"><button class="table-button" @click="openEdit(session)">Edit</button><button class="table-button border-red-300/20 text-red-200 hover:border-red-300/50" @click="removeSession(session)">Delete</button></div></td>
+              <td class="px-5 py-4 cell-actions" data-label="Actions"><div class="flex flex-wrap justify-end gap-2"><button class="table-button" @click="openEdit(session)">Edit</button><button class="table-button border-red-300/20 text-red-200 hover:border-red-300/50" @click="removeSession(session)">Delete</button></div></td>
             </tr>
           </tbody>
         </table>
@@ -80,7 +80,10 @@ section { font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; }
   .data-table-shell td { border: 0; padding: 0.35rem 0; display: flex; justify-content: space-between; gap: 0.75rem; font-size: .8rem; }
   .data-table-shell td::before { content: attr(data-label); color: #94a3b8; font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; width: 36%; flex-shrink: 0; }
   .data-table-shell td > * { flex: 1; min-width: 0; }
-  .data-table-shell td[data-label="Actions"] > * { justify-content: flex-start; }
+  .data-table-shell td.cell-actions { flex-direction: column; align-items: stretch; }
+  .data-table-shell td.cell-actions::before { width: 100%; margin-bottom: 0.25rem; }
+  .data-table-shell td.cell-actions > div { justify-content: stretch; }
+  .data-table-shell td.cell-actions .table-button { width: 100%; }
   .modal-card { width: min(100%, 32rem); }
   .modal-card .space-y-4, .modal-card .flex.justify-end { padding-left: 1rem; padding-right: 1rem; }
   .modal-card .flex.justify-end { flex-direction: column; }

@@ -13,8 +13,8 @@
     <section class="mt-6 grid gap-6 xl:grid-cols-[1.5fr_.8fr]">
       <article class="glass-card rounded-3xl p-5">
         <div class="flex flex-col gap-3 lg:flex-row"><input v-model="filters.search" class="field flex-1" placeholder="Search participant, company, topic" @keyup.enter="loadReport"><select v-model="filters.status" class="field"><option value="">All statuses</option><option v-for="status in statuses" :key="status">{{ status }}</option></select><select v-model="filters.source" class="field"><option value="">All sources</option><option value="participant_request">Participant request</option><option value="organizer_recommendation">Organizer recommendation</option></select><button class="button-primary" @click="loadReport">Filter</button></div>
-        <div class="mt-5 overflow-x-auto"><table class="min-w-full text-left text-sm"><thead class="border-b border-white/10 text-[10px] uppercase tracking-wider text-slate-400"><tr><th class="py-3">Parties</th><th>Status</th><th>Source</th><th>Action</th></tr></thead><tbody><tr v-for="item in report?.items || []" :key="item.meeting.id" class="border-b border-white/5"><td class="py-4 pr-3"><b>{{ party(item.requester) }}</b><span class="block text-xs text-slate-400">with {{ party(item.recipient) }}</span></td><td><span class="chip">{{ item.meeting.status }}</span></td><td class="text-xs text-slate-300">{{ item.meeting.source?.replaceAll('_', ' ') || '—' }}</td><td><button class="button-secondary !px-3 !py-1.5 text-xs" @click="openAction(item)">Manage</button></td></tr><tr v-if="!report?.items?.length"><td colspan="4" class="py-8 text-center text-slate-400">No matching work items.</td></tr></tbody></table></div>
-        <div class="mt-4 flex items-center justify-between text-xs text-slate-400"><span>Page {{ filters.page }} of {{ report?.pagination?.pages || 1 }}</span><div class="flex gap-2"><button class="button-secondary" :disabled="filters.page <= 1" @click="changePage(-1)">Previous</button><button class="button-secondary" :disabled="filters.page >= (report?.pagination?.pages || 1)" @click="changePage(1)">Next</button></div></div>
+        <div class="data-table-shell mt-5 overflow-x-auto"><table class="min-w-full text-left text-sm"><thead class="border-b border-white/10 text-[10px] uppercase tracking-wider text-slate-400"><tr><th class="py-3">Parties</th><th>Status</th><th>Source</th><th>Action</th></tr></thead><tbody><tr v-for="item in report?.items || []" :key="item.meeting.id" class="border-b border-white/5"><td class="py-4 pr-3" data-label="Parties"><b class="break-words">{{ party(item.requester) }}</b><span class="block break-words text-xs text-slate-400">with {{ party(item.recipient) }}</span></td><td data-label="Status"><span class="chip">{{ item.meeting.status }}</span></td><td class="text-xs text-slate-300 break-words" data-label="Source">{{ item.meeting.source?.replaceAll('_', ' ') || '—' }}</td><td class="cell-actions" data-label="Action"><button class="button-secondary !px-3 !py-1.5 text-xs" @click="openAction(item)">Manage</button></td></tr><tr v-if="!report?.items?.length"><td colspan="4" class="py-8 text-center text-slate-400">No matching work items.</td></tr></tbody></table></div>
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400"><span>Page {{ filters.page }} of {{ report?.pagination?.pages || 1 }}</span><div class="flex gap-2"><button class="button-secondary" :disabled="filters.page <= 1" @click="changePage(-1)">Previous</button><button class="button-secondary" :disabled="filters.page >= (report?.pagination?.pages || 1)" @click="changePage(1)">Next</button></div></div>
       </article>
 
       <div class="space-y-6">
@@ -61,4 +61,71 @@ onMounted(async () => { try { events.value = (await getEvents(1, 100)).data || [
 
 <style scoped>
 .field{border:1px solid rgb(255 255 255/.14);border-radius:.85rem;background:rgb(15 23 42/.8);padding:.65rem .8rem;color:white}.button-primary,.button-secondary{border-radius:999px;padding:.65rem 1rem;font-weight:700}.button-primary{background:#fcd34d;color:#0f172a}.button-secondary{border:1px solid rgb(255 255 255/.16);color:#e2e8f0}.button-primary:disabled,.button-secondary:disabled{opacity:.45}.chip{display:inline-flex;border-radius:999px;background:rgb(251 191 36/.12);padding:.3rem .55rem;font-size:.65rem;text-transform:uppercase;color:#fde68a}
+
+@media (max-width: 767px) {
+  .data-table-shell { overflow: visible; }
+  .data-table-shell table,
+  .data-table-shell thead,
+  .data-table-shell tbody,
+  .data-table-shell tr,
+  .data-table-shell th,
+  .data-table-shell td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .data-table-shell thead { display: none; }
+
+  .data-table-shell tbody {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .data-table-shell tr {
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 1.1rem;
+    background: rgba(15,23,42,0.72);
+    padding: 0.8rem;
+  }
+
+  .data-table-shell td {
+    border: 0;
+    padding: 0.35rem 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    align-items: flex-start;
+  }
+
+  .data-table-shell td::before {
+    content: attr(data-label);
+    color: #94a3b8;
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    width: 36%;
+    flex-shrink: 0;
+  }
+
+  .data-table-shell td > * {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .data-table-shell td.cell-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .data-table-shell td.cell-actions::before {
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
+
+  .data-table-shell td.cell-actions .button-secondary {
+    width: 100%;
+  }
+}
 </style>
