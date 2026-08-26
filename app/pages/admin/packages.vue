@@ -100,8 +100,46 @@ const savePackage = async () => {
   saving.value = true; feedback.value = '';
   const payload = { ...form, currency: form.currency.toUpperCase(), payment_amount_idr: form.payment_amount_idr || null };
   try {
-    if (editingId.value) await adminApi.updateDelegatePackage(selectedEventId.value, editingId.value, payload);
-    else await adminApi.createDelegatePackage(selectedEventId.value, payload);
+    const packageId = editingId.value;
+    if (packageId) {
+      await adminApi.updateDelegatePackage(selectedEventId.value, packageId, payload);
+      const currentPackage = packages.value.find(item => item.id === packageId);
+      const defaultRate = currentPackage?.rates.find(rate => rate.is_default) || currentPackage?.rates[0];
+      const ratePayload: DelegatePackageRatePayload = {
+        occupancy_type: defaultRate?.occupancy_type || 'sharing',
+        name: defaultRate?.name || 'Twin Sharing Basis',
+        amount: payload.amount,
+        currency: payload.currency,
+        payment_amount_idr: payload.payment_amount_idr,
+        is_default: true,
+        is_active: payload.is_active,
+        valid_from: defaultRate?.valid_from || null,
+        valid_until: defaultRate?.valid_until || null
+      };
+      if (defaultRate) await adminApi.updateDelegatePackageRate(defaultRate.id, ratePayload);
+      else await adminApi.createDelegatePackageRate(selectedEventId.value, packageId, ratePayload);
+    } else {
+      const created = await adminApi.createDelegatePackage(selectedEventId.value, payload);
+      let createdPackageId: string | undefined = created.data?.id;
+      if (!createdPackageId) {
+        const catalog = (await adminApi.getDelegatePackageCatalog(selectedEventId.value)).data;
+        const createdPackage = [...(catalog.main_packages || []), ...(catalog.additional_packages || [])]
+          .find(item => item.code.toLowerCase() === payload.code.toLowerCase());
+        createdPackageId = createdPackage?.id;
+      }
+      if (!createdPackageId) throw new Error('Package was created, but its ID was not returned so the tariff could not be saved. Reload the page and add the rate manually.');
+      await adminApi.createDelegatePackageRate(selectedEventId.value, createdPackageId, {
+        occupancy_type: 'sharing',
+        name: 'Twin Sharing Basis',
+        amount: payload.amount,
+        currency: payload.currency,
+        payment_amount_idr: payload.payment_amount_idr,
+        is_default: true,
+        is_active: payload.is_active,
+        valid_from: null,
+        valid_until: null
+      });
+    }
     feedbackTone.value = 'success'; feedback.value = editingId.value ? 'Delegate package updated.' : 'Delegate package created.';
     resetForm(); await loadPackages();
   } catch (error) { feedbackTone.value = 'error'; feedback.value = apiError(error); }

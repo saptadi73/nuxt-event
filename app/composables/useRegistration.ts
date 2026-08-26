@@ -8,9 +8,7 @@ export interface RegistrationPayload {
   nationality: string;
   title: string;
   business_sector: string;
-  country: string;
   email: string;
-  mobile_whatsapp: string;
   office_phone?: string | null;
   company_website?: string | null;
   linkedin?: string | null;
@@ -54,6 +52,7 @@ export interface RegistrationItem {
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   confirmed_at?: string | null;
+  detail?: Partial<RegistrationPayload> & Record<string, unknown>;
 }
 
 export function useRegistration() {
@@ -73,10 +72,16 @@ export function useRegistration() {
       query: eventId ? { event_id: eventId } : undefined
     });
 
+  const updateRegistration = (eventId: string, registrationId: string, payload: RegistrationPayload) =>
+    api<ApiResponse<RegistrationItem>>(`/events/${eventId}/registrations/${registrationId}`, {
+      method: 'PATCH',
+      body: Object.fromEntries(Object.entries(payload).filter(([key]) => key !== 'event_id'))
+    });
+
   return {
     createRegistration,
-    getRegistration
-    ,
-    getMyRegistrations
+    getRegistration,
+    getMyRegistrations,
+    updateRegistration
   };
 }

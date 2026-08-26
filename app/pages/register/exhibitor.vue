@@ -12,11 +12,9 @@
         <legend>Company profile</legend>
         <div class="grid gap-4 md:grid-cols-2">
           <label class="label"><span>Company name *</span><input v-model.trim="form.company_name" required class="field" /></label>
-          <label class="label"><span>Country *</span><input v-model.trim="form.country" required class="field" /></label>
           <label class="label"><span>Brand</span><input v-model.trim="form.brand" class="field" /></label>
           <label class="label"><span>Contact person *</span><input v-model.trim="form.contact_person" required class="field" /></label>
           <label class="label"><span>Email *</span><input v-model.trim="form.email" type="email" required class="field" /></label>
-          <label class="label"><span>Phone *</span><input v-model.trim="form.phone" type="tel" required class="field" /></label>
           <label class="label md:col-span-2"><span>Products to display *</span><textarea v-model.trim="form.products_to_display" required class="field" rows="3" /></label>
           <label class="label"><span>Booth size requested *</span><input v-model.trim="form.booth_size_requested" required class="field" /></label>
           <label class="label"><span>Electricity requirement</span><input v-model.trim="form.electricity_requirement" class="field" /></label>
@@ -36,7 +34,7 @@
 
       <div class="submit-row">
         <button type="submit" class="rounded-full bg-cyan-300 px-7 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="submitting">
-          {{ submitting ? 'Submitting...' : 'Create exhibitor registration' }}
+          {{ submitting ? 'Saving...' : editingExhibitorId ? 'Update exhibitor registration' : 'Create exhibitor registration' }}
         </button>
       </div>
     </form>
@@ -54,15 +52,14 @@ useSeoMeta({
 });
 
 const { getEvents } = useEvent();
-const { createExhibitor } = useExhibitor();
+const { createExhibitor, getExhibitor, updateExhibitor } = useExhibitor();
+const registrationFlow = useRegistrationFlow();
 
 const form = reactive({
   company_name: '',
-  country: '',
   brand: '',
   contact_person: '',
   email: '',
-  phone: '',
   products_to_display: '',
   booth_size_requested: '',
   electricity_requirement: '',
@@ -73,6 +70,7 @@ const form = reactive({
 const submitting = ref(false);
 const feedback = ref('');
 const success = ref(false);
+const editingExhibitorId = ref('');
 
 const { data: eventData, pending, error: fetchError } = await useAsyncData('iwbif-exhibitor-event', async () => {
   const response = await getEvents(1, 1);
@@ -80,6 +78,31 @@ const { data: eventData, pending, error: fetchError } = await useAsyncData('iwbi
   if (!event) throw new Error('No IWBIF event is currently published.');
   return event;
 });
+
+if (eventData.value) {
+  try {
+    const state = await registrationFlow.loadFlow(true);
+    const registrations = Array.isArray(state?.registrations) ? state.registrations as Array<Record<string, unknown>> : [];
+    const exhibitors = Array.isArray(state?.exhibitors) ? state.exhibitors as Array<Record<string, unknown>> : [];
+    const directExhibitor = state?.exhibitor && typeof state.exhibitor === 'object' ? [state.exhibitor as Record<string, unknown>] : [];
+    const draft = [...exhibitors, ...directExhibitor, ...registrations].find((item) => {
+      const kind = String(item.registration_type || item.type || item.product_type || '').toLowerCase();
+      const detail = item.detail as Record<string, unknown> | undefined;
+      return kind === 'exhibitor' || typeof item.company_name === 'string' || typeof detail?.company_name === 'string';
+    });
+    const draftId = typeof draft?.id === 'string' ? draft.id : typeof draft?.exhibitor_id === 'string' ? draft.exhibitor_id : '';
+    if (draftId && String(draft?.status || 'draft').toLowerCase() === 'draft') {
+      const existing = (await getExhibitor(eventData.value.id, draftId)).data;
+      for (const key of Object.keys(form) as Array<keyof typeof form>) {
+        if (existing[key] !== undefined && existing[key] !== null) (form[key] as unknown) = existing[key];
+      }
+      editingExhibitorId.value = draftId;
+    }
+  } catch (error) {
+    const value = error as { data?: { message?: string } };
+    feedback.value = value.data?.message || (error instanceof Error ? error.message : 'Existing Exhibitor profile could not be loaded.');
+  }
+}
 
 const submit = async () => {
   if (!eventData.value) {
@@ -93,27 +116,29 @@ const submit = async () => {
   success.value = false;
 
   try {
-    const result = await createExhibitor(eventData.value.id, {
+    const payload = {
       company_name: form.company_name,
-      country: form.country,
       brand: form.brand || undefined,
       contact_person: form.contact_person,
       email: form.email,
-      phone: form.phone,
       products_to_display: form.products_to_display,
       booth_size_requested: form.booth_size_requested,
       electricity_requirement: form.electricity_requirement || undefined,
       special_requirement: form.special_requirement || undefined,
       exhibition_terms_accepted: form.exhibition_terms_accepted,
       exhibition_terms_version: '2026-01'
-    });
+    };
+    const result = editingExhibitorId.value
+      ? await updateExhibitor(eventData.value.id, editingExhibitorId.value, payload)
+      : await createExhibitor(eventData.value.id, payload);
 
     success.value = true;
     feedback.value = result.message || 'Exhibitor registration created successfully.';
     await navigateTo('/dashboard');
   } catch (error) {
     success.value = false;
-    feedback.value = error instanceof Error ? error.message : 'Exhibitor registration could not be submitted.';
+    const value = error as { data?: { message?: string; errors?: Array<{ message: string }> } };
+    feedback.value = value.data?.errors?.[0]?.message || value.data?.message || (error instanceof Error ? error.message : 'Exhibitor registration could not be saved.');
   } finally {
     submitting.value = false;
   }

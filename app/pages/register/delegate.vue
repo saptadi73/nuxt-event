@@ -56,7 +56,7 @@
       <div v-if="feedback" class="rounded-2xl border p-5" :class="success?'border-emerald-300/30 bg-emerald-950/30':'border-red-300/30 bg-red-950/30'">{{ feedback }}</div>
 
       <div class="submit-row">
-        <button class="rounded-full bg-amber-300 px-7 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="submitting||!form.activity_ids.length||!form.participation_categories.length||!form.looking_for.length||!form.preferred_countries.length||form.need_airport_pickup===null||form.need_official_invoice===null">{{ submitting?'Submitting…':'Create Registration' }}</button>
+        <button class="rounded-full bg-amber-300 px-7 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="submitting||!form.activity_ids.length||!form.participation_categories.length||!form.looking_for.length||!form.preferred_countries.length||form.need_airport_pickup===null||form.need_official_invoice===null">{{ submitting ? 'Saving…' : editingRegistrationId ? 'Update Registration' : 'Create Registration' }}</button>
       </div>
     </form>
   </section>
@@ -71,9 +71,9 @@ useSeoMeta({ title: 'Delegate Registration | IWBIF 2026', description: 'Complete
 
 const { getEvents, getEventActivities } = useEvent();
 const { upsertMyProfile } = useParticipant();
-const { createRegistration } = useRegistration();
+const { createRegistration, getMyRegistrations, getRegistration, updateRegistration } = useRegistration();
 
-type TextKey = 'full_name' | 'job_title' | 'company_organization' | 'nationality' | 'title' | 'business_sector' | 'country' | 'email' | 'mobile_whatsapp' | 'company_website' | 'linkedin';
+type TextKey = 'full_name' | 'job_title' | 'company_organization' | 'nationality' | 'title' | 'business_sector' | 'email' | 'company_website' | 'linkedin';
 type IdentityField = { key: TextKey; label: string; type?: string; autocomplete?: string; options?: readonly string[]; required?: boolean };
 
 const titleOptions = ['Mrs.', 'Ms.', 'Dr.', 'Prof.', 'Mr.', 'Others'] as const;
@@ -93,7 +93,6 @@ const businessSectorOptions = [
   'Professional Services',
   'Others'
 ] as const;
-const countryOptions = ['Malaysia', 'China', 'Indonesia', 'Singapore', 'Thailand', 'Cambodia', 'Vietnam', 'Philippines', 'Brunei', 'Laos', 'Myanmar', 'Other'] as const;
 const participationCategoryOptions = ['Delegate', 'Speaker', 'Buyer', 'Investor', 'Government', 'Association', 'Media', 'Exhibitor', 'Sponsor', 'Other'] as const;
 const lookingForOptions = ['Buyer', 'Distributor', 'Importer', 'Retailer', 'Investor', 'Technology Partner', 'Joint Venture', 'Government', 'Others'] as const;
 const preferredCountryOptions = ['Indonesia', 'Malaysia', 'China', 'Singapore', 'Thailand', 'Vietnam', 'Cambodia', 'Philippines', 'Others'] as const;
@@ -104,10 +103,8 @@ const identityFields: IdentityField[] = [
   { key: 'job_title', label: 'Job title' },
   { key: 'company_organization', label: 'Company / organization', autocomplete: 'organization' },
   { key: 'nationality', label: 'Nationality' },
-  { key: 'country', label: 'Country', options: countryOptions },
   { key: 'business_sector', label: 'Business sector', options: businessSectorOptions },
   { key: 'email', label: 'Email', type: 'email', autocomplete: 'email' },
-  { key: 'mobile_whatsapp', label: 'Mobile / WhatsApp', type: 'tel' },
   { key: 'company_website', label: 'Company website', type: 'url', required: false },
   { key: 'linkedin', label: 'LinkedIn', type: 'url', required: false }
 ];
@@ -120,9 +117,7 @@ const form = reactive({
   nationality: '',
   title: '',
   business_sector: '',
-  country: '',
   email: '',
-  mobile_whatsapp: '',
   office_phone: '',
   company_website: '',
   linkedin: '',
@@ -172,6 +167,26 @@ const activities = computed(() => options.value?.activities ?? []);
 const submitting = ref(false);
 const feedback = ref('');
 const success = ref(false);
+const editingRegistrationId = ref('');
+
+if (options.value?.event.id) {
+  try {
+    const registrations = (await getMyRegistrations(options.value.event.id)).data || [];
+    const draft = registrations.find(item => item.status === 'draft');
+    if (draft) {
+      const registration = (await getRegistration(draft.id)).data;
+      const detail = registration.detail || (registration as unknown as Record<string, unknown>);
+      for (const key of Object.keys(form) as Array<keyof typeof form>) {
+        if (key === 'event_id' || detail[key] === undefined || detail[key] === null) continue;
+        (form[key] as unknown) = detail[key];
+      }
+      editingRegistrationId.value = draft.id;
+    }
+  } catch (error) {
+    const value = error as { data?: { message?: string } };
+    feedback.value = value.data?.message || (error instanceof Error ? error.message : 'Existing Delegate profile could not be loaded.');
+  }
+}
 
 const nullable = (value: string) => value || null;
 
@@ -201,16 +216,19 @@ const submit = async () => {
       medical_condition: nullable(form.medical_condition),
       special_assistance: nullable(form.special_assistance),
       tax_id: nullable(form.tax_id),
-      terms_version: '2026-08-14',
-      consent_version: '2026-08-14'
+      terms_version: '2026-01',
+      consent_version: '2026-01'
     };
 
-    const result = await createRegistration(payload as RegistrationPayload);
+    const result = editingRegistrationId.value
+      ? await updateRegistration(form.event_id, editingRegistrationId.value, payload as RegistrationPayload)
+      : await createRegistration(payload as RegistrationPayload);
     success.value = true;
-    feedback.value = `Registration ${result.data.registration_number} created successfully.`;
+    feedback.value = `Registration ${result.data.registration_number} saved successfully.`;
     await navigateTo('/dashboard');
   } catch (error) {
-    feedback.value = error instanceof Error ? error.message : 'Registration could not be created.';
+    const value = error as { data?: { message?: string; errors?: Array<{ message: string }> } };
+    feedback.value = value.data?.errors?.[0]?.message || value.data?.message || (error instanceof Error ? error.message : 'Registration could not be saved.');
   } finally {
     submitting.value = false;
   }
