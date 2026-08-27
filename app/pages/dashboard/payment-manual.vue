@@ -4,7 +4,7 @@
       <div class="bg-gradient-to-r from-amber-300/15 via-transparent to-cyan-300/10 p-5 sm:p-8">
         <p class="text-xs font-bold uppercase tracking-[.3em] text-amber-200">Manual Bank Transfer</p>
         <h1 class="mt-4 text-3xl font-black sm:text-4xl">Transfer instructions</h1>
-        <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-300">Transfer the exact order amount and include your order number as the payment reference. Your order remains pending until the organizer verifies the bank transaction.</p>
+        <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-300">Transfer the exact order amount, include your order number as the payment reference, then upload your payment proof below. Your order remains pending until the organizer verifies the transaction.</p>
       </div>
       <div class="p-5 sm:p-8">
         <div class="rounded-2xl border border-amber-300/25 bg-amber-300/5 p-4 text-sm leading-6 text-amber-100"><strong>Important.</strong> Verify the beneficiary name and transfer the exact order amount. Keep the receipt for organizer verification.</div>
@@ -15,8 +15,9 @@
             <div v-for="detail in bankDetails" :key="detail.label" class="bg-slate-950/75 p-5"><dt class="text-xs uppercase tracking-[.18em] text-slate-500">{{ detail.label }}</dt><dd class="mt-2 break-words text-lg font-bold text-white">{{ detail.value }}</dd></div>
           </dl>
           <div class="mt-6 rounded-2xl border border-amber-300/20 bg-amber-300/5 p-5"><p class="text-sm text-slate-400">Exact transfer amount</p><p class="mt-2 text-3xl font-black text-amber-200">{{ money(order?.total_amount || 0, order?.currency || 'IDR') }}</p></div>
-          <ol class="mt-7 space-y-3 text-sm leading-7 text-slate-300"><li>1. Open your bank's mobile banking or internet banking service.</li><li>2. Transfer the exact amount to the account shown above.</li><li>3. Enter the order number in the payment reference or transfer notes.</li><li>4. Keep your transfer receipt for organizer verification.</li></ol>
+          <ol class="mt-7 space-y-3 text-sm leading-7 text-slate-300"><li>1. Open your bank's mobile banking or internet banking service.</li><li>2. Transfer the exact amount to the account shown above.</li><li>3. Enter the order number in the payment reference or transfer notes.</li><li>4. Upload your transfer receipt using the form below.</li></ol>
           <div class="mt-6 rounded-2xl border border-amber-300/20 bg-amber-300/5 p-4 text-sm leading-6 text-amber-100">Payment status: <strong>Pending verification</strong>. Only an authorized admin or organizer can confirm a manual transfer.</div>
+          <ManualPaymentProofUpload :order-id="orderId" payment-method="manual_transfer" />
         </template>
         <div class="mt-8 flex flex-col gap-3 sm:flex-row"><NuxtLink :to="`/dashboard/payment?order_id=${encodeURIComponent(orderId)}`" class="rounded-full border border-white/20 px-6 py-3 text-center font-semibold">Choose another method</NuxtLink><NuxtLink to="/dashboard" class="rounded-full bg-amber-300 px-6 py-3 text-center font-bold text-slate-950">Return to dashboard</NuxtLink></div>
       </div>

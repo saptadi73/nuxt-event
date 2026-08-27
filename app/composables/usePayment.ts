@@ -1,4 +1,4 @@
-import { useApi, type ApiResponse } from '~/composables/useApi';
+import type { useApi, ApiResponse } from '~/composables/useApi';
 import { getPaymentProviderConfig, normalizePaymentProvider } from '../config/payment';
 
 export interface DokuCheckoutData {
@@ -31,6 +31,13 @@ export interface PaymentItem {
   payment_type?: string | null; gross_amount: number; currency: string;
   transaction_status: 'created' | 'pending' | 'success' | 'failed' | 'expired' | string;
   fraud_status?: string | null; paid_at?: string | null;
+}
+
+export type ManualPaymentMethod = 'manual_transfer' | 'manual_qr_code';
+export interface ManualPaymentProof {
+  id: string; payment_id?: string; file_name?: string; original_filename?: string;
+  content_type?: string; file_size?: number; transfer_reference?: string | null;
+  notes?: string | null; created_at?: string; download_url?: string;
 }
 
 export interface Invoice {
@@ -73,6 +80,15 @@ export function usePayment() {
   };
   const getOrder = (orderId: string) => api<ApiResponse<OrderItem>>(`/orders/${orderId}`);
   const getPayment = (paymentId: string) => api<ApiResponse<PaymentItem>>(`/payments/${paymentId}`);
+  const uploadManualProof = (orderId: string, paymentMethod: ManualPaymentMethod, file: File, transferReference?: string, notes?: string) => {
+    const body = new FormData();
+    body.append('payment_method', paymentMethod);
+    if (transferReference) body.append('transfer_reference', transferReference);
+    if (notes) body.append('notes', notes);
+    body.append('file', file);
+    return api<ApiResponse<ManualPaymentProof>>(`/payments/orders/${encodeURIComponent(orderId)}/manual-proof`, { method: 'POST', body });
+  };
+  const getManualProofs = (orderId: string) => api<ApiResponse<ManualPaymentProof[]>>(`/payments/orders/${encodeURIComponent(orderId)}/manual-proofs`);
   const getMyInvoices = () => api<ApiResponse<InvoiceResponseData>>('/payments/me/invoices');
   const getInvoiceByRegistration = (registrationId: string) => api<ApiResponse<Invoice>>(`/payments/registrations/${encodeURIComponent(registrationId)}/invoice`);
   return {
@@ -92,6 +108,8 @@ export function usePayment() {
     createCheckout,
     getOrder,
     getPayment,
+    uploadManualProof,
+    getManualProofs,
     getMyInvoices,
     getInvoiceByRegistration,
     normalizePaymentProvider

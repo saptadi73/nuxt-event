@@ -1764,6 +1764,42 @@ Pada implementasi saat ini total package tetap berasal dari rate package;
 breakdown facility tidak dijumlahkan ulang ke checkout. Ini mencegah perubahan
 rincian facility mengubah invoice tanpa perubahan tarif package yang eksplisit.
 
+Participant dapat mengunggah bukti transfer manual atau QRIS statis sebagai
+`multipart/form-data`. File disimpan privat; format yang diterima JPG, PNG, atau
+PDF dengan ukuran maksimal 10 MB.
+
+```http
+POST /api/v1/payments/orders/{order_id}/manual-proof
+Authorization: Bearer <participant_access_token>
+Content-Type: multipart/form-data
+
+payment_method=manual_transfer|manual_qr_code
+transfer_reference=<opsional, maksimal 128 karakter>
+notes=<opsional, maksimal 1000 karakter>
+file=<binary>
+```
+
+Upload membuat atau memperbarui payment manual menjadi `pending`; upload tidak
+pernah menandai order sebagai lunas. Participant dapat melihat daftar bukti via
+`GET /api/v1/payments/orders/{order_id}/manual-proofs`. Admin/organizer melihat
+bukti via `GET /api/v1/admin/orders/{order_id}/manual-proofs`. File diunduh oleh
+pemilik order atau admin/organizer melalui
+`GET /api/v1/payments/manual-proofs/{proof_id}/download`.
+
+Report khusus pembayaran manual tersedia untuk role admin dan organizer:
+
+```http
+GET /api/v1/admin/reports/payments/manual
+GET /api/v1/admin/reports/payments/manual.csv
+```
+
+Setiap item `transactions` pada report JSON memiliki `payment_proof_count` dan
+array `payment_proofs`. Setiap bukti memuat metadata file dan `download_url`
+privat yang dapat dibuka admin/organizer. Export CSV memuat
+`payment_proof_count` dan `payment_proof_download_urls`. Report mencakup payment
+provider `manual_transfer` dan `manual_qr_code`, baik yang masih `pending` maupun
+yang sudah dikonfirmasi `success`.
+
 Konfirmasi transfer manual memerlukan role `admin` atau `organizer`:
 
 ```http

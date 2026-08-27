@@ -34,6 +34,8 @@ export interface PaymentReportTransaction {
   gross_amount?: number;
   currency?: string;
   paid_at?: string | null;
+  payment_proof_count?: number;
+  payment_proofs?: Array<{ id: string; file_name?: string; original_filename?: string; download_url: string; created_at?: string }>;
 }
 
 export interface PaymentReportResponse {
@@ -46,7 +48,7 @@ export interface PaymentReportResponse {
 }
 
 export interface ManualPaymentConfirmPayload {
-  payment_method: 'manual_transfer';
+  payment_method: 'manual_transfer' | 'manual_qr_code';
   transfer_reference: string;
   notes?: string | null;
   paid_at?: string | null;
@@ -108,6 +110,14 @@ export function useAdminReport() {
       body: payload
     });
 
+  const getManualPaymentReport = (params: Record<string, string | number | undefined> = {}) => {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => { if (value !== undefined && value !== '') query.append(key, String(value)); });
+    const suffix = query.toString() ? `?${query.toString()}` : '';
+    return api<ApiResponse<PaymentReportResponse>>(`/admin/reports/payments/manual${suffix}`);
+  };
+  const downloadManualProof = (proofId: string) => api<Blob>(`/payments/manual-proofs/${encodeURIComponent(proofId)}/download`, { responseType: 'blob' });
+
   const getParticipantReport = (params: Record<string, string | number | undefined> = {}) => {
     const query = new URLSearchParams();
 
@@ -123,6 +133,8 @@ export function useAdminReport() {
   return {
     getReport,
     confirmManualPayment,
+    getManualPaymentReport,
+    downloadManualProof,
     getParticipantReport,
     isMidtransReport: paymentProvider.isMidtrans
   };
