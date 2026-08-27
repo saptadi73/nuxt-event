@@ -82,6 +82,31 @@ Dokumen ini adalah kontrak integrasi frontend untuk pembayaran IWBIF 2026.
 OpenAPI backend tersedia di `/openapi.json`, sedangkan seluruh endpoint aplikasi
 menggunakan prefix `/api/v1`.
 
+## Rekonsiliasi seluruh transaksi oleh admin/organizer
+
+Panel operasional gabungan menggunakan endpoint berikut untuk transaksi manual,
+DOKU, Midtrans, dan provider lain:
+
+```http
+GET /api/v1/admin/transactions
+PATCH /api/v1/admin/transactions/{payment_id}/status
+DELETE /api/v1/admin/transactions/{payment_id}
+POST /api/v1/admin/transactions/bulk-actions
+```
+
+Payload `PATCH` menerima `paid`, `success`, atau `canceled`. Setelah organizer
+mengecek rekening manual atau dashboard payment gateway, `paid` dan `success`
+akan menghasilkan `payment.transaction_status=success` serta
+`order.status=paid`. Status `canceled` membatalkan transaksi dan order apabila
+tidak ada pembayaran sukses lain. Endpoint `DELETE` juga membersihkan bukti dan
+status order/registrasi. Delete bersifat soft-delete; bukti dan audit tetap
+dipertahankan. Transaksi `success` atau `refunded` tidak boleh dihapus.
+Frontend wajib menggunakan `allowed_actions` dari response transaksi untuk
+menampilkan tombol, bukan menebak aksi dari status.
+
+Endpoint konfirmasi manual di bawah tetap dipertahankan untuk workflow lama yang
+belum memiliki `payment_id`.
+
 ## Konfirmasi transfer manual oleh admin
 
 Untuk transfer bank manual, frontend peserta hanya menampilkan status order

@@ -88,7 +88,14 @@ Untuk admin/organizer, kasus mismatch dipush ke inbox notifikasi:
 
 - `GET /api/v1/admin/notifications?event_id=<uuid>`
 - `POST /api/v1/admin/notifications/{id}/read`
-- `POST /api/v1/admin/orders/{order_id}/confirm-manual-payment`
+- `GET /api/v1/admin/transactions` untuk menemukan transaksi lintas provider.
+- `PATCH /api/v1/admin/transactions/{payment_id}/status` dengan status
+  `paid`, `success`, atau `canceled` setelah hasil pada dashboard Midtrans
+  diverifikasi. Jangan gunakan endpoint manual-order untuk transaksi Midtrans.
+- `DELETE /api/v1/admin/transactions/{payment_id}` hanya bila organizer memang
+  perlu menghapus catatan transaksi; backend akan menyelaraskan status order.
+- Gunakan `allowed_actions` pada setiap transaksi untuk menentukan tombol yang
+  tersedia; jangan menduplikasi matriks status di frontend.
 
 Notifikasi yang umum dipakai untuk jalur ini:
 
@@ -124,6 +131,10 @@ Laporan admin dipisahkan berdasarkan provider:
 
 - DOKU: `/api/v1/admin/reports/payments` dan `.csv`
 - Midtrans: `/api/v1/admin/reports/payments/midtrans` dan `.csv`
+
+Untuk layar operasional gabungan semua provider gunakan
+`GET /api/v1/admin/transactions`; endpoint laporan provider di atas tetap
+dipakai untuk laporan dan ekspor khusus gateway.
 
 Frontend harus memberi label referensi sesuai provider. Jangan menampilkan
 `provider_order_id`/`provider_transaction_id` DOKU di kolom berjudul “Midtrans

@@ -160,6 +160,7 @@ terminal atau komponen dilepas.
 | `success` | Pembayaran berhasil | Tampilkan invoice dan langkah berikutnya |
 | `failed` | Pembayaran gagal | Izinkan payment ulang setelah order baru/valid |
 | `expired` | Pembayaran kedaluwarsa | Izinkan checkout ulang |
+| `canceled` | Transaksi dibatalkan organizer | Izinkan checkout/order baru sesuai kebijakan UI |
 
 Jika status terlihat `pending` sementara gateway mengirim success tapi backend belum
 menandai `success`, jangan ubah UI ke sukses sampai /payments/{payment_id} sudah
@@ -188,11 +189,19 @@ inbox notifikasi:
   - `GET /api/v1/admin/notifications?event_id=<uuid>`
 - Mark read:
   - `POST /api/v1/admin/notifications/{id}/read`
-- Aksi manual penyelesaian:
-  - `POST /api/v1/admin/orders/{order_id}/confirm-manual-payment`
+- Aksi rekonsiliasi seluruh provider:
+  - `GET /api/v1/admin/transactions`
+  - `PATCH /api/v1/admin/transactions/{payment_id}/status`
+  - Payload: `{"status":"paid|success|canceled","notes":"hasil verifikasi"}`
+- Untuk banyak transaksi gunakan `POST /api/v1/admin/transactions/bulk-actions`.
+- Delete bersifat soft-delete dan ditolak untuk transaksi `success`/`refunded`.
+- Render tombol rekonsiliasi dari `transaction.allowed_actions`; jangan
+  menghitung ulang matriks transisi di frontend.
+- Endpoint lama `POST /api/v1/admin/orders/{order_id}/confirm-manual-payment`
+  tetap tersedia khusus transfer/QR manual berbasis order.
 
 Backend akan membuat notifikasi/riwayat yang terkait agar user juga mendapatkan
-catatan status terbaru setelah admin confirm manual.
+catatan status terbaru setelah admin/organizer melakukan rekonsiliasi.
 
 Khusus Midtrans, keberadaan `provider_order_id` atau
 `provider_transaction_id` tidak mengubah aturan UI di atas. Frontend tetap

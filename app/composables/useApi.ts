@@ -3,6 +3,8 @@ export interface ApiMeta {
   size?: number;
   total?: number;
   pages?: number;
+  limit?: number;
+  offset?: number;
 }
 
 export interface ApiResponse<T> {

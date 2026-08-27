@@ -18,8 +18,9 @@ export interface PaymentReportMetric {
 }
 
 export interface PaymentReportTransaction {
-  id: string;
+  id?: string;
   payment_id?: string;
+  order_id?: string;
   order_number?: string;
   order_status?: string;
   participant_name?: string;
@@ -34,8 +35,31 @@ export interface PaymentReportTransaction {
   gross_amount?: number;
   currency?: string;
   paid_at?: string | null;
+  created_at?: string | null;
+  expires_at?: string | null;
+  deleted_at?: string | null;
+  deleted_by?: string | null;
+  deletion_reason?: string | null;
+  allowed_actions?: Array<'paid' | 'success' | 'canceled' | 'delete'>;
   payment_proof_count?: number;
   payment_proofs?: Array<{ id: string; file_name?: string; original_filename?: string; download_url: string; created_at?: string }>;
+}
+
+export type AdminTransactionResponse = PaymentReportResponse;
+
+export interface TransactionMutationResult {
+  order?: Record<string, unknown>;
+  payment?: PaymentReportTransaction;
+  payment_id?: string;
+  order_id?: string;
+  deleted_at?: string | null;
+  allowed_actions?: PaymentReportTransaction['allowed_actions'];
+}
+
+export interface BulkTransactionResult {
+  action: 'paid' | 'success' | 'canceled' | 'delete';
+  processed: number;
+  transactions: PaymentReportTransaction[];
 }
 
 export interface PaymentReportResponse {
@@ -104,6 +128,30 @@ export function useAdminReport() {
     return api<ApiResponse<PaymentReportResponse>>(`${reportPath}${suffix}`);
   };
 
+  const buildQuery = (params: Record<string, string | number | boolean | undefined>) => {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === undefined || value === '') return;
+      query.append(key, String(value));
+    });
+    return query.toString() ? `?${query.toString()}` : '';
+  };
+
+  const getAdminTransactions = (params: Record<string, string | number | boolean | undefined> = {}) =>
+    api<ApiResponse<AdminTransactionResponse>>(`/admin/transactions${buildQuery(params)}`);
+
+  const updateTransactionStatus = (paymentId: string, payload: { status: 'paid' | 'success' | 'canceled'; notes: string; paid_at?: string | null }) =>
+    api<ApiResponse<TransactionMutationResult>>(`/admin/transactions/${encodeURIComponent(paymentId)}/status`, {
+      method: 'PATCH',
+      body: payload
+    });
+
+  const deleteTransaction = (paymentId: string) =>
+    api<ApiResponse<TransactionMutationResult>>(`/admin/transactions/${encodeURIComponent(paymentId)}`, { method: 'DELETE' });
+
+  const bulkTransactionAction = (payload: { payment_ids: string[]; action: 'paid' | 'success' | 'canceled' | 'delete'; notes: string; paid_at?: string | null }) =>
+    api<ApiResponse<BulkTransactionResult>>('/admin/transactions/bulk-actions', { method: 'POST', body: payload });
+
   const confirmManualPayment = (orderId: string, payload: ManualPaymentConfirmPayload) =>
     api<ApiResponse<Record<string, unknown>>>(`/admin/orders/${encodeURIComponent(orderId)}/confirm-manual-payment`, {
       method: 'POST',
@@ -132,6 +180,10 @@ export function useAdminReport() {
 
   return {
     getReport,
+    getAdminTransactions,
+    updateTransactionStatus,
+    deleteTransaction,
+    bulkTransactionAction,
     confirmManualPayment,
     getManualPaymentReport,
     downloadManualProof,

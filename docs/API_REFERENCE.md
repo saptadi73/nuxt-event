@@ -878,7 +878,11 @@ Sumber kebenaran tetap endpoint `GET /api/v1/payments/{payment_id}`.
   dan dapat digunakan untuk menindaklanjuti verifikasi manual:
   - `GET /api/v1/admin/notifications?event_id=<uuid>`
   - `POST /api/v1/admin/notifications/{notification_id}/read`
-  - `POST /api/v1/admin/orders/{order_id}/confirm-manual-payment`
+  - `GET /api/v1/admin/transactions`
+  - `PATCH /api/v1/admin/transactions/{payment_id}/status` untuk manual maupun
+    payment gateway;
+  - `POST /api/v1/admin/orders/{order_id}/confirm-manual-payment` khusus alur
+    manual lama berbasis order.
 
 `entity_type` yang umum dipakai pada kasus ini: `order`, `payment`,
 `manual_payment`, `manual_payment_confirmation`, `admin_order`.
@@ -1346,6 +1350,245 @@ Untuk production, gunakan production Server/Client Key dan ubah
 
 ### Laporan pembayaran dan pendapatan organizer
 
+### Pengelolaan seluruh transaksi oleh organizer
+
+Endpoint berikut mencakup pembayaran manual, DOKU, Midtrans, dan provider lain.
+Seluruhnya memerlukan role `admin` atau `organizer`:
+
+```text
+GET    /api/v1/admin/transactions
+PATCH  /api/v1/admin/transactions/{payment_id}/status
+DELETE /api/v1/admin/transactions/{payment_id}
+POST   /api/v1/admin/transactions/bulk-actions
+```
+
+Endpoint daftar menerima filter `event_id`, `date_from`, `date_to`, `status`,
+`provider`, `channel_code`, `package_id`, `limit`, `offset`, dan
+`include_deleted`. Tanpa `provider`, semua provider dikembalikan. Soft-deleted
+transaction tidak ditampilkan kecuali `include_deleted=true`. Pagination berada
+pada `meta`; `data.transactions` hanya berisi slice sesuai `limit` dan `offset`,
+sedangkan agregasi pada `data.summary` dihitung dari seluruh hasil filter.
+
+Contoh response `GET /api/v1/admin/transactions?limit=20&offset=0`:
+
+```json
+{
+  "success": true,
+  "message": "Semua transaksi pembayaran berhasil diambil",
+  "data": {
+    "summary": {
+      "total_transactions": 1,
+      "successful_transactions": 1,
+      "pending_transactions": 0,
+      "failed_transactions": 0,
+      "expired_transactions": 0,
+      "gross_revenue": 8000000,
+      "pending_amount": 0,
+      "currency": "IDR"
+    },
+    "by_status": [{"status":"success","transactions":1,"amount":8000000}],
+    "by_channel": [],
+    "by_package": [],
+    "daily_revenue": [],
+    "transactions": [{
+      "payment_id": "75c9e112-2974-49e2-bd6c-65c23e343d28",
+      "order_id": "ad3df206-c6cc-4053-b80a-edb59b9f4647",
+      "order_number": "ORD-2026-0001",
+      "provider": "midtrans",
+      "transaction_status": "success",
+      "order_status": "paid",
+      "gross_amount": 8000000,
+      "currency": "IDR",
+      "provider_transaction_id": "midtrans-transaction-id",
+      "provider_order_id": "ORD-2026-0001-MT-A1B2C3D4",
+      "paid_at": "2026-08-27T08:00:00Z",
+      "deleted_at": null,
+      "deleted_by": null,
+      "deletion_reason": null,
+      "allowed_actions": ["paid", "success"]
+    }]
+  },
+  "meta": {"total":1,"limit":20,"offset":0},
+  "request_id": "request-uuid",
+  "timestamp": "2026-08-27T08:01:00Z"
+}
+```
+
+Payload perubahan status:
+
+```json
+{"status":"paid","notes":"Sudah diverifikasi pada rekening/gateway"}
+```
+
+Nilai canonical pembatalan payment adalah **`canceled`** (satu huruf `l`).
+`cancelled` tidak diterima untuk API payment. Istilah `cancelled` yang masih ada
+pada domain meeting/business matching tidak termasuk kontrak payment.
+
+`paid` adalah alias command untuk `success`: keduanya menyimpan
+`payment.transaction_status=success` dan `order.status=paid`. Contoh response
+berhasil `PATCH`:
+
+```json
+{
+  "success": true,
+  "message": "Status transaksi pembayaran berhasil diperbarui",
+  "data": {
+    "order": {
+      "id":"ad3df206-c6cc-4053-b80a-edb59b9f4647",
+      "registration_id":"e54bbb58-f309-471e-ac02-14dc7ec9b11f",
+      "order_number":"ORD-2026-0001",
+      "subtotal":8000000,
+      "discount_amount":0,
+      "tax_amount":0,
+      "service_fee":0,
+      "total_amount":8000000,
+      "currency":"IDR",
+      "status":"paid",
+      "expires_at":"2026-08-27T09:00:00Z"
+    },
+    "payment": {
+      "id":"75c9e112-2974-49e2-bd6c-65c23e343d28",
+      "order_id":"ad3df206-c6cc-4053-b80a-edb59b9f4647",
+      "provider":"midtrans",
+      "provider_transaction_id":"midtrans-transaction-id",
+      "provider_order_id":"ORD-2026-0001-MT-A1B2C3D4",
+      "payment_type":"bank_transfer",
+      "gross_amount":8000000,
+      "currency":"IDR",
+      "transaction_status":"success",
+      "fraud_status":null,
+      "paid_at":"2026-08-27T08:00:00Z",
+      "checkout_url":null,
+      "channel_code":"BCA",
+      "virtual_account_no":null,
+      "provider_reference_no":null,
+      "payment_instructions_url":null,
+      "deleted_at":null,
+      "deleted_by":null,
+      "deletion_reason":null,
+      "allowed_actions":["paid","success"]
+    }
+  },
+  "meta": null,
+  "request_id": "request-uuid",
+  "timestamp": "2026-08-27T08:01:00Z"
+}
+```
+
+Matriks transisi organizer:
+
+| Status awal payment | `paid`/`success` | `canceled` | soft-delete |
+|---|---|---|---|
+| `created` | Diizinkan | Diizinkan | Diizinkan |
+| `pending` | Diizinkan | Diizinkan | Diizinkan |
+| `failed` | Diizinkan setelah verifikasi | Diizinkan | Diizinkan |
+| `expired` | Diizinkan setelah verifikasi gateway/rekening | Diizinkan | Diizinkan |
+| `canceled` | Diizinkan setelah verifikasi | Idempotent | Diizinkan |
+| `success` | Idempotent | **Ditolak 409** | **Ditolak 409** |
+| `refunded` | **Ditolak 409** | **Ditolak 409** | **Ditolak 409** |
+
+Frontend tidak perlu menghitung matriks tersebut. Setiap transaksi memiliki
+`allowed_actions`, dan tombol aksi harus dibentuk dari field ini:
+
+- `created`, `pending`, `failed`, `expired`, `canceled`:
+  `["paid","success","canceled","delete"]`;
+- `success`: `["paid","success"]` untuk retry idempotent, tanpa cancel/delete;
+- `refunded` atau soft-deleted: `[]`.
+
+`allowed_actions` dikembalikan oleh GET transaction list, objek payment pada
+response PATCH, response DELETE, dan setiap item response bulk. Backend tetap
+melakukan validasi ulang; field ini adalah kapabilitas UI, bukan pengganti
+otorisasi atau validasi server.
+
+Transaksi `success` tidak boleh dibatalkan atau dihapus karena merupakan catatan
+keuangan final. Gunakan proses refund tersendiri ketika dana benar-benar
+dikembalikan. `DELETE` adalah soft-delete dan hanya berlaku pada transaksi
+non-final: row payment, bukti pembayaran, dan seluruh audit event tetap
+dipertahankan. Contoh response:
+
+```json
+{
+  "success": true,
+  "message": "Transaksi pembayaran berhasil dihapus secara soft-delete",
+  "data": {
+    "payment_id": "75c9e112-2974-49e2-bd6c-65c23e343d28",
+    "order_id": "ad3df206-c6cc-4053-b80a-edb59b9f4647",
+    "deleted_at": "2026-08-27T08:05:00Z",
+    "deleted_by": "organizer-user-uuid",
+    "allowed_actions": []
+  },
+  "meta": null,
+  "request_id": "request-uuid",
+  "timestamp": "2026-08-27T08:05:00Z"
+}
+```
+
+Bulk action menerima maksimal 500 ID unik dan bersifat atomik:
+
+```json
+{
+  "payment_ids": ["payment-uuid-1", "payment-uuid-2"],
+  "action": "success",
+  "notes": "Cocok dengan settlement gateway",
+  "paid_at": "2026-08-27T08:00:00Z"
+}
+```
+
+`action` adalah `paid`, `success`, `canceled`, atau `delete`. Jika satu item
+tidak ditemukan atau melanggar matriks transisi, seluruh batch di-rollback.
+Response sukses memuat `action`, `processed`, dan array `transactions` berisi
+`payment_id`, `order_id`, `transaction_status`, `order_status`, serta
+`deleted_at`, dan `allowed_actions`.
+
+Contoh response bulk:
+
+```json
+{
+  "success": true,
+  "message": "Bulk action transaksi pembayaran berhasil",
+  "data": {
+    "action": "canceled",
+    "processed": 2,
+    "transactions": [
+      {
+        "payment_id": "payment-uuid-1",
+        "order_id": "order-uuid-1",
+        "transaction_status": "canceled",
+        "order_status": "canceled",
+        "deleted_at": null,
+        "allowed_actions": ["paid", "success", "canceled", "delete"]
+      },
+      {
+        "payment_id": "payment-uuid-2",
+        "order_id": "order-uuid-2",
+        "transaction_status": "canceled",
+        "order_status": "canceled",
+        "deleted_at": null,
+        "allowed_actions": ["paid", "success", "canceled", "delete"]
+      }
+    ]
+  },
+  "meta": null,
+  "request_id": "request-uuid",
+  "timestamp": "2026-08-27T08:15:00Z"
+}
+```
+
+Error contract:
+
+| HTTP | Kondisi | Contoh code |
+|---|---|---|
+| `400` | Filter/periode/status tidak valid | `INVALID_PAYMENT_STATUS`, `INVALID_REPORT_PERIOD` |
+| `404` | Payment atau order tidak ditemukan | `PAYMENT_NOT_FOUND`, `ORDER_NOT_FOUND` |
+| `409` | Transisi dilarang, sudah soft-delete, atau mencoba delete transaksi final | `INVALID_PAYMENT_STATUS_TRANSITION`, `PAYMENT_DELETED`, `PAYMENT_ALREADY_DELETED`, `PAYMENT_DELETE_FORBIDDEN` |
+| `422` | UUID, tipe field, literal action/status, atau batas 1–500 ID tidak valid | validasi request FastAPI/Pydantic |
+
+Error aplikasi `400/404/409` memakai envelope berikut:
+
+```json
+{"success":false,"message":"Transaksi success atau refunded tidak boleh dihapus; pertahankan sebagai catatan keuangan","errors":[{"field":"","code":"PAYMENT_DELETE_FORBIDDEN","message":"Transaksi success atau refunded tidak boleh dihapus; pertahankan sebagai catatan keuangan"}],"request_id":"request-uuid","timestamp":"2026-08-27T08:10:00Z"}
+```
+
 Laporan DOKU dan Midtrans dipisahkan agar referensi transaksi, channel, dan CSV
 tidak tercampur. Semua endpoint berikut memerlukan Bearer token dengan role
 `admin` atau `organizer`:
@@ -1366,7 +1609,8 @@ Query parameter opsional untuk seluruh endpoint laporan:
 - `event_id`: UUID event.
 - `date_from`, `date_to`: datetime ISO 8601. Filter memakai `paid_at`, atau
   `created_at` ketika transaksi belum dibayar.
-- `status`: `created`, `pending`, `success`, `failed`, `expired`, atau `refunded`.
+- `status`: `created`, `pending`, `success`, `failed`, `expired`, `refunded`,
+  atau `canceled`.
 - `channel_code`: contoh `BCA`, `BNI`, `BRI`, atau `MANDIRI`.
 - `package_id`: UUID delegate package/tiket.
 - Khusus JSON: `limit` 1–500 dan `offset` untuk daftar transaksi.
@@ -1447,8 +1691,8 @@ Query parameter opsional:
 
 - `event_id`: UUID event yang package-nya ingin ditampilkan.
 - `package_id`: UUID delegate package.
-- `payment_status`: `created`, `pending`, `success`, `failed`, `expired`, atau
-  `refunded`.
+- `payment_status`: `created`, `pending`, `success`, `failed`, `expired`,
+  `refunded`, atau `canceled`.
 - `search`: pencarian case-insensitive pada nama participant, email, atau nama
   organisasi.
 - Khusus JSON: `page` mulai dari 1 dan `size` 1–200. Pagination dilakukan per
