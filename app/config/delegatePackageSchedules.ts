@@ -21,9 +21,9 @@ export const delegatePackageSchedules: Record<'main' | 'additional', PackageSche
     title: 'Delegate Package Jakarta',
     subtitle: 'IWBIF 2026 · Jakarta, Indonesia · 14–17 October 2026',
     days: [
-      { date: '14 October 2026', location: 'Arrival · Jakarta', activities: ['Airport transfer from Soekarno-Hatta International Airport', 'Overnight stay at hotel in Jakarta'] },
+      { date: '14 October 2026', location: 'Arrival · Jakarta', activities: ['Airport transfer from Soekarno-Hatta International Airport to the hotel', 'Overnight stay at hotel in Jakarta'] },
       { date: '15 October 2026', location: 'Jakarta', activities: ['Visit to TEI – Trade Expo Indonesia', 'Exhibition and talk show', 'Lunch', 'Dinner at Dreamville PIK 2', 'Overnight stay at hotel in Jakarta'] },
-      { date: '16 October 2026', location: 'Jakarta', activities: ['Opening event, Business Matching and Conference', 'Buffet lunch and two coffee breaks at the hotel', 'Welcome Dinner hosted by the Governor of DKI Jakarta', 'Overnight stay at hotel in Jakarta'] },
+      { date: '16 October 2026', location: 'Jakarta', activities: ['Opening event, Business Matching and Conference', 'Buffet lunch and two coffee breaks at the hotel', 'Welcome Dinner hosted by the Governor of DKI Jakarta (subject to confirmation)', 'Overnight stay at hotel in Jakarta'] },
       { date: '17 October 2026', location: 'Jakarta · Departure', activities: ['Breakfast at hotel', 'Hotel check-out', 'Jakarta trip to Jababeka', 'Airport transfer to Soekarno-Hatta International Airport'] }
     ],
     highlights: ['Business Matching Sessions', 'Conference and Networking Forum', 'Governor Dinner Reception', 'Trade Expo Visit'],
