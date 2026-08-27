@@ -211,7 +211,7 @@ type InboxNotification = {
 
 const inboxNotifications = ref<Array<InboxNotification>>([]);
 const inboxUnreadCount = ref(0);
-const inboxPoller = ref<ReturnType<typeof setInterval> | null>(null);
+const inboxPoller = ref<number | null>(null);
 const unreadBadgeText = computed(() => (inboxUnreadCount.value > 9 ? '9+' : String(inboxUnreadCount.value)));
 const unreadCount = computed(() => inboxUnreadCount.value);
 const activeAccountName = computed(() => authStore.user?.full_name || authStore.user?.name || 'Unknown user');
@@ -261,11 +261,8 @@ const loadInboxNotifications = async () => {
     const unreadRequest = communication.getInboxUnreadCount(eventId || undefined);
     const [notificationsResponse, unreadResponse] = await Promise.all([notificationsRequest, unreadRequest]);
 
-    if (notificationsResponse.error) throw new Error(notificationsResponse.error);
-    if (unreadResponse.error) throw new Error(unreadResponse.error);
-
-    inboxNotifications.value = notificationsResponse.value?.data ?? [];
-    inboxUnreadCount.value = unreadResponse.value?.data?.unread_count ?? 0;
+    inboxNotifications.value = notificationsResponse.data ?? [];
+    inboxUnreadCount.value = unreadResponse.data?.unread_count ?? 0;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to load inbox';
     inboxError.value = message;
@@ -281,8 +278,7 @@ const refreshUnreadOnly = async () => {
   const eventId = activeEventIdForInbox.value;
   try {
     const unreadResponse = await communication.getInboxUnreadCount(eventId || undefined);
-    if (unreadResponse.error) return;
-    inboxUnreadCount.value = unreadResponse.value?.data?.unread_count ?? 0;
+    inboxUnreadCount.value = unreadResponse.data?.unread_count ?? 0;
   } catch {
     // silent
   }
@@ -301,10 +297,9 @@ const handleMarkRead = async (notification: InboxNotification) => {
   try {
     const isAdminInbox = authStore.isAdminOrOrganizer;
     const eventId = activeEventIdForInbox.value;
-    const response = isAdminInbox && eventId
-      ? await communication.markAdminNotificationRead(notification.id, eventId)
-      : await communication.markNotificationRead(notification.id);
-    if (response.error) throw new Error(response.error);
+    await (isAdminInbox && eventId
+      ? communication.markAdminNotificationRead(notification.id, eventId)
+      : communication.markNotificationRead(notification.id));
     await loadInboxNotifications();
   } catch {
     inboxError.value = 'Unable to mark notification as read';
@@ -343,7 +338,7 @@ const resolveNotificationRoute = (notification: InboxNotification) => {
     case 'meeting_reschedule_requested':
       return '/business-matching';
     case 'payment_status_update':
-      return '/admin/reports';
+      return '/admin/transactions';
     default:
       return '/dashboard';
   }
@@ -389,10 +384,9 @@ const handleMarkAllRead = async () => {
   try {
     const isAdminInbox = authStore.isAdminOrOrganizer;
     const eventId = activeEventIdForInbox.value;
-    const response = isAdminInbox && eventId
-      ? await communication.markAllAdminNotificationsRead(eventId)
-      : await communication.markAllNotificationsRead();
-    if (response.error) throw new Error(response.error);
+    await (isAdminInbox && eventId
+      ? communication.markAllAdminNotificationsRead(eventId)
+      : communication.markAllNotificationsRead());
     await loadInboxNotifications();
   } catch {
     inboxError.value = 'Unable to mark all notifications as read';
