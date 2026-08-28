@@ -9,21 +9,21 @@
       <NuxtLink to="/dashboard" class="rounded-full border border-white/20 px-5 py-3 text-sm font-semibold">Back to dashboard</NuxtLink>
     </div>
 
-    <label class="mt-8 block max-w-md text-sm text-slate-300"><span class="mb-2 block">Event</span><select v-model="selectedEventId" class="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-amber-300/50"><option v-for="event in events" :key="event.id" :value="event.id">{{ event.name }}</option></select></label>
+    <div class="mt-8 flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-end"><label class="block flex-1 text-sm text-slate-300"><span class="mb-2 block">Event</span><select v-model="selectedEventId" class="w-full rounded-2xl border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-amber-300/50"><option v-for="event in events" :key="event.id" :value="event.id">{{ event.name }}</option></select></label><label class="flex items-center gap-2 rounded-full border border-white/10 px-4 py-3 text-sm text-slate-300"><input v-model="showInactive" type="checkbox" class="accent-amber-300"> Show inactive packages</label></div>
     <div v-if="feedback" class="mt-5 rounded-2xl border p-4 text-sm" :class="feedbackTone === 'error' ? 'border-red-400/30 bg-red-950/30 text-red-100' : 'border-emerald-300/30 bg-emerald-950/30 text-emerald-100'">{{ feedback }}</div>
 
     <div class="mt-8 grid gap-6 lg:grid-cols-[1fr_24rem]">
       <div>
         <p v-if="loading" class="glass-card rounded-3xl p-6 text-slate-300">Loading Delegate packages...</p>
-        <div v-else-if="!packages.length" class="glass-card rounded-3xl p-6 text-slate-300">No Delegate package has been created for this event.</div>
+        <div v-else-if="!visiblePackages.length" class="glass-card rounded-3xl p-6 text-slate-300">{{ packages.length ? 'No active Delegate packages. Enable “Show inactive packages” to review deactivated records.' : 'No Delegate package has been created for this event.' }}</div>
         <div v-else class="grid gap-4 md:grid-cols-2">
-          <article v-for="item in packages" :key="item.id" class="glass-card rounded-3xl p-5">
+          <article v-for="item in visiblePackages" :key="item.id" class="glass-card rounded-3xl p-5" :class="item.is_active ? '' : 'opacity-65'">
             <div class="flex items-center justify-between gap-3"><span class="text-xs font-bold uppercase tracking-[.2em] text-amber-200">{{ item.code }}</span><span class="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[.16em]" :class="item.is_active ? 'bg-emerald-300/10 text-emerald-200' : 'bg-white/10 text-slate-400'">{{ item.is_active ? 'Active' : 'Inactive' }}</span></div>
             <h2 class="mt-4 text-xl font-bold">{{ item.name }}</h2>
             <p class="mt-2 text-xs uppercase tracking-wider text-slate-400">{{ item.package_type }} · {{ item.selection_mode }}</p>
             <div class="mt-4 grid gap-2"><div v-for="rate in item.rates" :key="rate.id" class="rounded-xl border border-white/10 bg-slate-950/40 p-3"><div class="flex justify-between gap-2"><b class="min-w-0 break-words capitalize">{{ rate.occupancy_type }} <span v-if="rate.is_default" class="text-xs text-amber-200">(default)</span></b><span class="shrink-0">{{ money(rate.amount, rate.currency) }}</span></div><p class="mt-1 text-xs text-slate-400">{{ rate.payment_amount_idr ? `Payment ${money(rate.payment_amount_idr, 'IDR')}` : 'IDR payment not configured' }}</p><div class="mt-3 flex flex-wrap gap-2"><button class="rounded-full border border-amber-300/30 px-3 py-2 text-xs font-semibold text-amber-200" @click="editRate(item.id, rate)">Edit</button><button class="rounded-full border border-rose-300/30 px-3 py-2 text-xs font-semibold text-rose-200" @click="removeRate(rate)">Deactivate</button></div></div></div>
             <ul class="mt-4 space-y-2 text-xs text-slate-400"><li v-for="facility in item.facilities" :key="facility.id" class="flex items-start justify-between gap-2"><span class="min-w-0 flex-1 break-words">• {{ facility.name }}</span><span class="flex shrink-0 flex-wrap justify-end gap-2"><button class="rounded-full border border-amber-300/30 px-3 py-1.5 text-xs text-amber-200" @click="editFacility(item.id, facility)">Edit</button><button class="rounded-full border border-rose-300/30 px-3 py-1.5 text-xs text-rose-200" @click="removeFacility(facility)">Deactivate</button></span></li></ul>
-            <div class="mt-5 flex flex-wrap gap-3"><button class="w-full rounded-full bg-amber-300 px-5 py-2 text-sm font-semibold text-slate-950 sm:w-auto" @click="selectedPackageId = item.id">Rates & facilities</button><button class="w-full rounded-full border border-amber-300/40 px-5 py-2 text-sm font-semibold text-amber-100 sm:w-auto" @click="editPackage(item)">Edit</button><button class="w-full rounded-full border border-red-300/30 px-5 py-2 text-sm font-semibold text-red-200 disabled:opacity-50 sm:w-auto" :disabled="deletingId === item.id" @click="removePackage(item)">{{ deletingId === item.id ? 'Removing...' : 'Remove' }}</button></div>
+            <div class="mt-5 flex flex-wrap gap-3"><button class="w-full rounded-full bg-amber-300 px-5 py-2 text-sm font-semibold text-slate-950 sm:w-auto" @click="selectedPackageId = item.id">Rates & facilities</button><button class="w-full rounded-full border border-amber-300/40 px-5 py-2 text-sm font-semibold text-amber-100 sm:w-auto" @click="editPackage(item)">{{ item.is_active ? 'Edit' : 'Review / reactivate' }}</button><button v-if="item.is_active" class="w-full rounded-full border border-red-300/30 px-5 py-2 text-sm font-semibold text-red-200 disabled:opacity-50 sm:w-auto" :disabled="deletingId === item.id" @click="removePackage(item)">{{ deletingId === item.id ? 'Removing...' : 'Remove' }}</button></div>
           </article>
         </div>
       </div>
@@ -79,6 +79,8 @@ const { data: eventResponse } = await useAsyncData('admin-package-events', () =>
 const events = computed<EventItem[]>(() => eventResponse.value?.data || []);
 const selectedEventId = ref(events.value[0]?.id || '');
 const packages = ref<DelegatePackageCatalogItem[]>([]);
+const showInactive = ref(false);
+const visiblePackages = computed(() => showInactive.value ? packages.value : packages.value.filter(item => item.is_active !== false));
 const loading = ref(false);
 const saving = ref(false);
 const deletingId = ref('');
@@ -95,8 +97,12 @@ const emptyForm = (): DelegatePackageMutationPayload => ({ code: '', name: '', p
 const form = reactive<DelegatePackageMutationPayload>(emptyForm());
 
 const apiError = (error: unknown) => {
-  const value = error as { data?: { message?: string; errors?: Array<{ message: string }> } };
-  return value.data?.errors?.[0]?.message || value.data?.message || (error instanceof Error ? error.message : 'The package could not be saved.');
+  const value = error as { status?: number; statusCode?: number; data?: { detail?: string | Array<{ msg?: string }>; message?: string; request_id?: string; errors?: Array<{ code?: string; message: string }> } };
+  const detail = Array.isArray(value.data?.detail) ? value.data.detail[0]?.msg : value.data?.detail;
+  const message = value.data?.errors?.[0]?.message || value.data?.message || detail || (error instanceof Error ? error.message : 'The package operation could not be completed.');
+  const requestId = value.data?.request_id ? ` Request ID: ${value.data.request_id}.` : '';
+  const status = value.statusCode || value.status;
+  return `${status ? `HTTP ${status}: ` : ''}${message}${requestId}`;
 };
 const loadPackages = async () => {
   if (!selectedEventId.value) { packages.value = []; return; }
@@ -164,7 +170,7 @@ const savePackage = async () => {
 const removePackage = async (item: DelegatePackageCatalogItem) => {
   if (!selectedEventId.value || deletingId.value || !confirm(`Remove ${item.name}?`)) return;
   deletingId.value = item.id; feedback.value = '';
-  try { await adminApi.deleteDelegatePackage(selectedEventId.value, item.id); feedbackTone.value = 'success'; feedback.value = 'Delegate package removed.'; await loadPackages(); }
+  try { await adminApi.deleteDelegatePackage(selectedEventId.value, item.id); feedbackTone.value = 'success'; feedback.value = 'Delegate package deactivated successfully. It is retained for audit purposes and hidden from the active list.'; if (selectedPackageId.value === item.id) selectedPackageId.value = ''; await loadPackages(); }
   catch (error) { feedbackTone.value = 'error'; feedback.value = apiError(error); }
   finally { deletingId.value = ''; }
 };

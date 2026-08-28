@@ -20,9 +20,23 @@ export interface DirectDebitBindingData { binding_id: string; channel_code: stri
 export interface DirectDebitPaymentData { payment_id: string; order_id: string; partner_reference_no: string; status: string; redirect_url: string | null; requires_otp?: boolean; }
 
 export interface OrderItem {
-  id: string; registration_id: string; order_number: string; subtotal: number;
+  id: string; event_id?: string; registration_id: string; order_number: string; subtotal: number;
   discount_amount: number; tax_amount: number; service_fee: number;
   total_amount: number; currency: string; status: string; expires_at?: string;
+  allowed_actions?: Array<'continue_payment' | 'cancel'>;
+}
+
+export interface PendingOrderProductItem {
+  id: string; product_id: string; product_code?: string; product_name: string;
+  product_type?: string; quantity: number; unit_price: number; currency: string;
+  line_total: number; metadata?: Record<string, unknown>;
+}
+
+export interface PendingOrderRecord {
+  order: OrderItem;
+  items: PendingOrderProductItem[];
+  latest_payment?: PaymentItem | null;
+  payment_attempts?: PaymentItem[];
 }
 
 export interface PaymentItem {
@@ -79,6 +93,10 @@ export function usePayment() {
     return createDokuCheckout(orderId);
   };
   const getOrder = (orderId: string) => api<ApiResponse<OrderItem>>(`/orders/${orderId}`);
+  const getPendingOrders = (eventId?: string, page = 1, size = 20) => api<ApiResponse<PendingOrderRecord[]>>('/orders', { query: { status: 'pending', ...(eventId ? { event_id: eventId } : {}), page, size } });
+  const getOrderDetail = (orderId: string) => api<ApiResponse<PendingOrderRecord>>(`/orders/${encodeURIComponent(orderId)}/detail`);
+  const continueOrderPayment = (orderId: string, provider = runtimeProvider.provider) => api<ApiResponse<DokuCheckoutData>>(`/orders/${encodeURIComponent(orderId)}/continue-payment`, { method: 'POST', body: { provider } });
+  const cancelPendingOrder = (orderId: string, reason?: string) => api<ApiResponse<Record<string, unknown>>>(`/orders/${encodeURIComponent(orderId)}`, { method: 'DELETE', body: reason ? { reason } : undefined });
   const getPayment = (paymentId: string) => api<ApiResponse<PaymentItem>>(`/payments/${paymentId}`);
   const uploadManualProof = (orderId: string, paymentMethod: ManualPaymentMethod, file: File, transferReference?: string, notes?: string) => {
     const body = new FormData();
@@ -107,6 +125,10 @@ export function usePayment() {
     createMidtransCheckout,
     createCheckout,
     getOrder,
+    getPendingOrders,
+    getOrderDetail,
+    continueOrderPayment,
+    cancelPendingOrder,
     getPayment,
     uploadManualProof,
     getManualProofs,

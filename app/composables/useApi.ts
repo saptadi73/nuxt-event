@@ -124,7 +124,10 @@ export function useApi() {
 
     if (canRefresh && authStore.refreshToken && (!authStore.accessToken || authStore.isAccessTokenExpired)) {
       refreshAttempted = true;
-      await refreshAccessToken();
+      const refreshed = await refreshAccessToken();
+      if (!refreshed && (!authStore.accessToken || authStore.isAccessTokenExpired)) {
+        throw new Error('Sesi login telah berakhir. Silakan login kembali sebelum melanjutkan.');
+      }
     }
 
     const accessTokenAtRequest = authStore.accessToken;

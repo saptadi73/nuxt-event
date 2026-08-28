@@ -72,7 +72,7 @@ export function useAdminContent() {
   const updateProduct = (productId: string, payload: ProductMutationPayload) => api<ApiResponse<StoreProduct>>(`/store/admin/products/${productId}`, { method: 'PUT', body: payload });
   const createDelegatePackage = (eventId: string, payload: DelegatePackageMutationPayload) => api<ApiResponse<DelegatePackageCatalogItem>>(`/admin/events/${eventId}/delegate-packages`, { method: 'POST', body: payload });
   const updateDelegatePackage = (eventId: string, packageId: string, payload: DelegatePackageMutationPayload) => api<ApiResponse<DelegatePackageCatalogItem>>(`/admin/events/${eventId}/delegate-packages/${packageId}`, { method: 'PUT', body: payload });
-  const deleteDelegatePackage = (eventId: string, packageId: string) => api(`/admin/events/${eventId}/delegate-packages/${packageId}`, { method: 'DELETE' });
+  const deleteDelegatePackage = (eventId: string, packageId: string) => api<ApiResponse<Record<string, unknown>>>(`/admin/events/${encodeURIComponent(eventId)}/delegate-packages/${encodeURIComponent(packageId)}`, { method: 'DELETE' });
   const getDelegatePackageCatalog = (eventId: string) => api<ApiResponse<DelegatePackageCatalog>>(`/admin/events/${eventId}/delegate-package-catalog`);
   const createDelegatePackageRate = (eventId: string, packageId: string, payload: DelegatePackageRatePayload) => api<ApiResponse<DelegatePackageRate>>(`/admin/events/${eventId}/delegate-packages/${packageId}/rates`, { method: 'POST', body: payload });
   const updateDelegatePackageRate = (rateId: string, payload: DelegatePackageRatePayload) => api<ApiResponse<DelegatePackageRate>>(`/admin/delegate-package-rates/${rateId}`, { method: 'PUT', body: payload });

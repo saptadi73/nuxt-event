@@ -95,6 +95,50 @@ package yang dibeli. Simpan `order_id` dan `order_number` dari response.
 Checkout menghapus item dari cart dan membuat snapshot di `order_items`,
 sehingga histori tidak berubah jika admin mengubah harga katalog.
 
+Cart yang kosong setelah checkout tidak berarti pilihan package hilang. Package
+sudah berpindah menjadi pending order. Setelah login/refresh, selalu pulihkan
+pending checkout dari backend:
+
+```http
+GET /api/v1/orders?status=pending&page=1&size=20
+GET /api/v1/orders/{order_id}/detail
+```
+
+Setiap item memuat snapshot package dalam `items`, `latest_payment`, seluruh
+`payment_attempts`, dan `order.allowed_actions`. Render tombol hanya dari
+`allowed_actions`:
+
+- `continue_payment`: tampilkan pilihan provider lalu lanjutkan order lama;
+- `cancel`: tampilkan aksi hapus/batalkan pending order;
+- array kosong: tidak ada aksi yang boleh dilakukan.
+
+Lanjutkan pembayaran tanpa memilih package ulang:
+
+```http
+POST /api/v1/orders/{order_id}/continue-payment
+Content-Type: application/json
+
+{"provider":"doku"}
+```
+
+Provider yang didukung adalah `doku` dan `midtrans`. Payment attempt
+`failed`/`expired` tetap menjadi histori dan backend membuat attempt baru untuk
+order yang sama. URL/token gateway hanya digunakan ulang selama masih berlaku.
+
+Batalkan pending order melalui soft-cancel:
+
+```http
+DELETE /api/v1/orders/{order_id}
+Content-Type: application/json
+
+{"reason":"Tidak jadi melanjutkan pembelian"}
+```
+
+Order dan payment attempts tidak dihapus dari database. Order `paid` tidak dapat
+dibatalkan. Item order juga tidak diedit satu per satu setelah payment attempt
+dibuat karena nominal gateway sudah terikat pada total order; batalkan order
+lama lalu buat cart baru jika susunan package perlu diubah.
+
 Frontend harus menonaktifkan tombol selama request berlangsung. Jika request
 gagal, ambil ulang cart dan jangan mengasumsikan order telah dibuat.
 
@@ -158,9 +202,9 @@ terminal atau komponen dilepas.
 |---|---|---|
 | `created`, `pending` | Menunggu pembayaran | Lanjutkan polling |
 | `success` | Pembayaran berhasil | Tampilkan invoice dan langkah berikutnya |
-| `failed` | Pembayaran gagal | Izinkan payment ulang setelah order baru/valid |
-| `expired` | Pembayaran kedaluwarsa | Izinkan checkout ulang |
-| `canceled` | Transaksi dibatalkan organizer | Izinkan checkout/order baru sesuai kebijakan UI |
+| `failed` | Payment attempt gagal | `continue_payment` pada order yang sama |
+| `expired` | Payment attempt kedaluwarsa | `continue_payment` membuat attempt baru |
+| `canceled` | Payment attempt dibatalkan | Ikuti `order.allowed_actions` |
 
 Jika status terlihat `pending` sementara gateway mengirim success tapi backend belum
 menandai `success`, jangan ubah UI ke sukses sampai /payments/{payment_id} sudah
