@@ -2112,7 +2112,42 @@ Session create menerima `event_id`, `title`, `slug`, `description`,
 menerima subsetnya. Speaker create menerima identity/professional fields,
 biography, links, expertise, featured/status; update menerima subsetnya. Foto
 speaker diunggah lewat `POST /api/v1/speakers/{speaker_id}/photo` multipart
-field `file`. Hubungkan speaker ke event dengan payload
+field `file`. `speaker_id` wajib UUID valid. Format yang diterima adalah JPG,
+PNG, atau WebP dengan batas ukuran sesuai `PROFILE_PHOTO_MAX_SIZE_BYTES`
+(default 5 MB). Speaker divalidasi sebelum file disimpan; jika update database
+gagal file baru dibersihkan, dan setelah update berhasil foto lokal lama
+dibersihkan.
+
+Contoh request dan response:
+
+```http
+POST /api/v1/speakers/f2e392dd-0a63-425e-a7e3-dc7800f21b1b/photo
+Authorization: Bearer <admin_or_organizer_token>
+Content-Type: multipart/form-data
+
+file=<speaker.webp>
+```
+
+```json
+{
+  "success": true,
+  "message": "Foto speaker berhasil diunggah",
+  "data": {
+    "id": "f2e392dd-0a63-425e-a7e3-dc7800f21b1b",
+    "full_name": "Speaker Name",
+    "profile_photo_url": "/uploads/speakers/generated-file.webp"
+  },
+  "meta": null,
+  "request_id": "request-uuid",
+  "timestamp": "2026-08-28T08:00:00Z"
+}
+```
+
+Error yang mungkin dikembalikan: `400 INVALID_IMAGE_TYPE`, `400 EMPTY_IMAGE`,
+`400 IMAGE_TOO_LARGE`, `404 SPEAKER_NOT_FOUND`, `403` untuk role yang tidak
+diizinkan, dan `422` untuk UUID atau multipart field yang tidak valid.
+
+Hubungkan speaker ke event dengan payload
 `{"event_id":"uuid"}` pada `POST /api/v1/speakers/{speaker_id}/events`.
 Operasi delete dapat menghasilkan `409` jika resource masih direferensikan data
 lain yang tidak menggunakan cascade; frontend harus meminta admin melepas

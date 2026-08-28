@@ -1,4 +1,4 @@
-import { useApi, type ApiResponse } from '~/composables/useApi';
+import type { useApi, ApiResponse } from '~/composables/useApi';
 import type { SpeakerItem } from '~/composables/useEvent';
 
 export function useSpeaker() {
