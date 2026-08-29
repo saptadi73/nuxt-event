@@ -25,7 +25,7 @@
       </table>
     </div></div>
 
-    <Teleport to="body"><div v-if="modalOpen" class="modal-backdrop" @click.self="closeModal"><form class="modal-card" @submit.prevent="saveSpeaker">
+    <Teleport to="body"><div v-if="modalOpen" class="modal-backdrop"><form class="modal-card" @submit.prevent="saveSpeaker">
       <div class="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5 sm:px-7"><div><p class="text-xs uppercase tracking-[.24em] text-cyan-200">Speaker editor</p><h2 class="mt-2 text-2xl font-black">{{ editingId ? 'Update speaker' : 'Create speaker' }}</h2><p class="mt-2 text-xs text-slate-400">Admin controls remain in English. Content can be maintained in English and Simplified Chinese.</p></div><button type="button" class="modal-close" aria-label="Close" @click="closeModal">×</button></div>
       <div class="max-h-[70vh] space-y-5 overflow-y-auto px-5 py-6 sm:px-7">
         <div class="flex flex-wrap gap-2 rounded-full border border-white/10 bg-slate-950/60 p-1.5">

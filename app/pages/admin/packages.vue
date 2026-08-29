@@ -63,7 +63,7 @@
         </article>
       </div>
     </Teleport>
-    <Teleport to="body"><div v-if="translationModalOpen" class="fixed inset-0 z-[110] flex items-end justify-center bg-slate-950/85 p-0 backdrop-blur-sm sm:items-center sm:p-5" @click.self="closeTranslation"><form class="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-t-[2rem] border border-white/10 bg-slate-950 p-5 shadow-2xl sm:rounded-[2rem] sm:p-7" @submit.prevent="saveTranslation"><div class="flex items-start justify-between gap-4"><div><p class="text-xs font-bold uppercase tracking-[.25em] text-cyan-200">Simplified Chinese content</p><h2 class="mt-2 text-2xl font-black">{{ translationSourceLabel }}</h2><p class="mt-2 text-xs text-slate-400">{{ translationEntityLabel }} · ID {{ translationEntityId }}</p></div><button type="button" class="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-xl" @click="closeTranslation">×</button></div><p v-if="translationLoading" class="mt-6 text-sm text-slate-400">Loading translation...</p><div v-else class="mt-6 space-y-4"><label class="field"><span>Name (简体中文)</span><input v-model.trim="translationForm.name" required :placeholder="translationSourceLabel" /></label><label v-if="translationEntityType !== 'delegate_package_rate'" class="field"><span>Description (简体中文)</span><textarea v-model.trim="translationForm.description" rows="4" /></label><label v-if="translationEntityType === 'delegate_package_facility'" class="field"><span>Unit (简体中文)</span><input v-model.trim="translationForm.unit" placeholder="例如：每位代表" /></label><div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between"><button v-if="translationExists" type="button" class="rounded-full border border-red-300/25 px-5 py-3 font-semibold text-red-200" :disabled="savingTranslation" @click="deleteTranslation">Delete translation</button><span v-else /><div class="flex gap-3"><button type="button" class="rounded-full border border-white/20 px-5 py-3 font-semibold" @click="closeTranslation">Cancel</button><button class="rounded-full bg-cyan-300 px-6 py-3 font-bold text-slate-950 disabled:opacity-50" :disabled="savingTranslation">{{ savingTranslation?'Saving...':'Save Chinese' }}</button></div></div></div></form></div></Teleport>
+    <Teleport to="body"><div v-if="translationModalOpen" class="fixed inset-0 z-[110] flex items-end justify-center bg-slate-950/85 p-0 backdrop-blur-sm sm:items-center sm:p-5" @click.self="closeTranslation"><form class="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-t-[2rem] border border-white/10 bg-slate-950 p-5 shadow-2xl sm:rounded-[2rem] sm:p-7" @submit.prevent="saveTranslation"><div class="flex items-start justify-between gap-4"><div><p class="text-xs font-bold uppercase tracking-[.25em] text-cyan-200">Simplified Chinese content</p><h2 class="mt-2 text-2xl font-black">{{ translationSourceLabel }}</h2><p class="mt-2 text-xs text-slate-400">{{ translationEntityLabel }} · ID {{ translationEntityId }}</p></div><button type="button" class="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-xl" @click="closeTranslation">×</button></div><p v-if="translationLoading" class="mt-6 text-sm text-slate-400">Loading translation...</p><div v-else class="mt-6 space-y-4"><p class="text-xs text-slate-400">All displayed translation fields are required.</p><label class="field"><span>Name (简体中文)</span><input v-model.trim="translationForm.name" required :placeholder="translationSourceLabel" /></label><label v-if="translationEntityType !== 'delegate_package_rate'" class="field"><span>Description (简体中文)</span><textarea v-model.trim="translationForm.description" rows="4" required /></label><label v-if="translationEntityType === 'delegate_package_facility'" class="field"><span>Unit (简体中文)</span><input v-model.trim="translationForm.unit" required placeholder="例如：每位代表" /></label><div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between"><button v-if="translationExists" type="button" class="rounded-full border border-red-300/25 px-5 py-3 font-semibold text-red-200" :disabled="savingTranslation" @click="deleteTranslation">Delete translation</button><span v-else /><div class="flex gap-3"><button type="button" class="rounded-full border border-white/20 px-5 py-3 font-semibold" @click="closeTranslation">Cancel</button><button class="rounded-full bg-cyan-300 px-6 py-3 font-bold text-slate-950 disabled:opacity-50" :disabled="savingTranslation">{{ savingTranslation?'Saving...':'Save Chinese' }}</button></div></div></div></form></div></Teleport>
   </section>
 </template>
 
@@ -120,7 +120,15 @@ const apiError = (error: unknown) => {
   const status = value.statusCode || value.status;
   return `${status ? `HTTP ${status}: ` : ''}${message}${requestId}`;
 };
-const closeTranslation = () => { if (savingTranslation.value) return; translationModalOpen.value = false; translationEntityId.value = ''; translationExists.value = false; Object.assign(translationForm, { name: '', description: '', unit: '' }); };
+const closeTranslation = (event?: Event) => {
+  // Backdrop clicks must not discard translation text that has not been saved.
+  if (event?.currentTarget instanceof HTMLElement && event.currentTarget.classList.contains('fixed')) return;
+  if (savingTranslation.value) return;
+  translationModalOpen.value = false;
+  translationEntityId.value = '';
+  translationExists.value = false;
+  Object.assign(translationForm, { name: '', description: '', unit: '' });
+};
 const openTranslation = async (entityType: PackageTranslationEntity, entityId: string, sourceLabel: string) => {
   translationEntityType.value = entityType; translationEntityId.value = entityId; translationSourceLabel.value = sourceLabel; translationExists.value = false; Object.assign(translationForm, { name: '', description: '', unit: '' }); translationModalOpen.value = true; translationLoading.value = true;
   try { const rows = (await adminApi.getContentTranslations<PackageTranslationFields>(entityType, entityId)).data || []; const row = rows.find(item => item.locale === 'zh-CN'); translationExists.value = Boolean(row); Object.assign(translationForm, { name: String(row?.fields.name || ''), description: String(row?.fields.description || ''), unit: String(row?.fields.unit || '') }); }
@@ -128,7 +136,19 @@ const openTranslation = async (entityType: PackageTranslationEntity, entityId: s
   finally { translationLoading.value = false; }
 };
 const saveTranslation = async () => {
-  if (!translationEntityId.value || savingTranslation.value) return; savingTranslation.value = true;
+  if (!translationEntityId.value || savingTranslation.value) return;
+  const requiredFields = translationEntityType.value === 'delegate_package_rate'
+    ? [['name', translationForm.name]]
+    : translationEntityType.value === 'delegate_package_facility'
+      ? [['name', translationForm.name], ['description', translationForm.description], ['unit', translationForm.unit]]
+      : [['name', translationForm.name], ['description', translationForm.description]];
+  const blankFields = requiredFields.filter(([, value]) => !value.trim()).map(([field]) => field);
+  if (blankFields.length) {
+    feedbackTone.value = 'error';
+    feedback.value = `Complete the Chinese ${blankFields.join(', ')} field${blankFields.length > 1 ? 's' : ''} before saving.`;
+    return;
+  }
+  savingTranslation.value = true;
   const fields: PackageTranslationFields = { name: translationForm.name.trim() };
   if (translationEntityType.value !== 'delegate_package_rate') fields.description = translationForm.description.trim();
   if (translationEntityType.value === 'delegate_package_facility') fields.unit = translationForm.unit.trim();

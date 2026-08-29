@@ -30,7 +30,7 @@
       </div>
     </div>
 
-    <Teleport to="body"><div v-if="modalOpen" class="modal-backdrop" @click.self="closeModal"><form class="modal-card" @submit.prevent="saveSession">
+    <Teleport to="body"><div v-if="modalOpen" class="modal-backdrop"><form class="modal-card" @submit.prevent="saveSession">
       <div class="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5 sm:px-7"><div><p class="text-xs uppercase tracking-[.24em] text-cyan-200">Program editor</p><h2 class="mt-2 text-2xl font-black">{{ editingId ? 'Update session' : 'Create session' }}</h2></div><button type="button" class="modal-close" aria-label="Close" @click="closeModal">×</button></div>
       <div class="max-h-[70vh] space-y-4 overflow-y-auto px-5 py-6 sm:px-7">
         <div class="flex gap-2 rounded-full border border-white/10 bg-slate-950/60 p-1.5"><button type="button" class="language-tab" :class="activeTab === 'en' && 'language-tab-active'" @click="activeTab='en'">English — Source</button><button type="button" class="language-tab" :class="activeTab === 'zh-CN' && 'language-tab-active'" @click="activeTab='zh-CN'">简体中文 <span class="ml-1 rounded-full px-2 py-0.5 text-[10px]" :class="translationExists?'bg-emerald-300/15 text-emerald-200':'bg-amber-300/15 text-amber-200'">{{ translationLoading?'Loading':translationExists?'Complete':'Missing' }}</span></button></div>
