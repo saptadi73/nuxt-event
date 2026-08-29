@@ -49,6 +49,11 @@ useSeoMeta({ title: 'Chinese Content Translations | IWBIF 2026' });
 const fallbackDefinitions: TranslatableEntityDefinition[] = [
   { entity_type: 'event', fields: ['name', 'description', 'venue_name'] },
   { entity_type: 'product', fields: ['name', 'description'] },
+  { entity_type: 'speaker', fields: ['professional_title', 'organization_name', 'biography', 'expertise_tags', 'session_title'] },
+  { entity_type: 'session', fields: ['title', 'description', 'session_type', 'room_name'] },
+  { entity_type: 'delegate_package', fields: ['name', 'description'] },
+  { entity_type: 'delegate_package_rate', fields: ['name'] },
+  { entity_type: 'delegate_package_facility', fields: ['name', 'description', 'unit'] },
   { entity_type: 'announcement', fields: ['title', 'body'] },
   { entity_type: 'certificate', fields: ['title'] },
   { entity_type: 'event_activity', fields: ['name', 'description'] },
@@ -61,8 +66,11 @@ const fallbackDefinitions: TranslatableEntityDefinition[] = [
 const adminContent = useAdminContent();
 const route = useRoute();
 const definitions = ref<TranslatableEntityDefinition[]>(fallbackDefinitions);
-const entityType = ref<TranslatableEntityType>('event');
 const requestedEntityType = typeof route.query.entity_type === 'string' ? route.query.entity_type : '';
+const initialEntityType = fallbackDefinitions.some((definition) => definition.entity_type === requestedEntityType)
+  ? requestedEntityType as TranslatableEntityType
+  : 'event';
+const entityType = ref<TranslatableEntityType>(initialEntityType);
 const entityId = ref(typeof route.query.entity_id === 'string' ? route.query.entity_id.trim() : '');
 const form = reactive<Record<string, string>>({});
 const loading = ref(false);
@@ -85,6 +93,12 @@ const apiError = (error: unknown) => {
 const fieldLabel = (field: string) => field.replaceAll('_', ' ');
 const fieldPlaceholder = (field: string) => field === 'expertise_tags' ? 'Separate values with commas' : `Chinese ${fieldLabel(field)}`;
 const isLongText = (field: string) => ['description', 'body', 'biography'].includes(field);
+const mergeDefinitions = (backendDefinitions: TranslatableEntityDefinition[]) => {
+  const map = new Map<TranslatableEntityType, TranslatableEntityDefinition>();
+  for (const definition of fallbackDefinitions) map.set(definition.entity_type, definition);
+  for (const definition of backendDefinitions) map.set(definition.entity_type, definition);
+  return Array.from(map.values());
+};
 const loadTranslation = async () => {
   if (!entityId.value) return;
   loading.value = true;
@@ -131,10 +145,12 @@ watch(entityType, () => { resetForm(); translationExists.value = false; });
 try {
   const response = await adminContent.getTranslatableEntities();
   if (response.data?.length) {
-    definitions.value = response.data;
+    definitions.value = mergeDefinitions(response.data);
     entityType.value = response.data.some((definition) => definition.entity_type === requestedEntityType)
       ? requestedEntityType as TranslatableEntityType
-      : response.data[0]?.entity_type || 'event';
+      : definitions.value.some((definition) => definition.entity_type === requestedEntityType)
+        ? requestedEntityType as TranslatableEntityType
+        : response.data[0]?.entity_type || 'event';
   }
 } catch {
   feedbackTone.value = 'error';

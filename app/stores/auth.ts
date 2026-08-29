@@ -10,7 +10,22 @@ type AuthUser = {
 
 const storageKeys = {
   accessToken: 'iwbif_access_token',
-  refreshToken: 'iwbif_refresh_token'
+  refreshToken: 'iwbif_refresh_token',
+  user: 'iwbif_auth_user'
+};
+
+const readClientCookie = (key: string): string => {
+  if (import.meta.server || typeof document === 'undefined') return '';
+  const prefix = `${encodeURIComponent(key)}=`;
+  const cookie = document.cookie.split('; ').find((item) => item.startsWith(prefix));
+  return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : '';
+};
+
+const writeClientCookie = (key: string, value: string) => {
+  if (import.meta.server || typeof document === 'undefined') return;
+  const maxAge = value ? authCookieOptions.maxAge : 0;
+  const secure = authCookieOptions.secure ? '; Secure' : '';
+  document.cookie = `${encodeURIComponent(key)}=${encodeURIComponent(value)}; Path=${authCookieOptions.path}; Max-Age=${maxAge}; SameSite=Lax${secure}`;
 };
 
 const readStorageToken = (key: string): string => {
@@ -27,6 +42,28 @@ const writeStorageToken = (key: string, value: string) => {
   try {
     if (value) window.localStorage.setItem(key, value);
     else window.localStorage.removeItem(key);
+  } catch {
+    // Storage is optional; token state is still kept in memory/cookies.
+  }
+};
+
+const readStoredUser = (): AuthUser | null => {
+  if (import.meta.server || typeof window === 'undefined') return null;
+  try {
+    const value = window.localStorage.getItem(storageKeys.user);
+    if (!value) return null;
+    const user = JSON.parse(value) as AuthUser;
+    return user && typeof user === 'object' ? user : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeStoredUser = (user: AuthUser | null) => {
+  if (import.meta.server || typeof window === 'undefined') return;
+  try {
+    if (user) window.localStorage.setItem(storageKeys.user, JSON.stringify(user));
+    else window.localStorage.removeItem(storageKeys.user);
   } catch {
     // Storage is optional; token state is still kept in memory/cookies.
   }
@@ -95,10 +132,8 @@ export const useAuthStore = defineStore('auth', {
     syncTokensFromCookies() {
       // Public prerender payloads contain an anonymous Pinia snapshot. Restore
       // the browser cookies after hydration before auth state is inspected.
-      const accessToken = useCookie<string>('access_token', { ...authCookieOptions, default: () => '' });
-      const refreshToken = useCookie<string>('refresh_token', { ...authCookieOptions, default: () => '' });
-      const persistedAccessToken = accessToken.value || readStorageToken(storageKeys.accessToken);
-      const persistedRefreshToken = refreshToken.value || readStorageToken(storageKeys.refreshToken);
+      const persistedAccessToken = readClientCookie('access_token') || readStorageToken(storageKeys.accessToken);
+      const persistedRefreshToken = readClientCookie('refresh_token') || readStorageToken(storageKeys.refreshToken);
 
       this.accessToken = persistedAccessToken;
       this.refreshToken = persistedRefreshToken;
@@ -112,6 +147,14 @@ export const useAuthStore = defineStore('auth', {
       if (this.refreshToken) writeStorageToken(storageKeys.refreshToken, this.refreshToken);
 
       this.hydrateUserFromToken();
+      if (!this.userRole) {
+        const storedUser = readStoredUser();
+        const payload = this.decodeJwtPayload(this.accessToken);
+        const tokenUserId = typeof payload?.sub === 'string' ? payload.sub : typeof payload?.id === 'string' ? payload.id : '';
+        if (storedUser && (!tokenUserId || !storedUser.id || storedUser.id === tokenUserId)) {
+          this.setUser(storedUser);
+        }
+      }
     },
     decodeJwtPayload(token: string): Record<string, unknown> | null {
       return decodeJwtPayloadValue(token);
@@ -168,23 +211,35 @@ export const useAuthStore = defineStore('auth', {
     setTokens({ accessToken, refreshToken }: { accessToken: string; refreshToken: string }) {
       this.accessToken = accessToken;
       this.refreshToken = refreshToken;
-      useCookie<string>('access_token', authCookieOptions).value = accessToken;
-      useCookie<string>('refresh_token', authCookieOptions).value = refreshToken;
+      if (import.meta.client) {
+        writeClientCookie('access_token', accessToken);
+        writeClientCookie('refresh_token', refreshToken);
+      } else {
+        useCookie<string>('access_token', authCookieOptions).value = accessToken;
+        useCookie<string>('refresh_token', authCookieOptions).value = refreshToken;
+      }
       writeStorageToken(storageKeys.accessToken, accessToken);
       writeStorageToken(storageKeys.refreshToken, refreshToken);
       this.hydrateUserFromToken();
     },
     setUser(user: AuthUser | null) {
       this.user = user ? { ...user, role: user.role ?? normalizeRole(user.roles) } : null;
+      writeStoredUser(this.user);
     },
     clearToken() {
       this.accessToken = '';
       this.refreshToken = '';
       this.user = null;
-      useCookie<string | null>('access_token', authCookieOptions).value = null;
-      useCookie<string | null>('refresh_token', authCookieOptions).value = null;
+      if (import.meta.client) {
+        writeClientCookie('access_token', '');
+        writeClientCookie('refresh_token', '');
+      } else {
+        useCookie<string | null>('access_token', authCookieOptions).value = null;
+        useCookie<string | null>('refresh_token', authCookieOptions).value = null;
+      }
       writeStorageToken(storageKeys.accessToken, '');
       writeStorageToken(storageKeys.refreshToken, '');
+      writeStoredUser(null);
     }
   }
 });

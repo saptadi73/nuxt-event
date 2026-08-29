@@ -1,5 +1,9 @@
 ﻿<template>
   <main class="login-shell">
+    <div v-if="message && messageTone === 'error'" class="login-toast" role="alert" aria-live="assertive">
+      <p class="font-semibold">{{ copy.failed }}</p>
+      <p class="mt-1 text-sm leading-5">{{ message }}</p>
+    </div>
     <section class="mx-auto max-w-5xl px-3 py-10 sm:px-6 lg:px-8">
       <div class="login-card mx-auto max-w-md rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-950/80 via-slate-950/70 to-slate-900/70 p-5 shadow-[0_28px_60px_rgba(0,0,0,0.35)] sm:p-8">
         <div class="mb-4 inline-flex rounded-full border border-amber-200/20 bg-amber-300/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[.28em] text-amber-200">{{ copy.member }}</div>
@@ -38,6 +42,7 @@ const copy=computed(()=>messages[locale.value==='zh-CN'?'zh-CN':'en']);
 useSeoMeta({title:()=>`${copy.value.login} | IWBIF 2026`,description:()=>copy.value.intro});
 const form = reactive({ email: '', password: '' });
 const { login } = useAuth();
+const flow = useRegistrationFlow();
 const message = ref('');
 const messageTone = ref<'neutral' | 'success' | 'error'>('neutral');
 const isValidEmail = (value: string) => {
@@ -46,7 +51,12 @@ const isValidEmail = (value: string) => {
 };
 
 type ValidationError = { loc?: Array<string | number>; msg?: string };
-type ApiError = { data?: { detail?: ValidationError[]; message?: string }; response?: { _data?: { detail?: ValidationError[]; message?: string } } };
+type ApiErrorPayload = {
+  detail?: ValidationError[];
+  errors?: Array<{ message?: string }>;
+  message?: string;
+};
+type ApiError = { data?: ApiErrorPayload; response?: { _data?: ApiErrorPayload } };
 
 const getLoginErrorMessage = (error: unknown) => {
   const apiError = error as ApiError;
@@ -59,7 +69,9 @@ const getLoginErrorMessage = (error: unknown) => {
       .join('. ');
   }
 
-  return payload?.message || (error instanceof Error ? error.message : copy.value.processError);
+  return payload?.errors?.find((item) => item.message)?.message
+    || payload?.message
+    || (error instanceof Error ? error.message : copy.value.processError);
 };
 
 const onSubmit = async () => {
@@ -83,7 +95,6 @@ const onSubmit = async () => {
 
   message.value = copy.value.submitting;
   messageTone.value = 'neutral';
-  const flow = useRegistrationFlow();
 
   try {
     const result = await login(form);
@@ -107,6 +118,19 @@ const onSubmit = async () => {
 .login-shell {
   min-height: calc(100vh - 140px);
   background: radial-gradient(circle at top, rgba(216, 172, 89, 0.12), transparent 24rem), linear-gradient(180deg, #031127 0%, #061a35 48%, #020e21 100%);
+}
+.login-toast {
+  position: fixed;
+  top: 5.5rem;
+  right: 1rem;
+  z-index: 60;
+  width: min(24rem, calc(100vw - 2rem));
+  border: 1px solid rgba(252, 165, 165, 0.5);
+  border-radius: 0.75rem;
+  background: rgba(69, 10, 10, 0.96);
+  padding: 0.875rem 1rem;
+  color: #fee2e2;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.35);
 }
 .login-card {
   backdrop-filter: blur(18px);
