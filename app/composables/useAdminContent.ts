@@ -64,6 +64,37 @@ export interface SpeakerMutationPayload {
   status?: string;
 }
 
+export type TranslatableEntityType =
+  | 'event'
+  | 'product'
+  | 'speaker'
+  | 'session'
+  | 'delegate_package'
+  | 'delegate_package_rate'
+  | 'delegate_package_facility'
+  | 'event_activity'
+  | 'business_matching_slot'
+  | 'announcement'
+  | 'certificate'
+  | 'matching_session'
+  | 'meeting_venue'
+  | 'meeting_resource';
+
+export interface TranslatableEntityDefinition {
+  entity_type: TranslatableEntityType;
+  fields: string[];
+}
+
+export interface ContentTranslation<TFields extends Record<string, unknown> = Record<string, unknown>> {
+  id: string;
+  entity_type: TranslatableEntityType;
+  entity_id: string;
+  locale: 'zh-CN';
+  fields: TFields;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export function useAdminContent() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
 
@@ -73,14 +104,14 @@ export function useAdminContent() {
   const createDelegatePackage = (eventId: string, payload: DelegatePackageMutationPayload) => api<ApiResponse<DelegatePackageCatalogItem>>(`/admin/events/${eventId}/delegate-packages`, { method: 'POST', body: payload });
   const updateDelegatePackage = (eventId: string, packageId: string, payload: DelegatePackageMutationPayload) => api<ApiResponse<DelegatePackageCatalogItem>>(`/admin/events/${eventId}/delegate-packages/${packageId}`, { method: 'PUT', body: payload });
   const deleteDelegatePackage = (eventId: string, packageId: string) => api<ApiResponse<Record<string, unknown>>>(`/admin/events/${encodeURIComponent(eventId)}/delegate-packages/${encodeURIComponent(packageId)}`, { method: 'DELETE' });
-  const getDelegatePackageCatalog = (eventId: string) => api<ApiResponse<DelegatePackageCatalog>>(`/admin/events/${eventId}/delegate-package-catalog`);
+  const getDelegatePackageCatalog = (eventId: string, locale?: 'en' | 'zh-CN') => api<ApiResponse<DelegatePackageCatalog>>(`/admin/events/${eventId}/delegate-package-catalog`, { query: locale ? { locale } : undefined });
   const createDelegatePackageRate = (eventId: string, packageId: string, payload: DelegatePackageRatePayload) => api<ApiResponse<DelegatePackageRate>>(`/admin/events/${eventId}/delegate-packages/${packageId}/rates`, { method: 'POST', body: payload });
   const updateDelegatePackageRate = (rateId: string, payload: DelegatePackageRatePayload) => api<ApiResponse<DelegatePackageRate>>(`/admin/delegate-package-rates/${rateId}`, { method: 'PUT', body: payload });
   const deleteDelegatePackageRate = (rateId: string) => api(`/admin/delegate-package-rates/${rateId}`, { method: 'DELETE' });
   const createDelegatePackageFacility = (eventId: string, packageId: string, payload: DelegatePackageFacilityPayload) => api<ApiResponse<DelegatePackageFacility>>(`/admin/events/${eventId}/delegate-packages/${packageId}/facilities`, { method: 'POST', body: payload });
   const updateDelegatePackageFacility = (facilityId: string, payload: DelegatePackageFacilityPayload) => api<ApiResponse<DelegatePackageFacility>>(`/admin/delegate-package-facilities/${facilityId}`, { method: 'PUT', body: payload });
   const deleteDelegatePackageFacility = (facilityId: string) => api(`/admin/delegate-package-facilities/${facilityId}`, { method: 'DELETE' });
-  const getSessions = (eventSlug: string) => api<ApiResponse<SessionItem[]>>(`/events/${eventSlug}/sessions`);
+  const getSessions = (eventSlug: string, locale?: 'en' | 'zh-CN') => api<ApiResponse<SessionItem[]>>(`/events/${eventSlug}/sessions`, { query: locale ? { locale } : undefined });
   const createSession = (payload: SessionMutationPayload & { event_id: string }) => api<ApiResponse<SessionItem>>('/sessions', { method: 'POST', body: payload });
   const updateSession = (sessionId: string, payload: SessionMutationPayload) => api<ApiResponse<SessionItem>>(`/sessions/${sessionId}`, { method: 'PUT', body: payload });
   const deleteSession = (sessionId: string) => api(`/sessions/${sessionId}`, { method: 'DELETE' });
@@ -89,5 +120,13 @@ export function useAdminContent() {
   const deleteSpeaker = (speakerId: string) => api(`/speakers/${speakerId}`, { method: 'DELETE' });
   const attachSpeakerToEvent = (speakerId: string, eventId: string) => api(`/speakers/${speakerId}/events`, { method: 'POST', body: { event_id: eventId } });
 
-  return { getProducts, createProduct, updateProduct, createDelegatePackage, updateDelegatePackage, deleteDelegatePackage, getDelegatePackageCatalog, createDelegatePackageRate, updateDelegatePackageRate, deleteDelegatePackageRate, createDelegatePackageFacility, updateDelegatePackageFacility, deleteDelegatePackageFacility, getSessions, createSession, updateSession, deleteSession, createSpeaker, updateSpeaker, deleteSpeaker, attachSpeakerToEvent };
+  const getTranslatableEntities = () => api<ApiResponse<TranslatableEntityDefinition[]>>('/admin/content-translations/entities');
+  const getContentTranslations = <TFields extends Record<string, unknown> = Record<string, unknown>>(entityType: TranslatableEntityType, entityId: string) =>
+    api<ApiResponse<ContentTranslation<TFields>[]>>(`/admin/content-translations/${encodeURIComponent(entityType)}/${encodeURIComponent(entityId)}`);
+  const saveContentTranslation = <TFields extends Record<string, unknown>>(entityType: TranslatableEntityType, entityId: string, fields: TFields) =>
+    api<ApiResponse<ContentTranslation<TFields>>>(`/admin/content-translations/${encodeURIComponent(entityType)}/${encodeURIComponent(entityId)}/zh-CN`, { method: 'PUT', body: { fields } });
+  const deleteContentTranslation = (entityType: TranslatableEntityType, entityId: string) =>
+    api<ApiResponse<Record<string, unknown>>>(`/admin/content-translations/${encodeURIComponent(entityType)}/${encodeURIComponent(entityId)}/zh-CN`, { method: 'DELETE' });
+
+  return { getProducts, createProduct, updateProduct, createDelegatePackage, updateDelegatePackage, deleteDelegatePackage, getDelegatePackageCatalog, createDelegatePackageRate, updateDelegatePackageRate, deleteDelegatePackageRate, createDelegatePackageFacility, updateDelegatePackageFacility, deleteDelegatePackageFacility, getSessions, createSession, updateSession, deleteSession, createSpeaker, updateSpeaker, deleteSpeaker, attachSpeakerToEvent, getTranslatableEntities, getContentTranslations, saveContentTranslation, deleteContentTranslation };
 }

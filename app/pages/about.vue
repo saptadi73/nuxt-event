@@ -4,13 +4,12 @@
       <div class="about-glow" aria-hidden="true" />
       <div class="relative grid items-center gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:gap-16">
         <div class="relative z-10">
-          <p class="eyebrow">About IWBIF 2026</p>
+          <p class="eyebrow">{{ copy.eyebrow }}</p>
           <h1 class="mt-5 max-w-2xl text-4xl font-black leading-[1.08] text-[#f8f6f1] sm:text-5xl lg:text-6xl">
-            Where women-led businesses build <span class="hero-highlight">global momentum.</span>
+            {{ copy.heroLead }} <span class="hero-highlight">{{ copy.heroHighlight }}</span>
           </h1>
           <p class="mt-6 max-w-xl text-base leading-8 text-[#cbd2dc] sm:text-lg">
-            The International Women Business &amp; Investment Forum is a curated ecosystem where women entrepreneurs,
-            investors, buyers, governments, and international partners turn meaningful connections into measurable growth.
+            {{ copy.intro }}
           </p>
           <div class="mt-8 flex flex-wrap gap-3" aria-label="IWBIF focus areas">
             <span v-for="focus in focusAreas" :key="focus" class="focus-pill">{{ focus }}</span>
@@ -19,12 +18,12 @@
 
         <figure class="image-stage">
           <div class="image-frame">
-            <img src="/images/about-iwbif.png" alt="Women business leaders building international partnerships across Indonesia and Asia" class="h-full w-full object-cover" width="1536" height="1024" fetchpriority="high">
+            <img src="/images/about-iwbif.png" :alt="copy.heroAlt" class="h-full w-full object-cover" width="1536" height="1024" fetchpriority="high">
             <div class="image-overlay" aria-hidden="true" />
           </div>
           <figcaption class="image-caption">
             <span class="caption-mark" aria-hidden="true">01</span>
-            <span><strong>Indonesia to the world</strong><small>Trade · Investment · Partnership</small></span>
+            <span><strong>{{ copy.indonesiaWorld }}</strong><small>{{ copy.trade }}</small></span>
           </figcaption>
         </figure>
       </div>
@@ -33,20 +32,20 @@
     <section class="vision-section border-y border-white/10">
       <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-24">
         <div class="mb-9 max-w-3xl">
-          <p class="eyebrow">Our vision</p>
-          <h2 class="mt-4 text-3xl font-black leading-tight text-[#f8f6f1] sm:text-4xl lg:text-5xl">More than a forum. <span class="vision-highlight">A pathway to opportunity.</span></h2>
+          <p class="eyebrow">{{ copy.visionLabel }}</p>
+          <h2 class="mt-4 text-3xl font-black leading-tight text-[#f8f6f1] sm:text-4xl lg:text-5xl">{{ copy.visionLead }} <span class="vision-highlight">{{ copy.visionHighlight }}</span></h2>
         </div>
 
         <div class="vision-composition">
           <figure class="vision-image-frame">
-            <img src="/images/our-vision.png" alt="Women leaders representing Indonesia and Asia driving global business, technology, manufacturing, and sustainable growth" width="1672" height="941" loading="lazy">
+            <img src="/images/our-vision.png" :alt="copy.visionAlt" width="1672" height="941" loading="lazy">
             <div class="vision-image-shade" aria-hidden="true" />
-            <figcaption><span>One shared vision</span><strong>Women-led growth without borders</strong></figcaption>
+            <figcaption><span>{{ copy.sharedVision }}</span><strong>{{ copy.borderless }}</strong></figcaption>
           </figure>
 
           <div class="vision-panel">
             <span class="vision-quote" aria-hidden="true">“</span>
-            <p class="relative text-xl font-semibold leading-9 text-[#f8f6f1] sm:text-2xl">Position Indonesia as a regional hub where women-led businesses build bridges, unlock investments, and accelerate sustainable cross-border partnerships.</p>
+            <p class="relative text-xl font-semibold leading-9 text-[#f8f6f1] sm:text-2xl">{{ copy.visionText }}</p>
             <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
               <div v-for="outcome in outcomes" :key="outcome" class="outcome-item"><span class="outcome-dot" aria-hidden="true" /><span>{{ outcome }}</span></div>
             </div>
@@ -57,8 +56,8 @@
 
     <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
       <div class="max-w-2xl">
-        <p class="eyebrow">How we create impact</p>
-        <h2 class="mt-4 text-3xl font-black text-[#f8f6f1] sm:text-4xl">Connection with a clear business purpose.</h2>
+        <p class="eyebrow">{{ copy.impactLabel }}</p>
+        <h2 class="mt-4 text-3xl font-black text-[#f8f6f1] sm:text-4xl">{{ copy.impactTitle }}</h2>
       </div>
       <div class="mt-10 grid gap-5 md:grid-cols-3">
         <article v-for="(item, index) in mission" :key="item.title" class="mission-card">
@@ -88,19 +87,19 @@
 
       <div class="mt-20">
         <div class="max-w-3xl">
-          <p class="eyebrow">Why Indonesia?</p>
-          <h2 class="mt-4 text-3xl font-black text-[#f8f6f1] sm:text-4xl lg:text-5xl">A strategic home for regional growth.</h2>
-          <p class="mt-5 max-w-2xl leading-7 text-[#cbd2dc]">Scale, connectivity, and convening power make Indonesia a natural meeting point for ambitious businesses.</p>
+          <p class="eyebrow">{{ copy.whyLabel }}</p>
+          <h2 class="mt-4 text-3xl font-black text-[#f8f6f1] sm:text-4xl lg:text-5xl">{{ copy.whyTitle }}</h2>
+          <p class="mt-5 max-w-2xl leading-7 text-[#cbd2dc]">{{ copy.whyIntro }}</p>
         </div>
 
         <figure class="about-why-visual">
           <div class="about-why-frame">
-            <img src="/images/why-indonesia.png" alt="Indonesia's infrastructure, manufacturing, cultural heritage, tourism, renewable energy, and international trade" width="1672" height="941" loading="lazy">
+            <img src="/images/why-indonesia.png" :alt="copy.whyAlt" width="1672" height="941" loading="lazy">
             <div class="about-why-overlay" aria-hidden="true" />
           </div>
           <figcaption class="about-why-caption">
-            <span>Indonesia</span>
-            <strong>Gateway to ASEAN &amp; Asia</strong>
+            <span>{{ copy.indonesia }}</span>
+            <strong>{{ copy.gateway }}</strong>
           </figcaption>
           <div class="about-why-grid">
             <article v-for="(item, index) in why" :key="item.title" class="why-card">
@@ -116,25 +115,11 @@
 </template>
 
 <script setup lang="ts">
-useSeoMeta({
-  title: 'About | IWBIF 2026',
-  description: 'Discover the vision, purpose, and global business ecosystem behind the International Women Business & Investment Forum 2026.',
-  ogImage: '/images/about-iwbif.png',
-});
-
-const focusAreas = ['Women-led growth', 'Cross-border trade', 'Strategic investment'];
-const outcomes = ['Qualified business leads', 'Buyer and seller connections', 'Investment discussions', 'Strategic partnerships and MoUs'];
-const mission = [
-  { title: 'Connect', text: 'Bring entrepreneurs, buyers, investors, and ecosystem leaders together across borders.' },
-  { title: 'Collaborate', text: 'Shape practical solutions for market entry, access to capital, and procurement opportunities.' },
-  { title: 'Create', text: 'Turn conversations into qualified leads, tangible business deals, and lasting partnerships.' },
-];
-const why = [
-  { title: 'A market of significant scale', text: 'A domestic market of more than 283 million people with strong regional relevance.' },
-  { title: 'Gateway to ASEAN & Asia', text: 'A strategic location connecting dynamic markets and cross-border opportunity.' },
-  { title: 'Global convening power', text: 'A G20 economy suited to public-private dialogue and practical deal-making.' },
-  { title: 'Business meets diplomacy', text: 'Corporations, investors, embassies, and decision-makers meet in one city.' },
-];
+const {locale}=useI18n();
+const messages={en:{eyebrow:'About IWBIF 2026',heroLead:'Where women-led businesses build',heroHighlight:'global momentum.',intro:'The International Women Business & Investment Forum is a curated ecosystem where women entrepreneurs, investors, buyers, governments, and international partners turn meaningful connections into measurable growth.',heroAlt:'Women business leaders building international partnerships across Indonesia and Asia',indonesiaWorld:'Indonesia to the world',trade:'Trade · Investment · Partnership',visionLabel:'Our vision',visionLead:'More than a forum.',visionHighlight:'A pathway to opportunity.',visionAlt:'Women leaders representing Indonesia and Asia driving global business, technology, manufacturing, and sustainable growth',sharedVision:'One shared vision',borderless:'Women-led growth without borders',visionText:'Position Indonesia as a regional hub where women-led businesses build bridges, unlock investments, and accelerate sustainable cross-border partnerships.',impactLabel:'How we create impact',impactTitle:'Connection with a clear business purpose.',whyLabel:'Why Indonesia?',whyTitle:'A strategic home for regional growth.',whyIntro:'Scale, connectivity, and convening power make Indonesia a natural meeting point for ambitious businesses.',whyAlt:"Indonesia's infrastructure, manufacturing, cultural heritage, tourism, renewable energy, and international trade",indonesia:'Indonesia',gateway:'Gateway to ASEAN & Asia',focus:['Women-led growth','Cross-border trade','Strategic investment'],outcomes:['Qualified business leads','Buyer and seller connections','Investment discussions','Strategic partnerships and MoUs'],mission:[{title:'Connect',text:'Bring entrepreneurs, buyers, investors, and ecosystem leaders together across borders.'},{title:'Collaborate',text:'Shape practical solutions for market entry, access to capital, and procurement opportunities.'},{title:'Create',text:'Turn conversations into qualified leads, tangible business deals, and lasting partnerships.'}],why:[{title:'A market of significant scale',text:'A domestic market of more than 283 million people with strong regional relevance.'},{title:'Gateway to ASEAN & Asia',text:'A strategic location connecting dynamic markets and cross-border opportunity.'},{title:'Global convening power',text:'A G20 economy suited to public-private dialogue and practical deal-making.'},{title:'Business meets diplomacy',text:'Corporations, investors, embassies, and decision-makers meet in one city.'}]},'zh-CN':{eyebrow:'关于 IWBIF 2026',heroLead:'女性主导企业在此汇聚',heroHighlight:'全球发展动能。',intro:'国际女性商业与投资论坛是一个精心构建的生态系统，女性企业家、投资者、买家、政府和国际合作伙伴在此将有价值的连接转化为可量化的增长。',heroAlt:'女性商业领袖在印度尼西亚与亚洲建立国际合作',indonesiaWorld:'从印度尼西亚走向世界',trade:'贸易 · 投资 · 合作',visionLabel:'我们的愿景',visionLead:'不止于论坛。',visionHighlight:'通往机遇的道路。',visionAlt:'印度尼西亚与亚洲女性领袖推动全球商业、科技、制造与可持续增长',sharedVision:'共同愿景',borderless:'女性主导的无界增长',visionText:'将印度尼西亚打造成区域枢纽，让女性主导企业搭建桥梁、释放投资潜力，并加速可持续的跨境合作。',impactLabel:'我们如何创造影响',impactTitle:'以明确商业目标建立连接。',whyLabel:'为什么选择印度尼西亚？',whyTitle:'区域增长的战略枢纽。',whyIntro:'市场规模、互联能力和召集力，使印度尼西亚成为雄心企业的天然汇聚点。',whyAlt:'印度尼西亚的基础设施、制造业、文化遗产、旅游、可再生能源与国际贸易',indonesia:'印度尼西亚',gateway:'通往东盟与亚洲的门户',focus:['女性主导增长','跨境贸易','战略投资'],outcomes:['优质商业线索','买卖双方对接','投资洽谈','战略合作与谅解备忘录'],mission:[{title:'连接',text:'跨越国界汇聚企业家、买家、投资者和生态系统领袖。'},{title:'协作',text:'为市场准入、资本获取和采购机遇制定务实解决方案。'},{title:'创造',text:'将对话转化为优质线索、实质性交易和长久合作。'}],why:[{title:'规模庞大的市场',text:'超过2.83亿人的国内市场，对区域发展具有重要意义。'},{title:'通往东盟与亚洲的门户',text:'连接活力市场与跨境机遇的战略位置。'},{title:'全球召集力',text:'适合公私对话和务实交易的 G20 经济体。'},{title:'商业与外交交汇',text:'企业、投资者、使馆和决策者在同一城市汇聚。'}]}} as const;
+const copy=computed(()=>messages[locale.value==='zh-CN'?'zh-CN':'en']);
+const focusAreas=computed(()=>copy.value.focus); const outcomes=computed(()=>copy.value.outcomes); const mission=computed(()=>copy.value.mission); const why=computed(()=>copy.value.why);
+useSeoMeta({title:()=>`${copy.value.eyebrow} | IWBIF 2026`,description:()=>copy.value.intro,ogImage:'/images/about-iwbif.png'});
 </script>
 
 <style scoped>

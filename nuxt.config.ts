@@ -15,8 +15,30 @@ export default defineNuxtConfig({
   experimental: {
     appManifest: isDevelopmentRuntime
   },
-  modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
+  modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss', '@nuxtjs/i18n'],
+  i18n: {
+    strategy: 'no_prefix',
+    defaultLocale: 'en',
+    locales: [
+      { code: 'en', name: 'English', language: 'en-US', file: 'en.json' },
+      { code: 'zh-CN', name: '简体中文', language: 'zh-CN', file: 'zh-CN.json' }
+    ],
+    langDir: 'locales',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'iwbif_locale',
+      redirectOn: 'root',
+      fallbackLocale: 'en'
+    },
+    vueI18n: './i18n.config.ts'
+  },
   nitro: {
+    devProxy: {
+      [apiBasePath]: {
+        target: `${apiBaseUrl}${apiBasePath}`,
+        changeOrigin: true
+      }
+    },
     prerender: {
       concurrency: 1
     }

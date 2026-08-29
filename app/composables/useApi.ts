@@ -17,32 +17,64 @@ export interface ApiResponse<T> {
   errors?: Array<{ field?: string; code: string; message: string }>;
 }
 
+export interface LocalizedContentMeta {
+  content_locale?: 'en' | 'zh-CN' | 'source';
+  translation_fallback?: boolean;
+}
+
 export function useApi() {
   const config = useRuntimeConfig();
+  const route = useRoute();
   const authStore = useAuthStore();
+  // @nuxtjs/i18n owns this cookie. Read it without a default so SSR does not
+  // attempt to write a competing value while locale detection is running.
+  const localeCookie = useCookie<'en' | 'zh-CN'>('iwbif_locale');
   let refreshPromise: Promise<boolean> | null = null;
 
   const normalizeBaseUrl = (value: string) => value.replace(/\/+$/, '');
   const apiBasePath = config.public.apiBasePath || '/api/v1';
   const apiBaseUrl = normalizeBaseUrl(config.public.backendOrigin || '');
-  const requestBaseUrl = apiBaseUrl && !apiBaseUrl.endsWith('/api/v1')
-    ? `${apiBaseUrl}${apiBasePath}`
-    : apiBaseUrl;
+  const requestBaseUrl = import.meta.client && import.meta.dev
+    ? apiBasePath
+    : apiBaseUrl && !apiBaseUrl.endsWith('/api/v1')
+      ? `${apiBaseUrl}${apiBasePath}`
+      : apiBaseUrl;
 
   const buildAuthHeaders = (headers?: HeadersInit) => {
     const nextHeaders = new Headers(headers);
+    if (!nextHeaders.has('Accept-Language')) {
+      const locale = route.path.startsWith('/admin')
+        ? 'en'
+        : localeCookie.value === 'zh-CN' ? 'zh-CN' : 'en';
+      nextHeaders.set('Accept-Language', locale === 'zh-CN' ? 'zh-CN,zh;q=0.9,en;q=0.8' : 'en');
+    }
     if (authStore.accessToken) {
       nextHeaders.set('Authorization', `Bearer ${authStore.accessToken}`);
     }
     return nextHeaders;
   };
 
+  const requestLocale = () => route.path.startsWith('/admin')
+    ? 'en'
+    : localeCookie.value === 'zh-CN' ? 'zh-CN' : 'en';
+
   const rawApi = $fetch.create({
     baseURL: requestBaseUrl,
-    onRequest({ options }) {
+    onRequest({ request, options }) {
       if (import.meta.client) authStore.syncTokensFromCookies();
       else authStore.hydrateUserFromToken();
       options.headers = buildAuthHeaders(options.headers as HeadersInit | undefined);
+      const requestValue = typeof request === 'string' ? request : request instanceof Request ? request.url : String(request);
+      const query = options.query;
+      const hasLocaleInUrl = /[?&]locale=/.test(requestValue);
+      const hasLocaleInOptions = query instanceof URLSearchParams
+        ? query.has('locale')
+        : Boolean(query && typeof query === 'object' && 'locale' in query);
+      if (!hasLocaleInUrl && !hasLocaleInOptions) {
+        options.query = query instanceof URLSearchParams
+          ? new URLSearchParams([...query.entries(), ['locale', requestLocale()]])
+          : { ...(query as Record<string, unknown> | undefined), locale: requestLocale() };
+      }
     }
   });
 
@@ -126,7 +158,9 @@ export function useApi() {
       refreshAttempted = true;
       const refreshed = await refreshAccessToken();
       if (!refreshed && (!authStore.accessToken || authStore.isAccessTokenExpired)) {
-        throw new Error('Sesi login telah berakhir. Silakan login kembali sebelum melanjutkan.');
+        throw new Error(localeCookie.value === 'zh-CN' && !route.path.startsWith('/admin')
+          ? '您的登录会话已过期。请重新登录后继续。'
+          : 'Your session has expired. Please sign in again to continue.');
       }
     }
 

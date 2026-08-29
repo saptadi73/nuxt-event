@@ -1,0 +1,26 @@
+diff --git a/node_modules/nuxt/dist/pages/runtime/plugins/prerender.server.js b/node_modules/nuxt/dist/pages/runtime/plugins/prerender.server.js
+index 0651092..c2c0402 100644
+--- a/node_modules/nuxt/dist/pages/runtime/plugins/prerender.server.js
++++ b/node_modules/nuxt/dist/pages/runtime/plugins/prerender.server.js
+@@ -8,12 +8,15 @@ import _routes from "#build/routes";
+ //#region src/pages/runtime/plugins/prerender.server.ts
+ const routeRulesMatcher = _routeRulesMatcher;
+ let routes;
+-const plugin = defineNuxtPlugin(async () => {
+-	if (!import.meta.server || !import.meta.prerender || hashMode) return;
+-	if (routes && !routes.length) return;
+-	routes ||= Array.from(processRoutes(await routerOptions.routes?.(_routes) ?? _routes));
+-	const batch = routes.splice(0, 10);
+-	prerenderRoutes(batch);
++const plugin = defineNuxtPlugin({
++	name: "nuxt:prerender",
++	setup: async () => {
++		if (!import.meta.server || !import.meta.prerender || hashMode) return;
++		if (routes && !routes.length) return;
++		routes ||= Array.from(processRoutes(await routerOptions.routes?.(_routes) ?? _routes));
++		const batch = routes.splice(0, 10);
++		prerenderRoutes(batch);
++	}
+ });
+ const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/;
+ function shouldPrerender(path) {

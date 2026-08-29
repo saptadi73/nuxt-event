@@ -1,15 +1,15 @@
 <template>
   <section class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-    <p class="text-sm uppercase tracking-[0.3em] text-cyan-200/70">Ticket</p>
-    <h1 class="mt-3 text-4xl font-black text-white">My Ticket</h1>
-    <p class="mt-3 text-slate-300">View your ticket list, render the QR code, and reissue it when needed.</p>
+    <p class="text-sm uppercase tracking-[0.3em] text-cyan-200/70">{{ copy.ticket }}</p>
+    <h1 class="mt-3 text-4xl font-black text-white">{{ copy.title }}</h1>
+    <p class="mt-3 text-slate-300">{{ copy.description }}</p>
 
     <div v-if="loading" class="mt-8 grid gap-4 md:grid-cols-2">
       <div v-for="item in 4" :key="item" class="h-40 animate-pulse rounded-[1.75rem] bg-white/5"></div>
     </div>
 
     <div v-else-if="error" class="mt-8 rounded-3xl border border-red-400/40 bg-red-950/40 p-5 text-red-100">
-      Failed to load tickets: {{ error.message }}
+      {{ copy.loadError }}: {{ error.message }}
     </div>
 
     <div v-else class="mt-8 grid gap-4 md:grid-cols-2">
@@ -20,19 +20,19 @@
       >
         <div class="flex items-start justify-between gap-3">
           <div>
-            <p class="text-xs uppercase tracking-[0.25em] text-slate-400">Ticket</p>
+            <p class="text-xs uppercase tracking-[0.25em] text-slate-400">{{ copy.ticket }}</p>
             <h2 class="mt-2 text-xl font-semibold text-white">{{ ticket.ticket_number }}</h2>
-            <p class="mt-1 text-sm text-slate-300">{{ ticket.status }}</p>
+            <p class="mt-1 text-sm text-slate-300">{{ statusLabel(ticket.status) }}</p>
           </div>
           <button
             class="rounded-full border border-white/15 px-4 py-2 text-xs text-white"
             @click="loadQr(ticket.id)"
           >
-            Show QR
+            {{ copy.showQr }}
           </button>
         </div>
 
-        <p class="mt-3 text-sm text-slate-300">Reg ID: {{ ticket.registration_id }}</p>
+        <p class="mt-3 text-sm text-slate-300">{{ copy.registrationId }}: {{ ticket.registration_id }}</p>
 
         <div class="mt-4 space-y-3">
           <button
@@ -40,7 +40,7 @@
             @click="reissue(ticket.id)"
             :disabled="reissuing === ticket.id"
           >
-            {{ reissuing === ticket.id ? 'Processing...' : 'Reissue' }}
+            {{ reissuing === ticket.id ? copy.processing : copy.reissue }}
           </button>
         </div>
       </article>
@@ -56,14 +56,14 @@
       <div class="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.06),transparent)] opacity-70"></div>
       <div class="pointer-events-none absolute inset-y-6 right-[18rem] hidden border-r border-dashed border-white/15 lg:block"></div>
       <div class="pointer-events-none absolute right-4 top-4 rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-amber-100 sm:right-6 sm:top-6">
-        VIP Access
+        {{ copy.vipAccess }}
       </div>
       <div class="relative grid gap-8 lg:grid-cols-[1.35fr_280px] lg:items-center">
         <div>
           <div class="flex flex-wrap items-center gap-3 pr-20">
-            <p class="text-xs uppercase tracking-[0.45em] text-cyan-100/80 sm:text-sm">Official Event Pass</p>
+            <p class="text-xs uppercase tracking-[0.45em] text-cyan-100/80 sm:text-sm">{{ copy.officialPass }}</p>
             <span class="rounded-full border border-emerald-300/25 bg-emerald-300/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-emerald-100">
-              Confirmed
+              {{ copy.confirmed }}
             </span>
           </div>
           <div class="mt-4 flex items-center gap-4">
@@ -80,29 +80,29 @@
             </div>
           </div>
           <h2 class="mt-3 max-w-2xl text-3xl font-black leading-tight text-white sm:text-4xl">
-            You are officially registered for IWBIF 2026.
+            {{ copy.registered }}
           </h2>
           <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-200 sm:text-base">
-            Please present this QR code during re-registration and check-in at the venue.
+            {{ copy.instructions }}
           </p>
 
           <div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
-              <p class="text-[11px] uppercase tracking-[0.3em] text-cyan-100/70">Participant</p>
+              <p class="text-[11px] uppercase tracking-[0.3em] text-cyan-100/70">{{ copy.participant }}</p>
               <p class="mt-2 text-sm font-semibold leading-7 text-white sm:text-base sm:leading-8">{{ participantName }}</p>
             </div>
             <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
-              <p class="text-[11px] uppercase tracking-[0.3em] text-cyan-100/70">Event</p>
+              <p class="text-[11px] uppercase tracking-[0.3em] text-cyan-100/70">{{ copy.event }}</p>
               <p class="mt-2 text-sm font-semibold leading-7 text-white sm:text-base sm:leading-8">IWBIF 2026</p>
             </div>
             <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
-              <p class="text-[11px] uppercase tracking-[0.3em] text-cyan-100/70">Ticket Number</p>
+              <p class="text-[11px] uppercase tracking-[0.3em] text-cyan-100/70">{{ copy.ticketNumber }}</p>
               <p class="mt-2 break-words text-sm font-semibold leading-7 text-white sm:text-[15px] sm:leading-8">{{ qr.ticket_number }}</p>
             </div>
             <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-sm">
-              <p class="text-[11px] uppercase tracking-[0.3em] text-cyan-100/70">Date & Venue</p>
-              <p class="mt-2 text-sm font-semibold leading-7 text-white sm:text-[15px]">14–17 October 2026</p>
-              <p class="mt-1 text-xs leading-5 text-slate-300 sm:leading-6">Jakarta, Indonesia</p>
+              <p class="text-[11px] uppercase tracking-[0.3em] text-cyan-100/70">{{ copy.dateVenue }}</p>
+              <p class="mt-2 text-sm font-semibold leading-7 text-white sm:text-[15px]">{{ copy.eventDate }}</p>
+              <p class="mt-1 text-xs leading-5 text-slate-300 sm:leading-6">{{ copy.venue }}</p>
             </div>
           </div>
 
@@ -114,7 +114,7 @@
               class="rounded-full bg-cyan-400 px-5 py-3 text-sm font-semibold text-slate-950 transition duration-200 hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-50"
               @click="downloadTicket"
             >
-              {{ downloading ? 'Downloading...' : 'Download Ticket' }}
+              {{ downloading ? copy.downloading : copy.download }}
             </button>
           </div>
         </div>
@@ -126,11 +126,11 @@
               :src="qr.imageUrl"
               alt="QR ticket"
               class="w-full rounded-2xl"
-              @error="qr.imageError = 'QR could not be rendered. Please try reissuing the ticket.'"
+              @error="qr.imageError = copy.qrRenderError"
             />
           </div>
           <p class="mt-4 text-center text-xs uppercase tracking-[0.35em] text-cyan-100/70">
-            Scan for verification
+            {{ copy.scan }}
           </p>
         </div>
       </div>
@@ -147,6 +147,15 @@ import { useTicket } from '~/composables/useTicket';
 
 definePageMeta({ middleware: 'auth' });
 
+const { locale } = useI18n();
+const messages = {
+  en: { ticket: 'Ticket', title: 'My Ticket', description: 'View your ticket list, render the QR code, and reissue it when needed.', loadError: 'Failed to load tickets', showQr: 'Show QR', registrationId: 'Registration ID', processing: 'Processing…', reissue: 'Reissue', vipAccess: 'VIP Access', officialPass: 'Official Event Pass', confirmed: 'Confirmed', registered: 'You are officially registered for IWBIF 2026.', instructions: 'Please present this QR code during re-registration and check-in at the venue.', participant: 'Participant', event: 'Event', ticketNumber: 'Ticket Number', dateVenue: 'Date & Venue', eventDate: '14–17 October 2026', venue: 'Jakarta, Indonesia', downloading: 'Downloading…', download: 'Download Ticket', qrRenderError: 'QR could not be rendered. Please try reissuing the ticket.', scan: 'Scan for verification', registeredParticipant: 'Registered Participant', tokenUnavailable: 'QR token is not available.', failedQr: 'Failed to load QR', error: 'Error', qrCreateError: 'QR could not be created.', imageError: 'Unable to create ticket image.', downloadError: 'Ticket could not be downloaded. Please try again.', statuses: { active: 'Active', issued: 'Issued', used: 'Used', revoked: 'Revoked' }, seo: 'My Ticket' },
+  zh: { ticket: '门票', title: '我的门票', description: '查看门票列表、显示二维码，并在需要时重新签发。', loadError: '无法加载门票', showQr: '显示二维码', registrationId: '注册 ID', processing: '处理中…', reissue: '重新签发', vipAccess: '贵宾通行', officialPass: '官方活动通行证', confirmed: '已确认', registered: '您已正式注册参加 IWBIF 2026。', instructions: '请在现场重新登记和签到时出示此二维码。', participant: '参与者', event: '活动', ticketNumber: '门票编号', dateVenue: '日期与地点', eventDate: '2026年10月14日至17日', venue: '印度尼西亚雅加达', downloading: '正在下载…', download: '下载门票', qrRenderError: '无法显示二维码，请尝试重新签发门票。', scan: '扫码验证', registeredParticipant: '已注册参与者', tokenUnavailable: '二维码令牌不可用。', failedQr: '无法加载二维码', error: '错误', qrCreateError: '无法创建二维码。', imageError: '无法生成门票图片。', downloadError: '无法下载门票，请重试。', statuses: { active: '有效', issued: '已签发', used: '已使用', revoked: '已撤销' }, seo: '我的门票' }
+} as const;
+const copy = computed(() => locale.value === 'zh-CN' ? messages.zh : messages.en);
+const statusLabel = (status: string) => (copy.value.statuses as Record<string, string>)[status.toLowerCase()] || status;
+useSeoMeta({ title: () => `${copy.value.seo} | IWBIF 2026` });
+
 const authStore = useAuthStore();
 const { getMyTickets, getQrByTicket, reissueTicket } = useTicket();
 
@@ -157,7 +166,7 @@ const error = ref<Error | null>(null);
 const downloading = ref(false);
 const ticketCardRef = ref<HTMLElement | null>(null);
 const qr = ref({ ticket_id: '', ticket_number: '', token: '', imageUrl: '', imageError: '' });
-const participantName = computed(() => authStore.user?.full_name || authStore.user?.email || 'Registered Participant');
+const participantName = computed(() => authStore.user?.full_name || authStore.user?.email || copy.value.registeredParticipant);
 
 try {
   const response = await getMyTickets();
@@ -174,7 +183,7 @@ const loadQr = async (ticketId: string) => {
     const ticket = tickets.value.find((item) => item.id === ticketId);
     const token = result.data.qr_token;
 
-    if (!token) throw new Error('QR token is not available.');
+    if (!token) throw new Error(copy.value.tokenUnavailable);
 
     qr.value = {
       ticket_id: ticketId,
@@ -190,10 +199,10 @@ const loadQr = async (ticketId: string) => {
   } catch (error) {
     qr.value = {
       ticket_id: ticketId,
-      ticket_number: 'Failed to load QR',
-      token: 'Error',
+      ticket_number: copy.value.failedQr,
+      token: copy.value.error,
       imageUrl: '',
-      imageError: error instanceof Error ? error.message : 'QR could not be created.'
+      imageError: error instanceof Error ? error.message : copy.value.qrCreateError
     };
   }
 };
@@ -211,14 +220,14 @@ const downloadTicket = async () => {
       backgroundColor: '#082f49'
     });
     if (!dataUrl) {
-      throw new Error('Unable to create ticket image.');
+      throw new Error(copy.value.imageError);
     }
     const link = document.createElement('a');
     link.href = dataUrl;
     link.download = `${qr.value.ticket_number}-event-pass.png`;
     link.click();
   } catch {
-    qr.value.imageError = 'Ticket could not be downloaded. Please try again.';
+    qr.value.imageError = copy.value.downloadError;
   } finally {
     downloading.value = false;
     ticketCardRef.value.classList.remove('ticket-exporting');

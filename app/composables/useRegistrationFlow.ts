@@ -1,4 +1,4 @@
-import { useApi, type ApiResponse } from '~/composables/useApi';
+import type { useApi, ApiResponse } from '~/composables/useApi';
 
 export type PurchaseType = 'delegate' | 'exhibitor';
 export type PurchaseStatus = 'not_selected' | 'selected' | 'payment_pending' | 'paid_profile_incomplete' | 'completed';
@@ -42,6 +42,7 @@ const normalizeStatus = (item?: PurchaseTrackingItem): PurchaseStatus => {
 
 export function useRegistrationFlow() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
+  const { locale } = useI18n();
   const authStore = useAuthStore();
   const state = useState<RegistrationFlowState | null>('registration-flow-state', () => null);
   const loading = useState('registration-flow-loading', () => false);
@@ -116,13 +117,17 @@ export function useRegistrationFlow() {
   });
 
   const ctaLabel = computed(() => {
-    if (!authStore.isAuthenticated) return 'Register Now!';
+    if (!authStore.isAuthenticated) return locale.value === 'zh-CN' ? '立即注册' : 'Register Now!';
     if (authStore.isAdminOrOrganizer) return 'Organizer Dashboard';
-    if (primaryStatus.value === 'not_selected') return 'Secure your Seat!';
-    if (primaryStatus.value === 'selected') return 'Continue to Checkout';
-    if (primaryStatus.value === 'payment_pending') return 'Continue Payment';
-    if (primaryStatus.value === 'paid_profile_incomplete') return `Complete ${profilePendingType.value === 'exhibitor' ? 'Exhibitor' : 'Delegate'} Profile`;
-    return 'Registration Complete';
+    const zh = locale.value === 'zh-CN';
+    if (primaryStatus.value === 'not_selected') return zh ? '立即预订席位' : 'Secure your Seat!';
+    if (primaryStatus.value === 'selected') return zh ? '继续结账' : 'Continue to Checkout';
+    if (primaryStatus.value === 'payment_pending') return zh ? '继续付款' : 'Continue Payment';
+    if (primaryStatus.value === 'paid_profile_incomplete') {
+      if (zh) return profilePendingType.value === 'exhibitor' ? '完善参展商资料' : '完善代表资料';
+      return `Complete ${profilePendingType.value === 'exhibitor' ? 'Exhibitor' : 'Delegate'} Profile`;
+    }
+    return zh ? '注册已完成' : 'Registration Complete';
   });
 
   const ctaTo = computed(() => {
@@ -155,7 +160,7 @@ export function useRegistrationFlow() {
       authStore.setUser(user as Parameters<typeof authStore.setUser>[0]);
       authStore.hydrateUserFromToken();
       const userId = typeof user.id === 'string' ? user.id : '';
-      if (!userId) throw new Error('User ID was not returned by the backend.');
+      if (!userId) throw new Error(locale.value === 'zh-CN' ? '后端未返回用户 ID。' : 'User ID was not returned by the backend.');
       const detail = await api<ApiResponse<RegistrationFlowState>>(`/auth/users/${encodeURIComponent(userId)}`);
       state.value = detail.data;
       const detailUser = detail.data.user;
@@ -167,7 +172,9 @@ export function useRegistrationFlow() {
       return state.value;
     } catch (cause) {
       const value = cause as { data?: { message?: string } };
-      error.value = value.data?.message || (cause instanceof Error ? cause.message : 'Registration progress could not be loaded.');
+      error.value = value.data?.message || (cause instanceof Error
+        ? cause.message
+        : locale.value === 'zh-CN' ? '无法加载注册进度。' : 'Registration progress could not be loaded.');
       throw cause;
     } finally {
       loading.value = false;

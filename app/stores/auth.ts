@@ -5,6 +5,7 @@ type AuthUser = {
   name?: string;
   role?: string;
   roles?: string[];
+  preferred_locale?: 'en' | 'zh-CN';
 };
 
 const storageKeys = {

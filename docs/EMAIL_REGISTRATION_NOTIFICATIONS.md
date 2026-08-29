@@ -4,6 +4,26 @@ Backend mengirim email konfirmasi setelah `POST /api/v1/auth/register` berhasil.
 Email dikirim sebagai background task sehingga respons registrasi tidak tertahan
 oleh koneksi SMTP.
 
+## Locale email
+
+Setiap trigger memiliki template terpisah untuk `en` dan `zh-CN`. Endpoint admin
+template menerima query `locale`, misalnya:
+
+```http
+GET /api/v1/admin/events/{event_id}/email-notifications?locale=zh-CN
+PUT /api/v1/admin/events/{event_id}/email-notifications/payment_confirmed?locale=zh-CN
+```
+
+Email otomatis mengikuti `users.preferred_locale`. Log menyimpan locale yang
+benar-benar digunakan untuk audit. Trigger dan variabel template tetap canonical.
+Locale email sengaja mengikuti locale akun; tidak ada preferensi locale email
+terpisah. User dapat mengubahnya melalui `PUT /api/v1/auth/me`.
+Nama event, package/product, rate, serta meeting resource diambil dari content
+translation sesuai locale penerima. Jika template locale belum ada, backend
+menggunakan template `en`. Template locale yang sengaja dinonaktifkan tidak akan
+melewati pengaturan tersebut dengan fallback. Preview menampilkan
+`requested_locale`, `used_locale`, dan `translation_fallback`.
+
 Isi email:
 
 - Konfirmasi akun berhasil terdaftar pada event IWBIF 2026.
@@ -43,6 +63,16 @@ Jika SMTP gagal, akun tetap tersimpan dan backend mencatat error tanpa
 mengembalikan password atau credential ke response API.
 
 ## Template notifikasi yang dikelola admin
+
+Template bawaan IWBIF ditulis dalam bahasa Inggris dengan sapaan profesional,
+CTA menuju `FRONTEND_LOGIN_URL`, dan penutup `The IWBIF Team`. Seed bersifat
+idempotent dan memperbarui template event seed yang sebelumnya masih berbahasa
+Indonesia. Perubahan manual organizer setelah seed tetap tersimpan sampai seed
+dijalankan kembali.
+
+Saat deployment production, jalankan seed hanya jika memang ingin menerapkan
+ulang canonical English copy. Untuk perubahan editorial harian gunakan endpoint
+admin, preview, dan test-send.
 
 Setiap event memiliki template yang dapat diaktifkan/dinonaktifkan serta diubah
 subjek dan isinya oleh admin. Template menggunakan variabel dengan format

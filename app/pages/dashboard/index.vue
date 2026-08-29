@@ -1,13 +1,13 @@
 ﻿<template>
   <section class="dashboard-shell mx-auto max-w-7xl px-3 py-10 sm:px-6 lg:px-8">
-    <p class="text-sm uppercase tracking-[.35em] text-cyan-200">{{ canViewSalesReport ? 'Organizer Dashboard' : 'Participant Dashboard' }}</p>
+    <p class="text-sm uppercase tracking-[.35em] text-cyan-200">{{ canViewSalesReport ? 'Organizer Dashboard' : copy.eyebrow }}</p>
     <div class="mt-3 flex flex-wrap items-end justify-between gap-5">
       <div>
-        <h1 class="text-3xl font-black sm:text-4xl">Welcome to IWBIF 2026</h1>
-        <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">Your ticket, schedule, profile, networking, payment, and event updates in one place.</p>
+        <h1 class="text-3xl font-black sm:text-4xl">{{ copy.title }}</h1>
+        <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">{{ copy.description }}</p>
       </div>
       <div class="glass-card rounded-2xl px-4 py-3 text-left sm:text-right">
-        <p class="text-[10px] uppercase tracking-[.25em] text-slate-400 sm:text-xs">Event starts in</p>
+        <p class="text-[10px] uppercase tracking-[.25em] text-slate-400 sm:text-xs">{{ copy.startsIn }}</p>
         <p class="mt-1 text-lg font-bold text-cyan-200 sm:text-xl">{{ countdown }}</p>
       </div>
     </div>
@@ -43,7 +43,7 @@
       </div>
     </div>
 
-    <h2 class="mt-10 text-2xl font-bold">Quick access</h2>
+    <h2 class="mt-10 text-2xl font-bold">{{ copy.quickAccess }}</h2>
     <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <NuxtLink v-for="item in menu" :key="item.to" :to="item.to" class="glass-card rounded-3xl p-5 transition hover:-translate-y-1 hover:border-cyan-300/40 sm:p-6">
         <p class="text-xs uppercase tracking-[.25em] text-cyan-200">{{ item.label }}</p>
@@ -105,33 +105,23 @@
 
 <script setup lang="ts">
 definePageMeta({middleware:'auth'});
-useSeoMeta({title:'Participant Dashboard | IWBIF 2026'});
+const {locale}=useI18n();
+const messages={
+  en:{eyebrow:'Participant Dashboard',title:'Welcome to IWBIF 2026',description:'Your ticket, schedule, profile, networking, payment, and event updates in one place.',startsIn:'Event starts in',days:'{count} days',eventDay:'Event day',quickAccess:'Quick access',statuses:[['Registration','Check your status','Complete all required participant details.'],['Payment','Payment center','Review transaction and confirmation status.'],['My Ticket','Digital QR pass','Keep your personal QR code secure.'],['Profile','Build your network','Complete your professional information.']],menu:[['Purchase','Shopping Cart','Review selected packages and create your checkout order.'],['Access','My Ticket & QR Code','Open your event pass and check-in information.'],['Identity','My Profile','Update professional details, expertise, and interests.'],['Networking','Participant Directory','Discover potential collaborators across IWBIF.'],['Agenda','My Schedule','Review the forum agenda and sessions.'],['Transaction','Payment','Create or continue your payment transaction.'],['Document','Invoice','Review invoice and registration details.'],['Recognition','Certificate','Access your certificate after attendance eligibility.'],['Updates','Announcements','Read important information from the organizing team.'],['Privacy','Directory Consent','Understand and manage profile visibility.'],['Account','Change Password','Update the password used to sign in to your account.']],seo:'Participant Dashboard'},
+  zh:{eyebrow:'参与者控制面板',title:'欢迎参加 IWBIF 2026',description:'在一个页面中查看您的门票、日程、个人资料、商务联系、付款和活动更新。',startsIn:'距离活动开始',days:'{count} 天',eventDay:'活动当天',quickAccess:'快速访问',statuses:[['注册','查看注册状态','请填写所有必需的参与者资料。'],['付款','付款中心','查看交易与确认状态。'],['我的门票','电子二维码通行证','请妥善保管您的个人二维码。'],['个人资料','拓展商务网络','完善您的专业信息。']],menu:[['购买','购物车','核对所选套餐并创建结账订单。'],['入场','我的门票与二维码','查看活动通行证和签到信息。'],['身份资料','我的个人资料','更新专业信息、专长与兴趣。'],['商务联系','参与者名录','在 IWBIF 寻找潜在合作伙伴。'],['议程','我的日程','查看论坛议程和会议安排。'],['交易','付款','创建或继续您的付款交易。'],['文件','发票','查看发票和注册详情。'],['荣誉','证书','满足出席资格后获取证书。'],['更新','公告','阅读主办团队发布的重要信息。'],['隐私','名录授权','了解并管理个人资料的可见性。'],['账户','修改密码','更新用于登录账户的密码。']],seo:'参与者控制面板'}
+} as const;
+const copy=computed(()=>locale.value==='zh-CN'?messages.zh:messages.en);
+useSeoMeta({title:()=>`${copy.value.seo} | IWBIF 2026`});
 
 const authStore = useAuthStore();
 const canViewSalesReport = computed(() => authStore.isAdminOrOrganizer);
 
 const eventDate=new Date('2026-10-14T09:00:00+07:00');
 const days=Math.max(0,Math.ceil((eventDate.getTime()-Date.now())/86400000));
-const countdown=days>0?`${days} days`:'Event day';
+const countdown=computed(()=>days>0?copy.value.days.replace('{count}',String(days)):copy.value.eventDay);
 
-const statuses=[
-  {label:'Registration',value:'Check your status',note:'Complete all required participant details.'},
-  {label:'Payment',value:'Payment center',note:'Review transaction and confirmation status.'},
-  {label:'My Ticket',value:'Digital QR pass',note:'Keep your personal QR code secure.'},
-  {label:'Profile',value:'Build your network',note:'Complete your professional information.'}
-];
+const statuses=computed(()=>copy.value.statuses.map(([label,value,note])=>({label,value,note})));
 
-const menu=[
-  {to:'/dashboard/cart',label:'Purchase',title:'Shopping Cart',text:'Review selected packages and create your checkout order.'},
-  {to:'/dashboard/ticket',label:'Access',title:'My Ticket & QR Code',text:'Open your event pass and check-in information.'},
-  {to:'/dashboard/profile',label:'Identity',title:'My Profile',text:'Update professional details, expertise, and interests.'},
-  {to:'/dashboard/directory',label:'Networking',title:'Participant Directory',text:'Discover potential collaborators across IWBIF.'},
-  {to:'/dashboard/schedule',label:'Agenda',title:'My Schedule',text:'Review the forum agenda and sessions.'},
-  {to:'/dashboard/payment',label:'Transaction',title:'Payment',text:'Create or continue your payment transaction.'},
-  {to:'/dashboard/invoice',label:'Document',title:'Invoice',text:'Review invoice and registration details.'},
-  {to:'/dashboard/certificate',label:'Recognition',title:'Certificate',text:'Access your certificate after attendance eligibility.'},
-  {to:'/dashboard/announcements',label:'Updates',title:'Announcements',text:'Read important information from the organizing team.'},
-  {to:'/directory-consent',label:'Privacy',title:'Directory Consent',text:'Understand and manage profile visibility.'},
-  {to:'/dashboard/security',label:'Account',title:'Change Password',text:'Update the password used to sign in to your account.'}
-];
+const menuRoutes=['/dashboard/cart','/dashboard/ticket','/dashboard/profile','/dashboard/directory','/dashboard/schedule','/dashboard/payment','/dashboard/invoice','/dashboard/certificate','/dashboard/announcements','/directory-consent','/dashboard/security'] as const;
+const menu=computed(()=>copy.value.menu.map(([label,title,text],index)=>({to:menuRoutes[index]!,label,title,text})));
 </script>

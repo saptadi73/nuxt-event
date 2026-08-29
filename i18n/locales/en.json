@@ -1,0 +1,67 @@
+{
+  "language": { "label": "Language", "english": "English", "chinese": "Simplified Chinese" },
+  "nav": {
+    "home": "Home", "about": "About", "program": "Program", "speakers": "Speakers", "packages": "Delegate Packages",
+    "matching": "Business Matching", "exhibition": "Exhibition", "dealRoom": "Deal Room", "participants": "Participants",
+    "contact": "Contact", "partners": "Partners", "faq": "FAQ", "dashboard": "Dashboard", "more": "More", "menu": "Menu",
+    "managePackages": "Manage Packages", "transactions": "Transactions", "manualPayments": "Manual Payments", "salesReport": "Sales Report",
+    "participantsReport": "Participants Report", "manageSpeakers": "Manage Speakers", "manageProgram": "Manage Program",
+    "manageUsers": "Manage Users", "announcements": "Announcements", "certificates": "Certificates",
+    "emailNotifications": "Email Notifications", "matchingOperations": "Matching Operations"
+  },
+  "actions": { "registerNow": "Register Now!", "register": "Register", "signIn": "Sign In", "logOut": "Log Out", "refresh": "Refresh", "markAllRead": "Mark all as read" },
+  "inbox": { "title": "Inbox", "activeAccount": "Active account", "loading": "Loading inbox...", "empty": "No notifications.", "unread": "Unread", "unknownUser": "Unknown user", "unknownEmail": "Unknown email" },
+  "footer": {
+    "summary": "Connecting women-led businesses with global markets, finance, and trusted partnerships.",
+    "event": "International Women Business & Investment Forum", "datePlace": "14–17 October 2026 · Jakarta",
+    "privacy": "Privacy", "terms": "Terms", "conduct": "Code of Conduct", "refunds": "Refunds",
+    "copyright": "© 2026 International Women Business & Investment Forum. All rights reserved."
+  },
+  "legal": { "information": "Legal Information", "updated": "Last updated: August 1, 2026. Contact the organizer for the policy version that applies to your event." },
+  "adminParticipants": {
+    "panel": "Organizer Panel", "title": "Participants report", "lastUpdated": "Last updated: {value}", "role": "Role: {value}",
+    "event": "Event", "allEvents": "All events", "package": "Package", "loadingPackages": "Loading packages...", "allPackages": "All packages", "paymentStatus": "Payment status", "allStatuses": "All statuses", "reset": "Reset",
+    "paidFrom": "Paid from", "paidUntil": "Paid until", "search": "Search participants", "searchPlaceholder": "Search name, email, or organization", "filterHelp": "Event, package, payment status, and search filters are applied on the server (350 ms delay). The date period filters packages by paid_at on the displayed page.", "invalidDateRange": "The start date cannot be after the end date.",
+    "participants": "Participants", "downloadCsv": "Download CSV", "resultCount": "{filtered} of {total} participants (page {page})", "perPage": "Per page", "participant": "Participant", "organization": "Organization", "registration": "Registration", "packages": "Packages", "notAvailable": "N/A", "packageFallback": "Package", "paid": "Paid: {value}", "unpaid": "Not paid", "noPackage": "No package selected", "noData": "No data for the current filters.", "first": "First", "previous": "Previous", "page": "Page {current} / {total}", "next": "Next", "last": "Last", "notLoaded": "Not loaded", "loadError": "Unable to load the participants report. Check the admin access token or backend availability."
+  },
+  "emailNotifications": {
+    "fallbackDescription": "Automated email for participant activity", "accountPreferencesUnavailable": "Per-participant preferences are unavailable on the server. Confirm the backend is current and the database migration has run.", "operationFailed": "The email settings could not be processed.", "settingsSaved": "Email settings saved.", "testSent": "Test email sent to {email}.", "testFailed": "The email was not sent. Check the template status and SMTP configuration.", "preferencesSaved": "Email settings for {name} saved.",
+    "triggers": {
+      "account_registered": { "title": "Account created", "description": "Sent after a participant creates an account." },
+      "registration_submitted": { "title": "Registration received", "description": "Sent after the registration form is submitted." },
+      "delegate_package_selected": { "title": "Delegate package selected", "description": "Sent when a participant selects a delegate package." },
+      "exhibitor_package_selected": { "title": "Exhibitor package selected", "description": "Sent when a participant selects an exhibitor package." },
+      "payment_confirmed": { "title": "Payment confirmed", "description": "Sent after payment is confirmed by the system." },
+      "business_matching_profile_saved": { "title": "Business matching profile saved", "description": "Sent after a participant saves a business matching profile." },
+      "meeting_requested": { "title": "New meeting request", "description": "Sent when a participant receives a meeting request." },
+      "meeting_accepted": { "title": "Meeting accepted", "description": "Sent when a meeting request is accepted." },
+      "meeting_confirmed": { "title": "Meeting schedule confirmed", "description": "Sent when the meeting time and location are confirmed." },
+      "meeting_declined": { "title": "Meeting declined", "description": "Sent when a meeting request is declined." },
+      "meeting_cancelled": { "title": "Meeting cancelled", "description": "Sent when an existing meeting is cancelled." },
+      "meeting_reschedule_requested": { "title": "Reschedule requested", "description": "Sent when a meeting reschedule is requested." }
+    },
+    "variables": { "participant_name": "Participant name", "event_name": "Event name", "login_url": "Login link", "registration_number": "Registration number", "package_name": "Package name", "package_code": "Package code", "amount": "Amount", "currency": "Currency", "order_number": "Order number", "paid_at": "Payment time", "counterparty_name": "Meeting counterpart", "meeting_topic": "Meeting topic", "meeting_schedule": "Meeting schedule", "meeting_venue": "Meeting venue" }
+  },
+  "adminReports": {
+    "panel": "Organizer Panel", "title": "Ticket sales and revenue report", "lastUpdated": "Last updated: {value}", "role": "Role: {value}", "unknown": "Unknown", "sessionActive": "Session active", "loginSession": "Login session", "copyNameEmail": "Copy name and email",
+    "event": "Event", "allEvents": "All events", "startDate": "Start date", "endDate": "End date", "status": "Status", "allStatuses": "All statuses", "channel": "Channel", "allChannels": "All channels", "packageId": "Package ID", "loadingPackages": "Loading packages...", "allPackages": "All packages", "reset": "Reset", "today": "Today", "last7Days": "7 days", "last30Days": "30 days", "thisMonth": "This month", "filterHelp": "Filters are applied automatically 350 ms after changing a selection.", "invalidDateRange": "The start date cannot be after the end date.", "notLoaded": "Not loaded", "loadError": "Unable to load the payment report. Check the admin access token or backend availability.",
+    "organizerScope": "Organizer data is limited to {event}.", "accessScope": "Showing data according to account access and selected filters.", "newManualReview": "New transactions need manual verification (marked Check required).", "manualReviewReduced": "The number of transactions requiring manual verification decreased after synchronization.", "manualReviewRemain": "Transactions still require manual verification. Check the Check required indicator.", "checkRequired": "Check required"
+  },
+  "home": {
+    "heroAlt": "IWBIF 2026 Jakarta featuring women business leaders, international collaboration, business matching, and investment opportunities",
+    "mainEventAction": "Main event action", "whyAlt": "Indonesia's modern infrastructure, manufacturing, cultural heritage, natural destinations, and global trade connections",
+    "registrationOpen": "Registration is now open", "internationalPresence": "International Presence",
+    "ecosystemTitle": "Trusted global ecosystem of women-led business.",
+    "ecosystemBody": "IWBIF is positioned as a meeting ground for women entrepreneurs, investors, chambers, and ecosystem leaders to build credible, investable international partnerships.",
+    "whyIndonesia": "Why Indonesia", "whyTitle": "Where opportunity, connectivity, and culture converge.",
+    "gateway": "Indonesia · Gateway to ASEAN & Asia", "strategicHome": "A strategic home for growth", "scale": "Scale meets global possibility.",
+    "indonesiaBody": "A G20 economy with more than 283 million people, Indonesia connects ambitious businesses to ASEAN, Asia, trusted partners, and new investment pathways.",
+    "domesticMarket": "Domestic market", "globalPower": "Global convening power", "regionalGateway": "Regional gateway", "discover": "Discover why Indonesia",
+    "eventExperience": "Event Experience", "agenda": "Deal-Ready Agenda Structure", "programSnapshot": "Program Snapshot", "fourDays": "Four days, business outcomes first",
+    "exploreProgram": "Explore full 4-day program", "reviewMatching": "Review matching windows and industries", "seeDealRoom": "See Deal Room flow",
+    "connect": "Connect. Match. Make Deals.", "closing": "Explore new markets, investment opportunities, partnerships, and cross-border collaboration from one place.",
+    "exploreParticipants": "Explore Participants", "openDealRoom": "Open Deal Room",
+    "stats": ["Delegates, buyers, investors, and ecosystem leaders", "Global speakers and strategic sessions", "Business Matching sectors and channels", "International business network groups", "Industrial visit for investment immersion", "Event days on business outcomes"],
+    "experiences": ["Keynote Sessions", "Expert Panel Discussions", "Business Matching", "Partner Exhibition"]
+  }
+}

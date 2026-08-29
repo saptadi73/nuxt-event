@@ -186,30 +186,11 @@ import { useEmailNotifications, type EmailAccountPreference, type EmailDeliveryI
 import { useEvent, type EventItem } from '~/composables/useEvent';
 
 definePageMeta({ middleware: ['auth', 'admin'] });
-useSeoMeta({ title: 'Pengaturan Email Otomatis | IWBIF 2026' });
+const { locale, t, te } = useI18n();
+useSeoMeta({ title: () => `${t('nav.emailNotifications')} | IWBIF 2026` });
 
 type Section = 'general' | 'account' | 'history';
 type PreferenceChoice = 'default' | 'enabled' | 'disabled';
-
-const TRIGGER_CONTENT: Record<string, { title: string; description: string }> = {
-  account_registered: { title: 'Akun berhasil dibuat', description: 'Dikirim setelah peserta selesai membuat akun.' },
-  registration_submitted: { title: 'Pendaftaran diterima', description: 'Dikirim setelah formulir pendaftaran diserahkan.' },
-  delegate_package_selected: { title: 'Paket delegate dipilih', description: 'Dikirim ketika peserta memilih paket delegate.' },
-  exhibitor_package_selected: { title: 'Paket exhibitor dipilih', description: 'Dikirim ketika peserta memilih paket exhibitor.' },
-  payment_confirmed: { title: 'Pembayaran berhasil', description: 'Dikirim setelah pembayaran dikonfirmasi oleh sistem.' },
-  business_matching_profile_saved: { title: 'Profil business matching tersimpan', description: 'Dikirim setelah peserta menyimpan profil business matching.' },
-  meeting_requested: { title: 'Permintaan pertemuan baru', description: 'Dikirim ketika peserta menerima permintaan pertemuan.' },
-  meeting_accepted: { title: 'Pertemuan diterima', description: 'Dikirim ketika permintaan pertemuan diterima.' },
-  meeting_confirmed: { title: 'Jadwal pertemuan dikonfirmasi', description: 'Dikirim ketika waktu dan lokasi pertemuan sudah pasti.' },
-  meeting_declined: { title: 'Pertemuan ditolak', description: 'Dikirim ketika permintaan pertemuan ditolak.' },
-  meeting_cancelled: { title: 'Pertemuan dibatalkan', description: 'Dikirim ketika pertemuan yang sudah dibuat dibatalkan.' },
-  meeting_reschedule_requested: { title: 'Permintaan perubahan jadwal', description: 'Dikirim ketika ada permintaan untuk mengubah jadwal.' }
-};
-const VARIABLE_LABELS: Record<string, string> = {
-  participant_name: 'Nama peserta', event_name: 'Nama acara', login_url: 'Tautan masuk', registration_number: 'Nomor pendaftaran',
-  package_name: 'Nama paket', package_code: 'Kode paket', amount: 'Nominal', currency: 'Mata uang', order_number: 'Nomor pesanan',
-  paid_at: 'Waktu pembayaran', counterparty_name: 'Nama lawan pertemuan', meeting_topic: 'Topik pertemuan', meeting_schedule: 'Jadwal pertemuan', meeting_venue: 'Lokasi pertemuan'
-};
 
 const emailApi = useEmailNotifications();
 const adminApi = useAdminOperations();
@@ -267,8 +248,16 @@ const historyPageStart = computed(() => filteredDeliveries.value.length ? (histo
 const historyPageEnd = computed(() => Math.min(historyPage.value * historyPageSize.value, filteredDeliveries.value.length));
 const changedPreferenceCount = computed(() => accountPreferences.value.filter(preference => preferenceDraft[preference.trigger] !== preferenceChoice(preference.override_enabled)).length);
 
-const triggerInfo = (trigger: string) => TRIGGER_CONTENT[trigger] || { title: trigger.replaceAll('_', ' '), description: 'Email otomatis untuk aktivitas peserta.' };
-const variableLabel = (variable: string) => VARIABLE_LABELS[variable] || variable.replaceAll('_', ' ');
+const triggerInfo = (trigger: string) => {
+  const key = `emailNotifications.triggers.${trigger}`;
+  return te(`${key}.title`)
+    ? { title: t(`${key}.title`), description: t(`${key}.description`) }
+    : { title: trigger.replaceAll('_', ' '), description: t('emailNotifications.fallbackDescription') };
+};
+const variableLabel = (variable: string) => {
+  const key = `emailNotifications.variables.${variable}`;
+  return te(key) ? t(key) : variable.replaceAll('_', ' ');
+};
 const preferenceChoice = (value: boolean | null): PreferenceChoice => value === null ? 'default' : value ? 'enabled' : 'disabled';
 const choiceValue = (value: PreferenceChoice): boolean | null => value === 'default' ? null : value === 'enabled';
 const effectiveFor = (preference: EmailAccountPreference) => preference.global_enabled && preferenceDraft[preference.trigger] !== 'disabled';
@@ -284,8 +273,8 @@ const apiError = (error: unknown) => {
   const value = error as { status?: number; statusCode?: number; response?: { status?: number; _data?: { message?: string; errors?: Array<{ message: string }> } }; data?: { message?: string; errors?: Array<{ message: string }> } };
   const status = value.status || value.statusCode || value.response?.status;
   const data = value.data || value.response?._data;
-  if (status === 404 && activeSection.value === 'account') return 'Pengaturan per peserta belum tersedia di server. Pastikan backend terbaru dan migration database sudah dijalankan.';
-  return data?.errors?.[0]?.message || data?.message || (error instanceof Error ? error.message : 'Pengaturan tidak dapat diproses.');
+  if (status === 404 && activeSection.value === 'account') return t('emailNotifications.accountPreferencesUnavailable');
+  return data?.errors?.[0]?.message || data?.message || (error instanceof Error ? error.message : t('emailNotifications.operationFailed'));
 };
 const showFeedback = (message: string, tone: 'success' | 'error' = 'success') => {
   feedback.value = message;
@@ -344,7 +333,7 @@ const saveTemplate = async () => {
     const index = templates.value.findIndex(item => item.trigger === result.data.trigger);
     if (index >= 0) templates.value[index] = result.data;
     selectTemplate(result.data);
-    showFeedback('Pengaturan email berhasil disimpan.');
+    showFeedback(t('emailNotifications.settingsSaved'));
   } catch (error) { showFeedback(apiError(error), 'error'); }
   finally { saving.value = false; }
 };
@@ -357,7 +346,7 @@ const testSend = async () => {
   testing.value = true;
   try {
     const result = await emailApi.sendTest(eventId.value, selected.value.trigger, testEmail.value, sampleVariables());
-    showFeedback(result.data.sent ? `Email percobaan berhasil dikirim ke ${testEmail.value}.` : 'Email tidak terkirim. Periksa status template dan konfigurasi SMTP.', result.data.sent ? 'success' : 'error');
+    showFeedback(result.data.sent ? t('emailNotifications.testSent', { email: testEmail.value }) : t('emailNotifications.testFailed'), result.data.sent ? 'success' : 'error');
     await loadHistory();
   } catch (error) { showFeedback(apiError(error), 'error'); }
   finally { testing.value = false; }
@@ -372,7 +361,7 @@ const savePreferences = async () => {
       await emailApi.updateAccountPreference(eventId.value, selectedUser.value.id, preference.trigger, choiceValue(choice));
     }
     await loadPreferences();
-    showFeedback(`Pengaturan email untuk ${selectedUser.value.full_name || selectedUser.value.email} berhasil disimpan.`);
+    showFeedback(t('emailNotifications.preferencesSaved', { name: selectedUser.value.full_name || selectedUser.value.email }));
   } catch (error) { showFeedback(apiError(error), 'error'); }
   finally { preferencesSaving.value = false; }
 };
@@ -382,7 +371,7 @@ const appendVariable = (variable: string) => {
 };
 const userInitials = (user: AdminUserItem) => (user.full_name || user.email).split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map(part => part[0]?.toUpperCase()).join('');
 const deliveryStatusLabel = (status: string) => ['sent', 'success'].includes(status.toLowerCase()) ? 'Berhasil' : ['failed', 'error'].includes(status.toLowerCase()) ? 'Gagal' : 'Menunggu';
-const formatDate = (value?: string | null) => value ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—';
+const formatDate = (value?: string | null) => value ? new Intl.DateTimeFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—';
 
 watch(eventId, async () => {
   selectedType.value = '';

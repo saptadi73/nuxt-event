@@ -2,38 +2,38 @@
   <section class="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
     <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p class="text-xs uppercase tracking-[0.28em] text-amber-200">Organizer Panel</p>
-        <h1 class="mt-3 text-3xl font-black sm:text-4xl">Participants report</h1>
-        <p class="mt-2 text-xs text-slate-400">Last updated: {{ lastUpdatedLabel }}</p>
+        <p class="text-xs uppercase tracking-[0.28em] text-amber-200">{{ t('adminParticipants.panel') }}</p>
+        <h1 class="mt-3 text-3xl font-black sm:text-4xl">{{ t('adminParticipants.title') }}</h1>
+        <p class="mt-2 text-xs text-slate-400">{{ t('adminParticipants.lastUpdated', { value: lastUpdatedLabel }) }}</p>
       </div>
       <div class="rounded-full border border-amber-300/30 bg-amber-300/10 px-4 py-2 text-sm font-medium text-amber-100">
-        Role: {{ authStore.userRole || 'unknown' }}
+        {{ t('adminParticipants.role', { value: authStore.userRole || t('adminParticipants.notAvailable') }) }}
       </div>
     </div>
 
     <div class="report-filters mb-6 grid gap-3 rounded-3xl border border-amber-300/20 bg-white/5 p-4 sm:grid-cols-[1fr_1fr_1fr_auto]">
       <label class="grid gap-2 text-sm">
-        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Event</span>
+        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminParticipants.event') }}</span>
         <select v-model="eventFilter" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" :disabled="eventsLoading">
-          <option value="">Semua event</option>
+          <option value="">{{ t('adminParticipants.allEvents') }}</option>
           <option v-for="event in events" :key="event.id" :value="event.id">
             {{ event.name }}
           </option>
         </select>
       </label>
       <label class="grid gap-2 text-sm">
-        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Package</span>
+        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminParticipants.package') }}</span>
         <select v-model="packageIdFilter" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" :disabled="!eventFilter || packageLoading">
-          <option value="" :disabled="packageLoading">{{ packageLoading ? 'Memuat package...' : 'Semua package' }}</option>
+          <option value="" :disabled="packageLoading">{{ packageLoading ? t('adminParticipants.loadingPackages') : t('adminParticipants.allPackages') }}</option>
           <option v-for="option in packageOptions" :key="option.id" :value="option.id">
             {{ option.name }}
           </option>
         </select>
       </label>
       <label class="grid gap-2 text-sm">
-        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Status pembayaran</span>
+        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminParticipants.paymentStatus') }}</span>
         <select v-model="paymentStatusFilter" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none">
-          <option value="">Semua status</option>
+          <option value="">{{ t('adminParticipants.allStatuses') }}</option>
           <option value="created">created</option>
           <option value="pending">pending</option>
           <option value="success">success</option>
@@ -44,29 +44,28 @@
       </label>
       <div class="flex items-end gap-2">
         <button :disabled="loading || !hasActiveFilters" class="rounded-full border border-white/20 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50" @click="resetFilters">
-          Reset
+          {{ t('adminParticipants.reset') }}
         </button>
       </div>
 
       <label class="grid gap-2 text-sm">
-        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Tanggal bayar mulai</span>
+        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminParticipants.paidFrom') }}</span>
         <input v-model="dateFrom" type="date" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" />
       </label>
       <label class="grid gap-2 text-sm">
-        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Tanggal bayar selesai</span>
+        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminParticipants.paidUntil') }}</span>
         <input v-model="dateTo" type="date" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" />
       </label>
       <label class="grid gap-2 text-sm sm:col-span-2">
-        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Cari participant</span>
-        <input v-model="searchTerm" type="text" placeholder="Cari nama, email, atau organisasi" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" />
+        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminParticipants.search') }}</span>
+        <input v-model="searchTerm" type="text" :placeholder="t('adminParticipants.searchPlaceholder')" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" />
       </label>
 
       <p class="text-xs text-slate-400 sm:col-span-6">
-        Filter event, package, status pembayaran, dan pencarian diterapkan ke server (delay 350ms). Periode tanggal
-        memfilter package berdasarkan tanggal <code>paid_at</code> pada halaman yang sedang ditampilkan.
+        {{ t('adminParticipants.filterHelp') }}
       </p>
       <p v-if="hasDateRangeInvalid" class="text-xs text-rose-300 sm:col-span-6">
-        Tanggal mulai tidak boleh lebih besar dari tanggal selesai.
+        {{ t('adminParticipants.invalidDateRange') }}
       </p>
     </div>
 
@@ -81,14 +80,14 @@
     <div v-else class="space-y-6">
       <article class="glass-card rounded-3xl p-5">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 class="text-lg font-bold">Participants</h2>
-          <a :href="csvUrl" :download="csvFileName" class="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-100">Download CSV</a>
+          <h2 class="text-lg font-bold">{{ t('adminParticipants.participants') }}</h2>
+          <a :href="csvUrl" :download="csvFileName" class="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-100">{{ t('adminParticipants.downloadCsv') }}</a>
         </div>
 
         <div class="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-400">
-          <span>{{ filteredParticipants.length }} dari {{ totalParticipants }} participant (halaman {{ currentPage }})</span>
+          <span>{{ t('adminParticipants.resultCount', { filtered: filteredParticipants.length, total: totalParticipants, page: currentPage }) }}</span>
           <label class="flex items-center gap-2">
-            <span class="text-xs uppercase tracking-[0.16em] text-slate-500">Per halaman</span>
+            <span class="text-xs uppercase tracking-[0.16em] text-slate-500">{{ t('adminParticipants.perPage') }}</span>
             <select v-model.number="pageSize" class="rounded-full border border-white/15 bg-slate-900 px-3 py-2 text-sm text-white outline-none">
               <option :value="10">10</option>
               <option :value="20">20</option>
@@ -102,41 +101,41 @@
           <table class="min-w-full text-left text-sm text-slate-300">
             <thead>
               <tr class="border-b border-white/10 text-xs uppercase tracking-[0.18em] text-slate-400">
-                <th class="py-3 pr-4">Participant</th>
-                <th class="py-3 pr-4">Organisasi</th>
-                <th class="py-3 pr-4">Registrasi</th>
-                <th class="py-3 pr-4">Packages</th>
+                <th class="py-3 pr-4">{{ t('adminParticipants.participant') }}</th>
+                <th class="py-3 pr-4">{{ t('adminParticipants.organization') }}</th>
+                <th class="py-3 pr-4">{{ t('adminParticipants.registration') }}</th>
+                <th class="py-3 pr-4">{{ t('adminParticipants.packages') }}</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="item in filteredParticipants" :key="item.participant_id" class="border-b border-white/5 last:border-0">
-                <td class="py-3 pr-4" data-label="Participant">
-                  <p class="font-semibold text-white">{{ item.full_name || 'N/A' }}</p>
-                  <p class="text-xs text-slate-400">{{ item.email || 'N/A' }}</p>
+                <td class="py-3 pr-4" :data-label="t('adminParticipants.participant')">
+                  <p class="font-semibold text-white">{{ item.full_name || t('adminParticipants.notAvailable') }}</p>
+                  <p class="text-xs text-slate-400">{{ item.email || t('adminParticipants.notAvailable') }}</p>
                   <p class="text-xs text-slate-500">{{ item.phone || '' }}</p>
                 </td>
-                <td class="py-3 pr-4" data-label="Organisasi">{{ item.organization_name || 'N/A' }}</td>
-                <td class="py-3 pr-4" data-label="Registrasi">
-                  <span class="inline-flex rounded-full border border-white/15 px-2 py-1 text-xs">{{ item.registration_status || 'N/A' }}</span>
+                <td class="py-3 pr-4" :data-label="t('adminParticipants.organization')">{{ item.organization_name || t('adminParticipants.notAvailable') }}</td>
+                <td class="py-3 pr-4" :data-label="t('adminParticipants.registration')">
+                  <span class="inline-flex rounded-full border border-white/15 px-2 py-1 text-xs">{{ item.registration_status || t('adminParticipants.notAvailable') }}</span>
                 </td>
-                <td class="cell-packages py-3 pr-4" data-label="Packages">
+                <td class="cell-packages py-3 pr-4" :data-label="t('adminParticipants.packages')">
                   <div v-if="visiblePackages(item).length" class="grid gap-2">
                     <div v-for="pkg in visiblePackages(item)" :key="`${item.participant_id}-${pkg.package_id}-${pkg.order_id}`" class="rounded-2xl border border-white/10 bg-slate-950/50 p-2 text-xs">
                       <div class="flex items-start justify-between gap-2">
-                        <span class="min-w-0 break-words font-semibold text-white">{{ pkg.package_name || pkg.package_code || 'Package' }}</span>
+                        <span class="min-w-0 break-words font-semibold text-white">{{ pkg.package_name || pkg.package_code || t('adminParticipants.packageFallback') }}</span>
                         <span :class="paymentStatusClass(pkg.payment_status)" class="inline-flex shrink-0 rounded-full px-2 py-0.5 font-bold">
-                          {{ pkg.payment_status || 'N/A' }}
+                          {{ pkg.payment_status || t('adminParticipants.notAvailable') }}
                         </span>
                       </div>
-                      <p class="mt-1 text-slate-400">{{ pkg.order_number || pkg.order_id || 'N/A' }} &middot; {{ formatCurrency(pkg.line_total || 0) }}</p>
-                      <p class="mt-0.5 text-slate-500">Dibayar: {{ pkg.paid_at ? formatDateTime(pkg.paid_at) : 'Belum dibayar' }}</p>
+                      <p class="mt-1 text-slate-400">{{ pkg.order_number || pkg.order_id || t('adminParticipants.notAvailable') }} &middot; {{ formatCurrency(pkg.line_total || 0) }}</p>
+                      <p class="mt-0.5 text-slate-500">{{ pkg.paid_at ? t('adminParticipants.paid', { value: formatDateTime(pkg.paid_at) }) : t('adminParticipants.unpaid') }}</p>
                     </div>
                   </div>
-                  <span v-else class="text-slate-500">Belum mengambil package</span>
+                  <span v-else class="text-slate-500">{{ t('adminParticipants.noPackage') }}</span>
                 </td>
               </tr>
               <tr v-if="!filteredParticipants.length">
-                <td colspan="4" class="py-6 text-center text-slate-500" data-label="">Tidak ada data untuk filter saat ini.</td>
+                <td colspan="4" class="py-6 text-center text-slate-500" data-label="">{{ t('adminParticipants.noData') }}</td>
               </tr>
             </tbody>
           </table>
@@ -144,19 +143,19 @@
 
         <div v-if="totalPages > 1" class="mt-4 flex flex-wrap items-center justify-between gap-2">
           <button :disabled="currentPage <= 1" class="rounded-full border border-white/20 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50" @click="currentPage = 1">
-            Awal
+            {{ t('adminParticipants.first') }}
           </button>
           <div class="flex items-center gap-2">
             <button :disabled="currentPage <= 1" class="rounded-full border border-white/20 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50" @click="currentPage--">
-              Prev
+              {{ t('adminParticipants.previous') }}
             </button>
-            <span class="text-xs text-slate-300">Page {{ currentPage }} / {{ totalPages }}</span>
+            <span class="text-xs text-slate-300">{{ t('adminParticipants.page', { current: currentPage, total: totalPages }) }}</span>
             <button :disabled="currentPage >= totalPages" class="rounded-full border border-white/20 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50" @click="currentPage++">
-              Next
+              {{ t('adminParticipants.next') }}
             </button>
           </div>
           <button :disabled="currentPage >= totalPages" class="rounded-full border border-white/20 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50" @click="currentPage = totalPages">
-            Akhir
+            {{ t('adminParticipants.last') }}
           </button>
         </div>
       </article>
@@ -170,6 +169,7 @@ import { useEvent, type DelegatePackageItem, type EventItem } from '~/composable
 
 const route = useRoute();
 const router = useRouter();
+const { locale, t } = useI18n();
 
 definePageMeta({ middleware: ['auth', 'admin'] });
 useSeoMeta({ title: 'Participants Report | IWBIF 2026' });
@@ -202,8 +202,8 @@ const routeReady = ref(false);
 const autoReloadTimer = ref<ReturnType<typeof setTimeout> | null>(null);
 
 const lastUpdatedLabel = computed(() => {
-  if (!lastUpdated.value) return 'belum dimuat';
-  return new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(lastUpdated.value);
+  if (!lastUpdated.value) return t('adminParticipants.notLoaded');
+  return new Intl.DateTimeFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(lastUpdated.value);
 });
 
 const hasDateRangeInvalid = computed(() => Boolean(dateFrom.value && dateTo.value && dateFrom.value > dateTo.value));
@@ -304,7 +304,7 @@ const formatDateOnly = (value: Date) => {
 const loadReport = async () => {
   if (loading.value) return;
   if (hasDateRangeInvalid.value) {
-    errorMessage.value = 'Tanggal mulai tidak boleh lebih besar dari tanggal selesai.';
+    errorMessage.value = t('adminParticipants.invalidDateRange');
     return;
   }
 
@@ -317,7 +317,7 @@ const loadReport = async () => {
     totalPages.value = response.meta?.pages ?? 1;
     lastUpdated.value = new Date();
   } catch (error) {
-    errorMessage.value = 'Unable to load participants report. Please check your admin access token or backend availability.';
+    errorMessage.value = t('adminParticipants.loadError');
     console.error(error);
   } finally {
     loading.value = false;
@@ -408,13 +408,13 @@ const filteredParticipants = computed(() => {
 });
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(value || 0));
+  return new Intl.NumberFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'en-GB', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(value || 0));
 };
 
 const formatDateTime = (value: string) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+  return new Intl.DateTimeFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
 };
 
 const paymentStatusClass = (status?: string | null) => {

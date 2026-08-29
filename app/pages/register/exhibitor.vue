@@ -1,32 +1,32 @@
 <template>
   <section class="mx-auto max-w-5xl px-3 py-10 sm:px-6 lg:px-8">
-    <p class="text-sm uppercase tracking-[.35em] text-cyan-200">Exhibitor Registration</p>
-    <h1 class="mt-4 text-3xl font-black sm:text-5xl">Register as an exhibitor</h1>
-    <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">Submit your company profile and exhibition interest. Your account must already be created before starting.</p>
+    <p class="text-sm uppercase tracking-[.35em] text-cyan-200">{{ copy.eyebrow }}</p>
+    <h1 class="mt-4 text-3xl font-black sm:text-5xl">{{ copy.title }}</h1>
+    <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">{{ copy.description }}</p>
 
     <div v-if="pending" class="mt-8 h-60 animate-pulse rounded-[2rem] bg-white/5" />
     <div v-else-if="fetchError" class="mt-8 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ fetchError.message }}</div>
 
-    <form v-else class="mt-8 space-y-7" @submit.prevent="submit">
+    <form v-else class="mt-8 space-y-7" novalidate @submit.prevent="submit">
       <fieldset class="card">
-        <legend>Company profile</legend>
+        <legend>{{ copy.companyProfile }}</legend>
         <div class="grid gap-4 md:grid-cols-2">
-          <label class="label"><span>Company name *</span><input v-model.trim="form.company_name" required class="field" /></label>
-          <label class="label"><span>Brand</span><input v-model.trim="form.brand" class="field" /></label>
-          <label class="label"><span>Contact person *</span><input v-model.trim="form.contact_person" required class="field" /></label>
-          <label class="label"><span>Email *</span><input v-model.trim="form.email" type="email" required class="field" /></label>
-          <label class="label md:col-span-2"><span>Products to display *</span><textarea v-model.trim="form.products_to_display" required class="field" rows="3" /></label>
-          <label class="label"><span>Booth size requested *</span><input v-model.trim="form.booth_size_requested" required class="field" /></label>
-          <label class="label"><span>Electricity requirement</span><input v-model.trim="form.electricity_requirement" class="field" /></label>
-          <label class="label md:col-span-2"><span>Special requirement</span><textarea v-model.trim="form.special_requirement" class="field" rows="3" /></label>
+          <label class="label"><span>{{ copy.companyName }} *</span><input v-model.trim="form.company_name" required class="field" /></label>
+          <label class="label"><span>{{ copy.brand }}</span><input v-model.trim="form.brand" class="field" /></label>
+          <label class="label"><span>{{ copy.contactPerson }} *</span><input v-model.trim="form.contact_person" required class="field" /></label>
+          <label class="label"><span>{{ copy.email }} *</span><input v-model.trim="form.email" type="email" required class="field" /></label>
+          <label class="label md:col-span-2"><span>{{ copy.products }} *</span><textarea v-model.trim="form.products_to_display" required class="field" rows="3" /></label>
+          <label class="label"><span>{{ copy.boothSize }} *</span><input v-model.trim="form.booth_size_requested" required class="field" /></label>
+          <label class="label"><span>{{ copy.electricity }}</span><input v-model.trim="form.electricity_requirement" class="field" /></label>
+          <label class="label md:col-span-2"><span>{{ copy.special }}</span><textarea v-model.trim="form.special_requirement" class="field" rows="3" /></label>
         </div>
       </fieldset>
 
       <fieldset class="card">
-        <legend>Agreement</legend>
+        <legend>{{ copy.agreement }}</legend>
         <label class="check mt-2">
           <input v-model="form.exhibition_terms_accepted" type="checkbox" required />
-          <span>I accept the exhibitor terms and conditions.</span>
+          <span>{{ copy.acceptTerms }}</span>
         </label>
       </fieldset>
 
@@ -34,7 +34,7 @@
 
       <div class="submit-row">
         <button type="submit" class="rounded-full bg-cyan-300 px-7 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="submitting">
-          {{ submitting ? 'Saving...' : editingExhibitorId ? 'Update exhibitor registration' : 'Create exhibitor registration' }}
+          {{ submitting ? copy.saving : editingExhibitorId ? copy.update : copy.create }}
         </button>
       </div>
     </form>
@@ -46,9 +46,18 @@ import { useEvent } from '~/composables/useEvent';
 import { useExhibitor } from '~/composables/useExhibitor';
 
 definePageMeta({ middleware: 'auth' });
+const { locale } = useI18n();
+const messages = {
+  en: { eyebrow: 'Exhibitor Registration', title: 'Register as an exhibitor', description: 'Submit your company profile and exhibition interest. Your account must already be created before starting.', companyProfile: 'Company profile', companyName: 'Company name', brand: 'Brand', contactPerson: 'Contact person', email: 'Email', products: 'Products to display', boothSize: 'Booth size requested', electricity: 'Electricity requirement', special: 'Special requirement', agreement: 'Agreement', acceptTerms: 'I accept the exhibitor terms and conditions.', saving: 'Saving…', update: 'Update exhibitor registration', create: 'Create exhibitor registration', noEvent: 'No IWBIF event is currently published.', unavailable: 'IWBIF event is not available right now.', loadError: 'Existing exhibitor profile could not be loaded.', success: 'Exhibitor registration created successfully.', saveError: 'Exhibitor registration could not be saved.' },
+  zh: { eyebrow: '参展商注册', title: '注册成为参展商', description: '请提交您的公司资料和参展意向。开始之前，您必须先创建账户。', companyProfile: '公司资料', companyName: '公司名称', brand: '品牌', contactPerson: '联系人', email: '电子邮箱', products: '展示产品', boothSize: '申请展位尺寸', electricity: '用电需求', special: '特殊需求', agreement: '协议', acceptTerms: '我接受参展商条款与条件。', saving: '正在保存…', update: '更新参展商注册', create: '提交参展商注册', noEvent: '目前没有已发布的 IWBIF 活动。', unavailable: 'IWBIF 活动目前不可用。', loadError: '无法加载现有参展商资料。', success: '参展商注册已成功提交。', saveError: '无法保存参展商注册。' }
+} as const;
+const copy = computed(() => locale.value === 'zh-CN' ? messages.zh : messages.en);
+const validationCopy = computed(() => locale.value === 'zh-CN'
+  ? { required: '请填写所有必填字段。', email: '请输入有效的电子邮箱地址。', terms: '您必须接受参展商条款与条件。' }
+  : { required: 'Complete all required fields.', email: 'Enter a valid email address.', terms: 'You must accept the exhibitor terms and conditions.' });
 useSeoMeta({
-  title: 'Exhibitor Registration | IWBIF 2026',
-  description: 'Register as an exhibitor for IWBIF 2026.'
+  title: () => `${copy.value.eyebrow} | IWBIF 2026`,
+  description: () => copy.value.description
 });
 
 const { getEvents } = useEvent();
@@ -71,13 +80,14 @@ const submitting = ref(false);
 const feedback = ref('');
 const success = ref(false);
 const editingExhibitorId = ref('');
+const isValidEmail = (value: string) => { const parts = value.split('@'); return parts.length === 2 && Boolean(parts[0]) && Boolean(parts[1]?.includes('.')) && !value.includes(' '); };
 
 const { data: eventData, pending, error: fetchError } = await useAsyncData('iwbif-exhibitor-event', async () => {
   const response = await getEvents(1, 1);
   const event = response.data[0];
-  if (!event) throw new Error('No IWBIF event is currently published.');
+  if (!event) throw new Error(copy.value.noEvent);
   return event;
-});
+}, { watch: [locale] });
 
 if (eventData.value) {
   try {
@@ -100,13 +110,29 @@ if (eventData.value) {
     }
   } catch (error) {
     const value = error as { data?: { message?: string } };
-    feedback.value = value.data?.message || (error instanceof Error ? error.message : 'Existing Exhibitor profile could not be loaded.');
+    feedback.value = value.data?.message || (error instanceof Error ? error.message : copy.value.loadError);
   }
 }
 
 const submit = async () => {
   if (!eventData.value) {
-    feedback.value = 'IWBIF event is not available right now.';
+    feedback.value = copy.value.unavailable;
+    success.value = false;
+    return;
+  }
+
+  if ([form.company_name, form.contact_person, form.email, form.products_to_display, form.booth_size_requested].some(value => !value.trim())) {
+    feedback.value = validationCopy.value.required;
+    success.value = false;
+    return;
+  }
+  if (!isValidEmail(form.email)) {
+    feedback.value = validationCopy.value.email;
+    success.value = false;
+    return;
+  }
+  if (!form.exhibition_terms_accepted) {
+    feedback.value = validationCopy.value.terms;
     success.value = false;
     return;
   }
@@ -133,12 +159,12 @@ const submit = async () => {
       : await createExhibitor(eventData.value.id, payload);
 
     success.value = true;
-    feedback.value = result.message || 'Exhibitor registration created successfully.';
+    feedback.value = result.message || copy.value.success;
     await navigateTo('/dashboard');
   } catch (error) {
     success.value = false;
     const value = error as { data?: { message?: string; errors?: Array<{ message: string }> } };
-    feedback.value = value.data?.errors?.[0]?.message || value.data?.message || (error instanceof Error ? error.message : 'Exhibitor registration could not be saved.');
+    feedback.value = value.data?.errors?.[0]?.message || value.data?.message || (error instanceof Error ? error.message : copy.value.saveError);
   } finally {
     submitting.value = false;
   }

@@ -2,23 +2,23 @@
   <main class="exhibition-page">
     <section class="mx-auto max-w-7xl px-4 pb-14 pt-8 sm:px-6 sm:pt-12 lg:px-8">
       <div class="exhibition-hero">
-        <img src="/images/iwbif-exhibition.png" alt="IWBIF exhibition showcasing women-led businesses and Indonesian products" class="exhibition-hero__image">
+        <img src="/images/iwbif-exhibition.png" :alt="copy.alt" class="exhibition-hero__image">
         <div class="exhibition-hero__overlay" aria-hidden="true" />
         <div class="exhibition-hero__content">
-          <p class="text-xs font-semibold uppercase tracking-[.35em] text-[#f1d58f] sm:text-sm">IWBIF Exhibition</p>
-          <h1 class="mt-4 max-w-4xl text-4xl font-black leading-[1.03] text-white sm:text-5xl lg:text-7xl">Where women-led brands meet the world.</h1>
-          <p class="mt-5 max-w-2xl text-sm leading-7 text-white/80 sm:text-base lg:text-lg">Showcase products, services, MSMEs, innovation, digital businesses, and investment opportunities to an international business audience.</p>
-          <NuxtLink to="/register/exhibitor" class="hero-action">Become an Exhibitor <span aria-hidden="true">→</span></NuxtLink>
+          <p class="text-xs font-semibold uppercase tracking-[.35em] text-[#f1d58f] sm:text-sm">{{ copy.eyebrow }}</p>
+          <h1 class="mt-4 max-w-4xl text-4xl font-black leading-[1.03] text-white sm:text-5xl lg:text-7xl">{{ copy.title }}</h1>
+          <p class="mt-5 max-w-2xl text-sm leading-7 text-white/80 sm:text-base lg:text-lg">{{ copy.intro }}</p>
+          <NuxtLink to="/register/exhibitor" class="hero-action">{{ copy.become }} <span aria-hidden="true">→</span></NuxtLink>
         </div>
-        <div class="hero-note"><span>Showcase</span><i /><span>Connect</span><i /><span>Grow</span></div>
+        <div class="hero-note"><span>{{ copy.showcase }}</span><i /><span>{{ copy.connect }}</span><i /><span>{{ copy.grow }}</span></div>
       </div>
 
       <div class="mt-16 grid items-end gap-6 md:grid-cols-[1fr_auto]">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-[.32em] text-[#d8ac59]">Exhibition categories</p>
-          <h2 class="mt-4 max-w-3xl text-3xl font-black text-white sm:text-4xl">A curated showcase of enterprise and innovation.</h2>
+          <p class="text-xs font-semibold uppercase tracking-[.32em] text-[#d8ac59]">{{ copy.categoriesLabel }}</p>
+          <h2 class="mt-4 max-w-3xl text-3xl font-black text-white sm:text-4xl">{{ copy.categoriesTitle }}</h2>
         </div>
-        <p class="max-w-md text-sm leading-7 text-slate-400">Discover businesses ready to build visibility, partnerships, market access, and meaningful investment relationships.</p>
+        <p class="max-w-md text-sm leading-7 text-slate-400">{{ copy.categoriesText }}</p>
       </div>
 
       <div class="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -31,19 +31,21 @@
 
       <section class="exhibitor-callout">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-[.3em] text-[#d8ac59]">Present your business</p>
-          <h2 class="mt-3 text-3xl font-black text-white sm:text-4xl">Become an exhibitor</h2>
-          <p class="mt-4 max-w-3xl leading-7 text-slate-300">Create a complete exhibitor profile with your company, industry, products, booth information, website, and product media.</p>
+          <p class="text-xs font-semibold uppercase tracking-[.3em] text-[#d8ac59]">{{ copy.present }}</p>
+          <h2 class="mt-3 text-3xl font-black text-white sm:text-4xl">{{ copy.become }}</h2>
+          <p class="mt-4 max-w-3xl leading-7 text-slate-300">{{ copy.profile }}</p>
         </div>
-        <NuxtLink to="/register/exhibitor" class="callout-action">Register Your Interest</NuxtLink>
+        <NuxtLink to="/register/exhibitor" class="callout-action">{{ copy.register }}</NuxtLink>
       </section>
     </section>
   </main>
 </template>
 
 <script setup lang="ts">
-useSeoMeta({ title: 'Exhibition | IWBIF 2026', description: 'Showcase women-led products, services, innovation, and investment opportunities.' })
-const categories = ['Products', 'Services', 'MSMEs', 'Innovation', 'Digital Businesses', 'Investment Opportunities']
+const {locale}=useI18n();
+const messages={en:{eyebrow:'IWBIF Exhibition',title:'Where women-led brands meet the world.',intro:'Showcase products, services, MSMEs, innovation, digital businesses, and investment opportunities to an international business audience.',alt:'IWBIF exhibition showcasing women-led businesses and Indonesian products',showcase:'Showcase',connect:'Connect',grow:'Grow',categoriesLabel:'Exhibition categories',categoriesTitle:'A curated showcase of enterprise and innovation.',categoriesText:'Discover businesses ready to build visibility, partnerships, market access, and meaningful investment relationships.',present:'Present your business',become:'Become an exhibitor',profile:'Create a complete exhibitor profile with your company, industry, products, booth information, website, and product media.',register:'Register Your Interest',categories:['Products','Services','MSMEs','Innovation','Digital Businesses','Investment Opportunities']},'zh-CN':{eyebrow:'IWBIF 展览',title:'女性主导品牌与世界相遇之地。',intro:'向国际商业受众展示产品、服务、中小微企业、创新成果、数字企业与投资机遇。',alt:'IWBIF 女性主导企业与印度尼西亚产品展览',showcase:'展示',connect:'连接',grow:'成长',categoriesLabel:'展览类别',categoriesTitle:'精心策划的企业与创新展示。',categoriesText:'发现致力于提升影响力、建立合作、开拓市场及发展高价值投资关系的企业。',present:'展示您的企业',become:'成为参展商',profile:'建立完整的参展商资料，包括企业、行业、产品、展位信息、网站及产品媒体。',register:'登记参展意向',categories:['产品','服务','中小微企业','创新','数字企业','投资机遇']}} as const;
+const copy=computed(()=>messages[locale.value==='zh-CN'?'zh-CN':'en']); const categories=computed(()=>copy.value.categories);
+useSeoMeta({title:()=>`${copy.value.eyebrow} | IWBIF 2026`,description:()=>copy.value.intro});
 </script>
 
 <style scoped>

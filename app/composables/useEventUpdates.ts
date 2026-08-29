@@ -1,6 +1,6 @@
-import { useApi, type ApiResponse } from '~/composables/useApi';
+import type { useApi, ApiResponse, LocalizedContentMeta } from '~/composables/useApi';
 
-export interface AnnouncementItem {
+export interface AnnouncementItem extends LocalizedContentMeta {
   id: string;
   title: string;
   body: string;
@@ -9,7 +9,7 @@ export interface AnnouncementItem {
   created_at?: string;
 }
 
-export interface CertificateItem {
+export interface CertificateItem extends LocalizedContentMeta {
   id: string;
   event_id?: string;
   user_id?: string;

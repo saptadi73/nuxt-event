@@ -1,26 +1,26 @@
 <template>
   <section class="mx-auto max-w-3xl px-3 py-10 sm:px-6">
     <div class="glass-card rounded-[2rem] p-4 sm:p-7">
-      <p class="text-sm uppercase tracking-[.3em] text-amber-200">{{ paymentProviderLabel }} Payment Status</p>
+      <p class="text-sm uppercase tracking-[.3em] text-amber-200">{{ copy.eyebrow.replace('{provider}', paymentProviderLabel) }}</p>
       <h1 class="mt-3 text-3xl font-black sm:text-4xl">{{ heading }}</h1>
       <p class="mt-3 text-sm text-slate-300 sm:text-base">{{ description }}</p>
       <div class="mt-7 rounded-2xl border border-white/10 bg-white/5 p-5">
-        <p class="text-xs uppercase tracking-widest text-slate-400">Payment status</p>
+        <p class="text-xs uppercase tracking-widest text-slate-400">{{ copy.paymentStatus }}</p>
         <p class="mt-2 text-2xl font-bold" :class="statusClass">{{ statusLabel }}</p>
         <p v-if="payment" class="mt-2 text-sm text-slate-400">
-          Provider: {{ payment.provider }} · Amount: {{ currency(payment.gross_amount, payment.currency) }}
+          {{ copy.provider }}: {{ payment.provider }} · {{ copy.amount }}: {{ currency(payment.gross_amount, payment.currency) }}
         </p>
-        <p v-if="polling" class="mt-3 text-sm text-amber-200">Checking for {{ paymentProviderLabel }} confirmation…</p>
+        <p v-if="polling" class="mt-3 text-sm text-amber-200">{{ copy.checkingConfirmation.replace('{provider}', paymentProviderLabel) }}</p>
       </div>
       <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <NuxtLink v-if="status === 'success'" :to="invoiceTo" class="rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950">View invoice</NuxtLink>
-        <NuxtLink v-else-if="terminal" to="/dashboard/payment" class="rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950">Try payment again</NuxtLink>
-        <button v-else class="rounded-full border border-white/20 px-5 py-3" :disabled="checking" @click="checkStatus">Check again</button>
-        <NuxtLink to="/dashboard" class="rounded-full border border-white/20 px-5 py-3">Dashboard</NuxtLink>
+        <NuxtLink v-if="status === 'success'" :to="invoiceTo" class="rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950">{{ copy.viewInvoice }}</NuxtLink>
+        <NuxtLink v-else-if="terminal" to="/dashboard/payment" class="rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950">{{ copy.tryAgain }}</NuxtLink>
+        <button v-else class="rounded-full border border-white/20 px-5 py-3" :disabled="checking" @click="checkStatus">{{ checking ? copy.checking : copy.checkAgain }}</button>
+        <NuxtLink to="/dashboard" class="rounded-full border border-white/20 px-5 py-3">{{ copy.dashboard }}</NuxtLink>
       </div>
       <div v-if="errorMessage" class="mt-5 rounded-2xl border border-red-400/30 bg-red-950/30 p-4 text-red-100">
         <p>{{ errorMessage }}</p>
-        <p v-if="requestId" class="mt-2 text-xs">Reference: {{ requestId }}</p>
+        <p v-if="requestId" class="mt-2 text-xs">{{ copy.reference }}: {{ requestId }}</p>
       </div>
     </div>
   </section>
@@ -30,7 +30,13 @@
 import { usePayment, type PaymentItem } from '~/composables/usePayment';
 
 definePageMeta({ middleware: 'auth' });
-useSeoMeta({ title: 'Payment Status | IWBIF 2026' });
+const { locale } = useI18n();
+const messages = {
+  en: { eyebrow: '{provider} Payment Status', paymentStatus: 'Payment status', provider: 'Provider', amount: 'Amount', checkingConfirmation: 'Checking for {provider} confirmation…', viewInvoice: 'View invoice', tryAgain: 'Try payment again', checkAgain: 'Check again', checking: 'Checking…', dashboard: 'Dashboard', reference: 'Reference', payment: 'Payment', statuses: { created: 'Created', pending: 'Awaiting verification', success: 'Payment successful', failed: 'Payment failed', expired: 'Checkout expired', canceled: 'Payment canceled' }, received: 'Payment received', notCompleted: 'Payment not completed', processing: 'Payment processing', verified: '{provider} notification has been verified by the backend.', retry: 'You may safely create a new {provider} checkout.', wait: 'Do not create another checkout while backend verification is in progress.', retrievalError: 'Payment status could not be retrieved.', missingReference: 'Payment reference was not found in this browser.', seo: 'Payment Status' },
+  zh: { eyebrow: '{provider} 付款状态', paymentStatus: '付款状态', provider: '支付服务商', amount: '金额', checkingConfirmation: '正在检查 {provider} 的确认结果…', viewInvoice: '查看发票', tryAgain: '重新付款', checkAgain: '再次检查', checking: '正在检查…', dashboard: '控制面板', reference: '参考编号', payment: '付款', statuses: { created: '已创建', pending: '等待审核', success: '付款成功', failed: '付款失败', expired: '结账已过期', canceled: '付款已取消' }, received: '已收到付款', notCompleted: '付款未完成', processing: '付款处理中', verified: '后端已验证 {provider} 的付款通知。', retry: '您现在可以安全地创建新的 {provider} 付款。', wait: '后端验证期间请勿创建另一个付款。', retrievalError: '无法获取付款状态。', missingReference: '此浏览器中未找到付款参考信息。', seo: '付款状态' }
+} as const;
+const copy = computed(() => locale.value === 'zh-CN' ? messages.zh : messages.en);
+useSeoMeta({ title: () => `${copy.value.seo} | IWBIF 2026` });
 
 const route = useRoute();
 const paymentApi = usePayment();
@@ -54,21 +60,14 @@ let attempts = 0;
 const maxAttempts = 30;
 const terminalStatuses = ['success', 'failed', 'expired', 'canceled'];
 const terminal = computed(() => terminalStatuses.includes(status.value));
-const paymentProviderLabel = computed(() => payment.value?.provider?.toUpperCase() || paymentApi.paymentProviderLabel || 'Payment');
-const statusLabel = computed(() => ({
-  created: 'Created',
-  pending: 'Awaiting verification',
-  success: 'Payment successful',
-  failed: 'Payment failed',
-  expired: 'Checkout expired',
-  canceled: 'Payment canceled'
-}[status.value] || status.value));
-const heading = computed(() => status.value === 'success' ? 'Payment received' : terminal.value ? 'Payment not completed' : 'Payment processing');
+const paymentProviderLabel = computed(() => payment.value?.provider?.toUpperCase() || paymentApi.paymentProviderLabel || copy.value.payment);
+const statusLabel = computed(() => (copy.value.statuses as Record<string, string>)[status.value] || status.value);
+const heading = computed(() => status.value === 'success' ? copy.value.received : terminal.value ? copy.value.notCompleted : copy.value.processing);
 const description = computed(() => status.value === 'success'
-  ? `${paymentProviderLabel.value} notification has been verified by the backend.`
+  ? copy.value.verified.replace('{provider}', paymentProviderLabel.value)
   : terminal.value
-    ? `You may safely create a new ${paymentProviderLabel.value} checkout.`
-    : 'Do not create another checkout while backend verification is in progress.');
+    ? copy.value.retry.replace('{provider}', paymentProviderLabel.value)
+    : copy.value.wait);
 const statusClass = computed(() => status.value === 'success' ? 'text-emerald-300' : terminal.value ? 'text-red-300' : 'text-amber-200');
 const invoiceTo = computed(() => registrationId.value
   ? `/dashboard/invoice?registration_id=${encodeURIComponent(registrationId.value)}`
@@ -85,7 +84,7 @@ const stop = () => {
 const apiError = (error: unknown) => {
   const value = error as { data?: { message?: string; request_id?: string } };
   requestId.value = value.data?.request_id || '';
-  return value.data?.message || (error instanceof Error ? error.message : 'Payment status could not be retrieved.');
+  return value.data?.message || (error instanceof Error ? error.message : copy.value.retrievalError);
 };
 const handleSuccess = async () => {
   if (successHandled.value) return;
@@ -122,7 +121,7 @@ const checkStatus = async () => {
       const response = await paymentApi.getOrder(orderId.value);
       status.value = response.data.status.toLowerCase() === 'paid' ? 'success' : response.data.status.toLowerCase();
     } else {
-      throw new Error('Payment reference was not found in this browser.');
+      throw new Error(copy.value.missingReference);
     }
     if (status.value === 'success') await handleSuccess();
     else if (terminal.value) stop();
@@ -153,5 +152,5 @@ onMounted(async () => {
   }
 });
 onBeforeUnmount(stop);
-const currency = (amount: number, code: string) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: code || 'IDR', maximumFractionDigits: 0 }).format(amount);
+const currency = (amount: number, code: string) => new Intl.NumberFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'id-ID', { style: 'currency', currency: code || 'IDR', maximumFractionDigits: 0 }).format(amount);
 </script>

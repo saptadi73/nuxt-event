@@ -2,29 +2,29 @@
   <main class="login-shell">
     <section class="mx-auto max-w-5xl px-3 py-10 sm:px-6 lg:px-8">
       <div class="login-card mx-auto max-w-md rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-950/80 via-slate-950/70 to-slate-900/70 p-5 shadow-[0_28px_60px_rgba(0,0,0,0.35)] sm:p-8">
-        <div class="mb-4 inline-flex rounded-full border border-amber-200/20 bg-amber-300/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[.28em] text-amber-200">Member access</div>
-        <h1 class="mt-3 text-3xl font-black text-white sm:text-4xl">Login to IWBIF</h1>
-        <p class="mt-3 text-sm leading-7 text-slate-300">Access your dashboard, tickets, payment status, and event updates.</p>
+        <div class="mb-4 inline-flex rounded-full border border-amber-200/20 bg-amber-300/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[.28em] text-amber-200">{{ copy.member }}</div>
+        <h1 class="mt-3 text-3xl font-black text-white sm:text-4xl">{{ copy.title }}</h1>
+        <p class="mt-3 text-sm leading-7 text-slate-300">{{ copy.intro }}</p>
 
-        <form @submit.prevent="onSubmit" class="mt-6 space-y-4">
+        <form class="mt-6 space-y-4" novalidate @submit.prevent="onSubmit">
           <label class="block">
-            <span class="mb-2 block text-sm text-slate-300">Email</span>
+            <span class="mb-2 block text-sm text-slate-300">{{ copy.email }}</span>
             <input v-model.trim="form.email" type="email" autocomplete="email" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="you@example.com" minlength="6" required />
           </label>
 
           <label class="block">
-            <span class="mb-2 block text-sm text-slate-300">Password</span>
-            <input v-model="form.password" type="password" autocomplete="current-password" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="Enter your password" minlength="8" maxlength="128" required />
+            <span class="mb-2 block text-sm text-slate-300">{{ copy.password }}</span>
+            <input v-model="form.password" type="password" autocomplete="current-password" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" :placeholder="copy.passwordPlaceholder" minlength="8" maxlength="128" required />
           </label>
 
-          <button type="submit" class="w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3 text-sm font-bold uppercase tracking-[.18em] text-slate-950 shadow-[0_18px_35px_rgba(216,172,89,0.22)] transition duration-200 hover:brightness-110 active:scale-[0.99]">Log In</button>
+          <button type="submit" class="w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3 text-sm font-bold uppercase tracking-[.18em] text-slate-950 shadow-[0_18px_35px_rgba(216,172,89,0.22)] transition duration-200 hover:brightness-110 active:scale-[0.99]">{{ copy.login }}</button>
         </form>
 
         <div v-if="message" class="mt-4 rounded-2xl border p-3 text-sm" :class="messageTone === 'success' ? 'border-emerald-300/30 bg-emerald-950/30 text-emerald-100' : messageTone === 'error' ? 'border-red-300/30 bg-red-950/30 text-red-100' : 'border-white/10 bg-slate-950/60 text-slate-200'">{{ message }}</div>
 
         <p class="mt-5 text-center text-sm text-slate-300">
-          Need an account?
-          <NuxtLink to="/auth/register" class="font-semibold text-amber-200 underline-offset-4 hover:underline">Create one</NuxtLink>
+          {{ copy.needAccount }}
+          <NuxtLink to="/auth/register" class="font-semibold text-amber-200 underline-offset-4 hover:underline">{{ copy.create }}</NuxtLink>
         </p>
       </div>
     </section>
@@ -32,10 +32,18 @@
 </template>
 
 <script setup lang="ts">
+const {locale}=useI18n();
+const messages={en:{member:'Member access',title:'Login to IWBIF',intro:'Access your dashboard, tickets, payment status, and event updates.',email:'Email',password:'Password',passwordPlaceholder:'Enter your password',login:'Log In',needAccount:'Need an account?',create:'Create one',input:'Input',invalid:'Invalid value',processError:'Login could not be processed.',required:'Enter your email address and password.',invalidEmail:'Enter a valid email address.',passwordLength:'Password must be at least 8 characters long.',submitting:'Submitting login...',success:'Login successful.',failed:'Failed'},'zh-CN':{member:'会员入口',title:'登录 IWBIF',intro:'访问您的用户中心、门票、付款状态和活动更新。',email:'电子邮箱',password:'密码',passwordPlaceholder:'请输入密码',login:'登录',needAccount:'还没有账户？',create:'创建账户',input:'输入',invalid:'无效值',processError:'无法处理登录请求。',required:'请输入电子邮箱和密码。',invalidEmail:'请输入有效的电子邮箱地址。',passwordLength:'密码长度必须至少为 8 个字符。',submitting:'正在登录…',success:'登录成功。',failed:'失败'}} as const;
+const copy=computed(()=>messages[locale.value==='zh-CN'?'zh-CN':'en']);
+useSeoMeta({title:()=>`${copy.value.login} | IWBIF 2026`,description:()=>copy.value.intro});
 const form = reactive({ email: '', password: '' });
 const { login } = useAuth();
 const message = ref('');
 const messageTone = ref<'neutral' | 'success' | 'error'>('neutral');
+const isValidEmail = (value: string) => {
+  const parts = value.split('@');
+  return parts.length === 2 && Boolean(parts[0]) && Boolean(parts[1]?.includes('.')) && !value.includes(' ');
+};
 
 type ValidationError = { loc?: Array<string | number>; msg?: string };
 type ApiError = { data?: { detail?: ValidationError[]; message?: string }; response?: { _data?: { detail?: ValidationError[]; message?: string } } };
@@ -47,37 +55,49 @@ const getLoginErrorMessage = (error: unknown) => {
 
   if (Array.isArray(details) && details.length) {
     return details
-      .map((detail) => `${detail.loc?.at(-1) ?? 'Input'}: ${detail.msg ?? 'Invalid value'}`)
+      .map((detail) => `${detail.loc?.at(-1) ?? copy.value.input}: ${detail.msg ?? copy.value.invalid}`)
       .join('. ');
   }
 
-  return payload?.message || (error instanceof Error ? error.message : 'Login could not be processed.');
+  return payload?.message || (error instanceof Error ? error.message : copy.value.processError);
 };
 
 const onSubmit = async () => {
-  if (form.password.length < 8) {
-    message.value = 'Password must be at least 8 characters long.';
+  if (!form.email || !form.password) {
+    message.value = copy.value.required;
     messageTone.value = 'error';
     return;
   }
 
-  message.value = 'Submitting login...';
+  if (!isValidEmail(form.email)) {
+    message.value = copy.value.invalidEmail;
+    messageTone.value = 'error';
+    return;
+  }
+
+  if (form.password.length < 8) {
+    message.value = copy.value.passwordLength;
+    messageTone.value = 'error';
+    return;
+  }
+
+  message.value = copy.value.submitting;
   messageTone.value = 'neutral';
   const flow = useRegistrationFlow();
 
   try {
     const result = await login(form);
     if (result.success) {
-      message.value = `Login successful. ${flow.ctaLabel.value}`;
+      message.value = copy.value.success;
       messageTone.value = 'success';
       await navigateTo(flow.ctaTo.value);
       return;
     }
 
-    message.value = `Failed: ${result.message}`;
+    message.value = `${copy.value.failed}: ${result.message}`;
     messageTone.value = 'error';
   } catch (error) {
-    message.value = `Failed: ${getLoginErrorMessage(error)}`;
+    message.value = `${copy.value.failed}: ${getLoginErrorMessage(error)}`;
     messageTone.value = 'error';
   }
 };

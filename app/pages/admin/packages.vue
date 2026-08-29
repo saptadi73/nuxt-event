@@ -18,12 +18,12 @@
         <div v-else-if="!visiblePackages.length" class="glass-card rounded-3xl p-6 text-slate-300">{{ packages.length ? 'No active Delegate packages. Enable “Show inactive packages” to review deactivated records.' : 'No Delegate package has been created for this event.' }}</div>
         <div v-else class="grid gap-4 md:grid-cols-2">
           <article v-for="item in visiblePackages" :key="item.id" class="glass-card rounded-3xl p-5" :class="item.is_active ? '' : 'opacity-65'">
-            <div class="flex items-center justify-between gap-3"><span class="text-xs font-bold uppercase tracking-[.2em] text-amber-200">{{ item.code }}</span><span class="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[.16em]" :class="item.is_active ? 'bg-emerald-300/10 text-emerald-200' : 'bg-white/10 text-slate-400'">{{ item.is_active ? 'Active' : 'Inactive' }}</span></div>
+            <div class="flex items-center justify-between gap-3"><span class="text-xs font-bold uppercase tracking-[.2em] text-amber-200">{{ item.code }}</span><span class="flex gap-2"><span class="translation-badge" :class="translationStatusClass(translationStatuses[`delegate_package:${item.id}`])">ZH {{ translationStatusLabel(translationStatuses[`delegate_package:${item.id}`]) }}</span><span class="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[.16em]" :class="item.is_active ? 'bg-emerald-300/10 text-emerald-200' : 'bg-white/10 text-slate-400'">{{ item.is_active ? 'Active' : 'Inactive' }}</span></span></div>
             <h2 class="mt-4 text-xl font-bold">{{ item.name }}</h2>
             <p class="mt-2 text-xs uppercase tracking-wider text-slate-400">{{ item.package_type }} · {{ item.selection_mode }}</p>
-            <div class="mt-4 grid gap-2"><div v-for="rate in item.rates" :key="rate.id" class="rounded-xl border border-white/10 bg-slate-950/40 p-3"><div class="flex justify-between gap-2"><b class="min-w-0 break-words capitalize">{{ rate.occupancy_type }} <span v-if="rate.is_default" class="text-xs text-amber-200">(default)</span></b><span class="shrink-0">{{ money(rate.amount, rate.currency) }}</span></div><p class="mt-1 text-xs text-slate-400">{{ rate.payment_amount_idr ? `Payment ${money(rate.payment_amount_idr, 'IDR')}` : 'IDR payment not configured' }}</p><div class="mt-3 flex flex-wrap gap-2"><button class="rounded-full border border-amber-300/30 px-3 py-2 text-xs font-semibold text-amber-200" @click="editRate(item.id, rate)">Edit</button><button class="rounded-full border border-rose-300/30 px-3 py-2 text-xs font-semibold text-rose-200" @click="removeRate(rate)">Deactivate</button></div></div></div>
-            <ul class="mt-4 space-y-2 text-xs text-slate-400"><li v-for="facility in item.facilities" :key="facility.id" class="flex items-start justify-between gap-2"><span class="min-w-0 flex-1 break-words">• {{ facility.name }}</span><span class="flex shrink-0 flex-wrap justify-end gap-2"><button class="rounded-full border border-amber-300/30 px-3 py-1.5 text-xs text-amber-200" @click="editFacility(item.id, facility)">Edit</button><button class="rounded-full border border-rose-300/30 px-3 py-1.5 text-xs text-rose-200" @click="removeFacility(facility)">Deactivate</button></span></li></ul>
-            <div class="mt-5 flex flex-wrap gap-3"><button class="w-full rounded-full bg-amber-300 px-5 py-2 text-sm font-semibold text-slate-950 sm:w-auto" @click="selectedPackageId = item.id">Rates & facilities</button><button class="w-full rounded-full border border-amber-300/40 px-5 py-2 text-sm font-semibold text-amber-100 sm:w-auto" @click="editPackage(item)">{{ item.is_active ? 'Edit' : 'Review / reactivate' }}</button><button v-if="item.is_active" class="w-full rounded-full border border-red-300/30 px-5 py-2 text-sm font-semibold text-red-200 disabled:opacity-50 sm:w-auto" :disabled="deletingId === item.id" @click="removePackage(item)">{{ deletingId === item.id ? 'Removing...' : 'Remove' }}</button></div>
+            <div class="mt-4 grid gap-2"><div v-for="rate in item.rates" :key="rate.id" class="rounded-xl border border-white/10 bg-slate-950/40 p-3"><div class="flex justify-between gap-2"><b class="min-w-0 break-words capitalize">{{ rate.occupancy_type }} <span v-if="rate.is_default" class="text-xs text-amber-200">(default)</span> <span class="translation-badge" :class="translationStatusClass(translationStatuses[`delegate_package_rate:${rate.id}`])">ZH {{ translationStatusLabel(translationStatuses[`delegate_package_rate:${rate.id}`]) }}</span></b><span class="shrink-0">{{ money(rate.amount, rate.currency) }}</span></div><p class="mt-1 text-xs text-slate-400">{{ rate.payment_amount_idr ? `Payment ${money(rate.payment_amount_idr, 'IDR')}` : 'IDR payment not configured' }}</p><div class="mt-3 flex flex-wrap gap-2"><button class="rounded-full border border-amber-300/30 px-3 py-2 text-xs font-semibold text-amber-200" @click="editRate(item.id, rate)">Edit</button><button class="rounded-full border border-cyan-300/30 px-3 py-2 text-xs font-semibold text-cyan-200" @click="openTranslation('delegate_package_rate', rate.id, rate.name || rate.occupancy_type)">简体中文</button><button class="rounded-full border border-rose-300/30 px-3 py-2 text-xs font-semibold text-rose-200" @click="removeRate(rate)">Deactivate</button></div></div></div>
+            <ul class="mt-4 space-y-2 text-xs text-slate-400"><li v-for="facility in item.facilities" :key="facility.id" class="flex items-start justify-between gap-2"><span class="min-w-0 flex-1 break-words">• {{ facility.name }} <span class="translation-badge" :class="translationStatusClass(translationStatuses[`delegate_package_facility:${facility.id}`])">ZH {{ translationStatusLabel(translationStatuses[`delegate_package_facility:${facility.id}`]) }}</span></span><span class="flex shrink-0 flex-wrap justify-end gap-2"><button class="rounded-full border border-amber-300/30 px-3 py-1.5 text-xs text-amber-200" @click="editFacility(item.id, facility)">Edit</button><button class="rounded-full border border-cyan-300/30 px-3 py-1.5 text-xs text-cyan-200" @click="openTranslation('delegate_package_facility', facility.id, facility.name)">简体中文</button><button class="rounded-full border border-rose-300/30 px-3 py-1.5 text-xs text-rose-200" @click="removeFacility(facility)">Deactivate</button></span></li></ul>
+            <div class="mt-5 flex flex-wrap gap-3"><button class="w-full rounded-full bg-amber-300 px-5 py-2 text-sm font-semibold text-slate-950 sm:w-auto" @click="selectedPackageId = item.id">Rates & facilities</button><button class="w-full rounded-full border border-amber-300/40 px-5 py-2 text-sm font-semibold text-amber-100 sm:w-auto" @click="editPackage(item)">{{ item.is_active ? 'Edit' : 'Review / reactivate' }}</button><button class="w-full rounded-full border border-cyan-300/40 px-5 py-2 text-sm font-semibold text-cyan-100 sm:w-auto" @click="openTranslation('delegate_package', item.id, item.name)">简体中文</button><button v-if="item.is_active" class="w-full rounded-full border border-red-300/30 px-5 py-2 text-sm font-semibold text-red-200 disabled:opacity-50 sm:w-auto" :disabled="deletingId === item.id" @click="removePackage(item)">{{ deletingId === item.id ? 'Removing...' : 'Remove' }}</button></div>
           </article>
         </div>
       </div>
@@ -63,11 +63,12 @@
         </article>
       </div>
     </Teleport>
+    <Teleport to="body"><div v-if="translationModalOpen" class="fixed inset-0 z-[110] flex items-end justify-center bg-slate-950/85 p-0 backdrop-blur-sm sm:items-center sm:p-5" @click.self="closeTranslation"><form class="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-t-[2rem] border border-white/10 bg-slate-950 p-5 shadow-2xl sm:rounded-[2rem] sm:p-7" @submit.prevent="saveTranslation"><div class="flex items-start justify-between gap-4"><div><p class="text-xs font-bold uppercase tracking-[.25em] text-cyan-200">Simplified Chinese content</p><h2 class="mt-2 text-2xl font-black">{{ translationSourceLabel }}</h2><p class="mt-2 text-xs text-slate-400">{{ translationEntityLabel }} · ID {{ translationEntityId }}</p></div><button type="button" class="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-xl" @click="closeTranslation">×</button></div><p v-if="translationLoading" class="mt-6 text-sm text-slate-400">Loading translation...</p><div v-else class="mt-6 space-y-4"><label class="field"><span>Name (简体中文)</span><input v-model.trim="translationForm.name" required :placeholder="translationSourceLabel" /></label><label v-if="translationEntityType !== 'delegate_package_rate'" class="field"><span>Description (简体中文)</span><textarea v-model.trim="translationForm.description" rows="4" /></label><label v-if="translationEntityType === 'delegate_package_facility'" class="field"><span>Unit (简体中文)</span><input v-model.trim="translationForm.unit" placeholder="例如：每位代表" /></label><div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-between"><button v-if="translationExists" type="button" class="rounded-full border border-red-300/25 px-5 py-3 font-semibold text-red-200" :disabled="savingTranslation" @click="deleteTranslation">Delete translation</button><span v-else /><div class="flex gap-3"><button type="button" class="rounded-full border border-white/20 px-5 py-3 font-semibold" @click="closeTranslation">Cancel</button><button class="rounded-full bg-cyan-300 px-6 py-3 font-bold text-slate-950 disabled:opacity-50" :disabled="savingTranslation">{{ savingTranslation?'Saving...':'Save Chinese' }}</button></div></div></div></form></div></Teleport>
   </section>
 </template>
 
 <script setup lang="ts">
-import { useAdminContent, type DelegatePackageFacilityPayload, type DelegatePackageMutationPayload, type DelegatePackageRatePayload } from '~/composables/useAdminContent';
+import { useAdminContent, type DelegatePackageFacilityPayload, type DelegatePackageMutationPayload, type DelegatePackageRatePayload, type TranslatableEntityType } from '~/composables/useAdminContent';
 import { useEvent, type DelegatePackageCatalogItem, type DelegatePackageFacility, type DelegatePackageRate, type EventItem } from '~/composables/useEvent';
 
 definePageMeta({ middleware: ['auth', 'admin'] });
@@ -90,6 +91,21 @@ const feedbackTone = ref<'success' | 'error'>('success');
 const selectedPackageId = ref('');
 const editingRateId = ref('');
 const editingFacilityId = ref('');
+type PackageTranslationEntity = Extract<TranslatableEntityType, 'delegate_package' | 'delegate_package_rate' | 'delegate_package_facility'>;
+type PackageTranslationFields = Record<string, unknown> & { name?: string; description?: string; unit?: string };
+const translationModalOpen = ref(false);
+const translationLoading = ref(false);
+const savingTranslation = ref(false);
+const translationExists = ref(false);
+const translationEntityType = ref<PackageTranslationEntity>('delegate_package');
+const translationEntityId = ref('');
+const translationSourceLabel = ref('');
+const translationForm = reactive({ name: '', description: '', unit: '' });
+const translationEntityLabel = computed(() => ({ delegate_package: 'Delegate package', delegate_package_rate: 'Package rate', delegate_package_facility: 'Package facility' })[translationEntityType.value]);
+type TranslationStatus = 'loading' | 'complete' | 'missing' | 'error';
+const translationStatuses = ref<Record<string, TranslationStatus>>({});
+const translationStatusLabel = (status?: TranslationStatus) => status === 'complete' ? 'Complete' : status === 'error' ? 'Unknown' : status === 'loading' ? 'Checking' : 'Missing';
+const translationStatusClass = (status?: TranslationStatus) => status === 'complete' ? 'translation-complete' : status === 'error' ? 'translation-error' : status === 'loading' ? 'translation-loading' : 'translation-missing';
 const selectedPackage = computed(() => packages.value.find(item => item.id === selectedPackageId.value));
 const rateForm = reactive<DelegatePackageRatePayload>({ occupancy_type: 'sharing', name: 'Twin Sharing Basis', amount: 0, currency: 'USD', payment_amount_idr: null, is_default: true, is_active: true, valid_from: null, valid_until: null });
 const facilityForm = reactive<DelegatePackageFacilityPayload>({ name: '', description: null, quantity: null, unit: null, pricing_mode: 'included', sharing_amount: null, single_amount: null, currency: 'USD', display_order: 1, is_active: true });
@@ -104,12 +120,43 @@ const apiError = (error: unknown) => {
   const status = value.statusCode || value.status;
   return `${status ? `HTTP ${status}: ` : ''}${message}${requestId}`;
 };
+const closeTranslation = () => { if (savingTranslation.value) return; translationModalOpen.value = false; translationEntityId.value = ''; translationExists.value = false; Object.assign(translationForm, { name: '', description: '', unit: '' }); };
+const openTranslation = async (entityType: PackageTranslationEntity, entityId: string, sourceLabel: string) => {
+  translationEntityType.value = entityType; translationEntityId.value = entityId; translationSourceLabel.value = sourceLabel; translationExists.value = false; Object.assign(translationForm, { name: '', description: '', unit: '' }); translationModalOpen.value = true; translationLoading.value = true;
+  try { const rows = (await adminApi.getContentTranslations<PackageTranslationFields>(entityType, entityId)).data || []; const row = rows.find(item => item.locale === 'zh-CN'); translationExists.value = Boolean(row); Object.assign(translationForm, { name: String(row?.fields.name || ''), description: String(row?.fields.description || ''), unit: String(row?.fields.unit || '') }); }
+  catch (error) { feedbackTone.value = 'error'; feedback.value = `Chinese translation could not be loaded. ${apiError(error)}`; }
+  finally { translationLoading.value = false; }
+};
+const saveTranslation = async () => {
+  if (!translationEntityId.value || savingTranslation.value) return; savingTranslation.value = true;
+  const fields: PackageTranslationFields = { name: translationForm.name.trim() };
+  if (translationEntityType.value !== 'delegate_package_rate') fields.description = translationForm.description.trim();
+  if (translationEntityType.value === 'delegate_package_facility') fields.unit = translationForm.unit.trim();
+  try { await adminApi.saveContentTranslation(translationEntityType.value, translationEntityId.value, fields); translationExists.value = true; translationStatuses.value[`${translationEntityType.value}:${translationEntityId.value}`] = 'complete'; feedbackTone.value = 'success'; feedback.value = `${translationEntityLabel.value} Chinese translation saved.`; savingTranslation.value = false; closeTranslation(); }
+  catch (error) { feedbackTone.value = 'error'; feedback.value = `${translationEntityLabel.value} Chinese translation failed. ${apiError(error)}`; }
+  finally { savingTranslation.value = false; }
+};
+const deleteTranslation = async () => {
+  if (!translationEntityId.value || savingTranslation.value) return;
+  if (!confirm('Delete this Simplified Chinese translation? The English source will remain unchanged.')) return;
+  if (!confirm('Confirm again: the public Chinese page will fall back to English for this item.')) return;
+  savingTranslation.value = true;
+  try { await adminApi.deleteContentTranslation(translationEntityType.value, translationEntityId.value); translationExists.value = false; translationStatuses.value[`${translationEntityType.value}:${translationEntityId.value}`] = 'missing'; feedbackTone.value = 'success'; feedback.value = `${translationEntityLabel.value} Chinese translation deleted.`; savingTranslation.value = false; closeTranslation(); }
+  catch (error) { feedbackTone.value = 'error'; feedback.value = apiError(error); }
+  finally { savingTranslation.value = false; }
+};
 const loadPackages = async () => {
   if (!selectedEventId.value) { packages.value = []; return; }
   loading.value = true; feedback.value = '';
-  try { const catalog = (await adminApi.getDelegatePackageCatalog(selectedEventId.value)).data; packages.value = [...(catalog.main_packages || []), ...(catalog.additional_packages || [])]; }
+  try { const catalog = (await adminApi.getDelegatePackageCatalog(selectedEventId.value, 'en')).data; packages.value = [...(catalog.main_packages || []), ...(catalog.additional_packages || [])]; await loadTranslationStatuses(); }
   catch (error) { feedbackTone.value = 'error'; feedback.value = apiError(error); }
   finally { loading.value = false; }
+};
+const loadTranslationStatuses = async () => {
+  const entities: Array<{ type: PackageTranslationEntity; id: string }> = [];
+  for (const item of packages.value) { entities.push({ type: 'delegate_package', id: item.id }); for (const rate of item.rates) entities.push({ type: 'delegate_package_rate', id: rate.id }); for (const facility of item.facilities) entities.push({ type: 'delegate_package_facility', id: facility.id }); }
+  translationStatuses.value = Object.fromEntries(entities.map(item => [`${item.type}:${item.id}`, 'loading' as TranslationStatus]));
+  await Promise.all(entities.map(async item => { const key = `${item.type}:${item.id}`; try { const rows = (await adminApi.getContentTranslations(item.type, item.id)).data || []; translationStatuses.value[key] = rows.some(row => row.locale === 'zh-CN') ? 'complete' : 'missing'; } catch { translationStatuses.value[key] = 'error'; } }));
 };
 const resetForm = () => { editingId.value = ''; Object.assign(form, emptyForm()); };
 const editPackage = (item: DelegatePackageCatalogItem) => {
@@ -198,4 +245,5 @@ const money = (amount: number, currency: string) => new Intl.NumberFormat('en-US
 .field span { display:block; margin-bottom:.5rem; }
 .field input,.field select,.field textarea { width:100%; border:1px solid rgba(255,255,255,.1); border-radius:1rem; background:rgba(2,6,23,.78); padding:.75rem 1rem; color:white; outline:none; }
 .field input:focus,.field select:focus,.field textarea:focus { border-color:rgba(252,211,77,.55); }
+.translation-badge{display:inline-flex;border-radius:999px;padding:.2rem .45rem;font-size:.55rem;font-weight:800;line-height:1;text-transform:uppercase;letter-spacing:.08em;vertical-align:middle}.translation-complete{background:rgba(52,211,153,.12);color:#a7f3d0}.translation-missing{background:rgba(251,191,36,.12);color:#fde68a}.translation-loading{background:rgba(103,232,249,.1);color:#a5f3fc}.translation-error{background:rgba(248,113,113,.12);color:#fecaca}
 </style>

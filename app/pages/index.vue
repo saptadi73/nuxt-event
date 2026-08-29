@@ -1,14 +1,14 @@
 ﻿<template>
   <div>
     <section class="hero-stage" aria-labelledby="hero-title">
-      <h1 id="hero-title" class="sr-only">International Women Business and Investment Forum 2026 Jakarta</h1>
+      <h1 id="hero-title" class="sr-only">{{ t('home.heroAlt') }}</h1>
       <div class="hero-halo hero-halo-left" />
       <div class="hero-halo hero-halo-right" />
 
       <div class="hero-frame">
         <img
-          src="/images/iwbif-2026-hero.jpg"
-          alt="IWBIF 2026 Jakarta featuring women business leaders, international collaboration, business matching, and investment opportunities"
+          :src="heroImage"
+          :alt="t('home.heroAlt')"
           class="hero-image"
           width="1672"
           height="941"
@@ -18,8 +18,8 @@
         <div class="hero-vignette" />
       </div>
 
-      <nav class="hero-action-dock" aria-label="Main event action">
-        <div class="hero-action-status"><span class="hero-live-dot" aria-hidden="true" />Registration is now open</div>
+      <nav class="hero-action-dock" :aria-label="t('home.mainEventAction')">
+        <div class="hero-action-status"><span class="hero-live-dot" aria-hidden="true" />{{ t('home.registrationOpen') }}</div>
         <div class="hero-action-links">
           <NuxtLink :to="homeCtaTo" class="hero-button hero-button-primary hero-button-primary-large">{{ homeCtaLabel }} <span aria-hidden="true">→</span></NuxtLink>
         </div>
@@ -37,9 +37,9 @@
 
     <section class="home-section mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-16">
       <div class="glass-card rounded-[2rem] border border-white/10 bg-slate-950/35 p-8">
-        <p class="text-xs uppercase tracking-[.35em] text-[#d8ac59]">International Presence</p>
-        <h2 class="premium-title mt-3">Trusted global ecosystem of <span class="title-highlight">women-led business.</span></h2>
-        <p class="mt-4 max-w-3xl text-lg leading-8 text-slate-300">IWBIF is positioned as a meeting ground for women entrepreneurs, investors, chambers, and ecosystem leaders to build credible, investable international partnerships.</p>
+        <p class="text-xs uppercase tracking-[.35em] text-[#d8ac59]">{{ t('home.internationalPresence') }}</p>
+        <h2 class="premium-title mt-3">{{ t('home.ecosystemTitle') }}</h2>
+        <p class="mt-4 max-w-3xl text-lg leading-8 text-slate-300">{{ t('home.ecosystemBody') }}</p>
         <div class="mt-6 grid gap-3 sm:grid-cols-3">
           <p v-for="network in globalNetworks" :key="network" class="rounded-full border border-white/15 px-4 py-2 text-sm">{{ network }}</p>
         </div>
@@ -49,29 +49,29 @@
     <section class="home-section why-indonesia-section mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-20">
       <div class="why-heading">
         <div>
-          <p class="text-xs font-bold uppercase tracking-[.35em] text-[#d8ac59]">Why Indonesia</p>
-          <h2 class="premium-title mt-4 max-w-3xl leading-tight text-[#f8f6f1]">Where opportunity, connectivity, and <span class="title-highlight">culture converge.</span></h2>
+          <p class="text-xs font-bold uppercase tracking-[.35em] text-[#d8ac59]">{{ t('home.whyIndonesia') }}</p>
+          <h2 class="premium-title mt-4 max-w-3xl leading-tight text-[#f8f6f1]">{{ t('home.whyTitle') }}</h2>
         </div>
         <span class="why-coordinate" aria-hidden="true">06°12′S · 106°49′E</span>
       </div>
 
       <figure class="why-visual">
         <div class="why-image-wrap">
-          <img src="/images/why-indonesia.png" alt="Indonesia's modern infrastructure, manufacturing, cultural heritage, natural destinations, and global trade connections" class="why-image" width="1672" height="941" loading="lazy">
+          <img src="/images/why-indonesia.png" :alt="t('home.whyAlt')" class="why-image" width="1672" height="941" loading="lazy">
           <div class="why-image-overlay" aria-hidden="true" />
-          <span class="why-visual-label">Indonesia · Gateway to ASEAN &amp; Asia</span>
+          <span class="why-visual-label">{{ t('home.gateway') }}</span>
         </div>
 
         <figcaption class="why-content-card">
-          <p class="why-card-kicker">A strategic home for growth</p>
-          <h3 class="mt-3 text-2xl font-black text-[#f8f6f1] sm:text-3xl">Scale meets global possibility.</h3>
-          <p class="mt-4 leading-7 text-[#cbd2dc]">A G20 economy with more than 283 million people, Indonesia connects ambitious businesses to ASEAN, Asia, trusted partners, and new investment pathways.</p>
+          <p class="why-card-kicker">{{ t('home.strategicHome') }}</p>
+          <h3 class="mt-3 text-2xl font-black text-[#f8f6f1] sm:text-3xl">{{ t('home.scale') }}</h3>
+          <p class="mt-4 leading-7 text-[#cbd2dc]">{{ t('home.indonesiaBody') }}</p>
           <div class="why-proof-grid">
-            <span><strong>283M+</strong> Domestic market</span>
-            <span><strong>G20</strong> Global convening power</span>
-            <span><strong>ASEAN</strong> Regional gateway</span>
+            <span><strong>283M+</strong> {{ t('home.domesticMarket') }}</span>
+            <span><strong>G20</strong> {{ t('home.globalPower') }}</span>
+            <span><strong>ASEAN</strong> {{ t('home.regionalGateway') }}</span>
           </div>
-          <NuxtLink to="/about" class="why-link">Discover why Indonesia <span aria-hidden="true">→</span></NuxtLink>
+          <NuxtLink to="/about" class="why-link">{{ t('home.discover') }} <span aria-hidden="true">→</span></NuxtLink>
         </figcaption>
       </figure>
     </section>
@@ -79,20 +79,20 @@
     <section class="home-section mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       <div class="grid gap-6 lg:grid-cols-2">
         <article class="glass-card rounded-[2rem] p-8">
-          <p class="text-xs uppercase tracking-[.35em] text-[#d8ac59]">Event Experience</p>
-          <h3 class="mt-3 text-3xl font-black">Deal-Ready Agenda Structure</h3>
+          <p class="text-xs uppercase tracking-[.35em] text-[#d8ac59]">{{ t('home.eventExperience') }}</p>
+          <h3 class="mt-3 text-3xl font-black">{{ t('home.agenda') }}</h3>
           <div class="mt-6 grid gap-3 sm:grid-cols-2">
             <p v-for="item in experiences" :key="item" class="rounded-2xl border border-white/10 px-4 py-3 text-sm">{{ item }}</p>
           </div>
         </article>
 
         <article class="glass-card rounded-[2rem] p-8">
-          <p class="text-xs uppercase tracking-[.35em] text-[#d8ac59]">Program Snapshot</p>
-          <h3 class="mt-3 text-3xl font-black">Four days, business outcomes first</h3>
+          <p class="text-xs uppercase tracking-[.35em] text-[#d8ac59]">{{ t('home.programSnapshot') }}</p>
+          <h3 class="mt-3 text-3xl font-black">{{ t('home.fourDays') }}</h3>
           <div class="mt-6 space-y-4">
-            <NuxtLink to="/program" class="block rounded-xl border border-white/15 px-4 py-3 transition hover:border-[#d8ac59]/60 hover:text-[#e6c477]">Explore full 4-day program</NuxtLink>
-            <NuxtLink to="/business-matching" class="block rounded-xl border border-white/15 px-4 py-3 transition hover:border-[#d8ac59]/60 hover:text-[#e6c477]">Review matching windows and industries</NuxtLink>
-            <NuxtLink to="/deal-room" class="block rounded-xl border border-white/15 px-4 py-3 transition hover:border-[#d8ac59]/60 hover:text-[#e6c477]">See Deal Room flow</NuxtLink>
+            <NuxtLink to="/program" class="block rounded-xl border border-white/15 px-4 py-3 transition hover:border-[#d8ac59]/60 hover:text-[#e6c477]">{{ t('home.exploreProgram') }}</NuxtLink>
+            <NuxtLink to="/business-matching" class="block rounded-xl border border-white/15 px-4 py-3 transition hover:border-[#d8ac59]/60 hover:text-[#e6c477]">{{ t('home.reviewMatching') }}</NuxtLink>
+            <NuxtLink to="/deal-room" class="block rounded-xl border border-white/15 px-4 py-3 transition hover:border-[#d8ac59]/60 hover:text-[#e6c477]">{{ t('home.seeDealRoom') }}</NuxtLink>
           </div>
         </article>
       </div>
@@ -101,12 +101,12 @@
     <section class="home-section mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
       <div class="rounded-[2.5rem] border border-[#d8ac59]/20 bg-[#d8ac59]/10 p-8 text-center sm:p-12">
         <p class="text-sm uppercase tracking-[.35em] text-[#f8f6f1]">IWBIF 2026</p>
-        <h2 class="mt-4 text-4xl font-black">Connect. Match. Make Deals.</h2>
-        <p class="mx-auto mt-4 max-w-2xl text-slate-300">Explore new markets, investment opportunities, partnerships, and cross-border collaboration from one place.</p>
+        <h2 class="mt-4 text-4xl font-black">{{ t('home.connect') }}</h2>
+        <p class="mx-auto mt-4 max-w-2xl text-slate-300">{{ t('home.closing') }}</p>
         <div class="mt-7 flex flex-wrap justify-center gap-3">
           <NuxtLink :to="homeCtaTo" class="rounded-full bg-[#e6c477] px-6 py-3 text-lg font-semibold text-[#04152d] sm:text-xl">{{ homeCtaLabel }}</NuxtLink>
-          <NuxtLink to="/participants" class="rounded-full border border-white/20 px-6 py-3 font-semibold">Explore Participants</NuxtLink>
-          <NuxtLink to="/deal-room" class="rounded-full border border-white/20 px-6 py-3 font-semibold">Open Deal Room</NuxtLink>
+          <NuxtLink to="/participants" class="rounded-full border border-white/20 px-6 py-3 font-semibold">{{ t('home.exploreParticipants') }}</NuxtLink>
+          <NuxtLink to="/deal-room" class="rounded-full border border-white/20 px-6 py-3 font-semibold">{{ t('home.openDealRoom') }}</NuxtLink>
         </div>
       </div>
     </section>
@@ -115,19 +115,24 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+const { t, tm, locale } = useI18n();
+const heroImage = computed(() => locale.value === 'zh-CN' ? '/images/iwbif-2026-hero-zh-CN.png' : '/images/iwbif-2026-hero.jpg');
 const authStore = useAuthStore();
 const { isAuthenticated } = storeToRefs(authStore);
 const registrationFlow = useRegistrationFlow();
 const homeCtaTo = computed(() => (isAuthenticated.value ? registrationFlow.ctaTo.value : '/auth/register'));
 const homeCtaLabel = computed(() => {
-  if (!isAuthenticated.value) return 'Register Now!';
-  if (registrationFlow.primaryStatus.value === 'not_selected') return 'Secure Your Seats';
+  if (!isAuthenticated.value) return t('actions.registerNow');
+  if (registrationFlow.primaryStatus.value === 'not_selected') return locale.value === 'zh-CN' ? '立即预订席位' : 'Secure Your Seats';
 
   if (['selected', 'payment_pending'].includes(registrationFlow.primaryStatus.value)) {
+    if (locale.value === 'zh-CN') return registrationFlow.primaryType.value === 'exhibitor' ? '以参展商身份继续' : '以代表身份继续';
     return `Continue as ${registrationFlow.primaryType.value === 'exhibitor' ? 'Exhibitor' : 'Delegate'}`;
   }
 
-  return registrationFlow.ctaLabel.value;
+  if (locale.value !== 'zh-CN') return registrationFlow.ctaLabel.value;
+  const labels: Record<string,string> = {'Complete Profile':'完善资料','Complete Payment':'完成付款','Open Dashboard':'打开用户中心','View Ticket':'查看门票'};
+  return labels[registrationFlow.ctaLabel.value] || registrationFlow.ctaLabel.value;
 });
 
 onMounted(() => {
@@ -144,16 +149,13 @@ useSeoMeta({
   ogImage: '/images/iwbif-2026-hero.jpg'
 })
 
-const featuredStats = [
-  { label: 'Delegates, buyers, investors, and ecosystem leaders', value: 500, suffix: '+' },
-  { label: 'Global speakers and strategic sessions', value: 9, suffix: '+' },
-  { label: 'Business Matching sectors and channels', value: 6, suffix: '' },
-  { label: 'International business network groups', value: 3, suffix: '' },
-  { label: 'Industrial visit for investment immersion', value: 1, suffix: '' },
-  { label: 'Event days on business outcomes', value: 4, suffix: '' }
-]
+const statValues = [{ value: 500, suffix: '+' }, { value: 9, suffix: '+' }, { value: 6, suffix: '' }, { value: 3, suffix: '' }, { value: 1, suffix: '' }, { value: 4, suffix: '' }];
+const featuredStats = computed(() => {
+  const labels = tm('home.stats') as string[];
+  return statValues.map((stat, index) => ({ ...stat, label: labels[index] || '' }));
+});
 
-const displayedStats = ref(featuredStats.map(() => 0));
+const displayedStats = ref(statValues.map(() => 0));
 const hasAnimatedStats = ref(false);
 const durationMs = 1200;
 
@@ -165,12 +167,7 @@ const globalNetworks = [
   'Global Business Organizations'
 ]
 
-const experiences = [
-  'Keynote Sessions',
-  'Expert Panel Discussions',
-  'Business Matching',
-  'Partner Exhibition'
-]
+const experiences = computed(() => tm('home.experiences') as string[]);
 
 const animateStat = (index: number, to: number) => {
   const start = performance.now();
@@ -194,7 +191,7 @@ const animateStat = (index: number, to: number) => {
 const handleStatsSection = (entries: IntersectionObserverEntry[]) => {
   if (!hasAnimatedStats.value && entries[0]?.isIntersecting) {
     hasAnimatedStats.value = true;
-    featuredStats.forEach((stat, index) => animateStat(index, stat.value));
+    featuredStats.value.forEach((stat, index) => animateStat(index, stat.value));
   }
 }
 
@@ -212,7 +209,7 @@ const observeStats = () => {
 
 onMounted(() => {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    displayedStats.value = featuredStats.map((stat) => stat.value);
+    displayedStats.value = statValues.map((stat) => stat.value);
     return;
   }
 

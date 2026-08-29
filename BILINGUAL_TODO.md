@@ -1,0 +1,85 @@
+# English / Simplified Chinese rollout
+
+Every new or changed English user-facing string must include its `zh-CN` translation in the same change. English is the fallback locale.
+
+Scope note: organizer/admin routes (`/admin/**`) remain English-only because they are internal operational tools. The bilingual requirement applies to public and participant-facing pages.
+
+- [x] Install and configure Nuxt i18n (`en`, `zh-CN`)
+- [x] Persist locale choice and expose a global language switcher
+- [x] Localize the global header, navigation, inbox shell, and footer
+- [x] Localize the homepage and select the locale-specific hero
+- [x] Public information pages
+  - [x] Homepage
+  - [x] FAQ
+  - [x] Contact
+  - [x] Participants
+  - [x] Delegate Activities / Workshops
+  - [x] About
+  - [x] Program
+  - [x] Speakers
+  - [x] Delegate Packages shell, static itineraries, and localized backend package/facility content
+  - [x] Business Matching
+  - [x] Exhibition
+  - [x] Deal Room
+  - [x] Partners
+- [x] Legal pages
+  - [x] Privacy
+  - [x] Terms and Conditions
+  - [x] Code of Conduct
+  - [x] Refund Policy
+  - [x] Directory Consent
+- [x] Authentication and registration flows
+  - [x] Account registration
+  - [x] Login
+- [x] Delegate registration profile
+- [x] Exhibitor registration profile
+  - [x] Registration type selector
+- [x] Cart, payment, manual transfer, QR Direct, invoice, and payment status
+  - [x] Shopping cart and pending-order recovery
+  - [x] Payment method selection
+  - [x] Manual bank transfer
+  - [x] QR Code Direct
+  - [x] Payment-proof upload
+  - [x] Payment status
+  - [x] Invoice
+- [x] Participant dashboard pages
+  - [x] Dashboard overview (organizer panel remains English)
+  - [x] My Schedule
+  - [x] Announcements shell (announcement content remains backend-provided)
+  - [x] My Ticket and QR Code
+  - [x] Profile
+  - [x] Participant Directory
+  - [x] Certificate
+  - [x] Security / Change Password
+  - [x] Inbox page audit (admin/organizer view remains English)
+- [x] Organizer/admin pages (English-only by design; excluded from bilingual scope)
+- [x] Admin bilingual content editors (admin controls remain English-only)
+  - [x] Shared content-translation API client (`get`, `put`, `delete`)
+  - [x] Speaker English source and Simplified Chinese editor
+  - [x] Program/session English source and Simplified Chinese editor
+  - [x] Delegate package English source and Simplified Chinese editor
+  - [x] Delegate package rate translations handled independently
+  - [x] Delegate package facility translations handled independently
+  - [x] Translation status overview and fallback badges in admin lists
+- [x] Backend localization integration
+  - [x] Send `Accept-Language` (`en` or `zh-CN`) on API requests
+  - [x] Keep organizer/admin API reads in English
+  - [x] Send and persist the participant `preferred_locale`
+  - [x] Refresh localized public content after a language change
+  - [x] Model `content_locale` and `translation_fallback` response metadata
+- [x] Translate validation, toast, empty-state, and API error messages
+  - [x] Localize shared session-expiry and registration-progress errors
+  - [x] Localize shared registration-flow CTA states
+  - [x] Replace native browser validation in login, account registration, and password security forms
+  - [x] Validate payment-proof file type and size with localized feedback
+  - [x] Validate all required delegate/exhibitor fields, selections, dates, URLs, and consent in both languages
+  - [x] Keep localized backend messages for display while preserving canonical error codes for logic
+- [ ] Final hard-coded-string audit, responsive visual QA, and native-speaker copy review
+  - [x] Audit homepage image alternatives, screen-reader title, and action labels
+  - [x] Verify English and `zh-CN` locale key parity
+  - [x] Scan source files for invalid UTF-8 replacement or mojibake characters
+  - [x] Audit remaining literal text (brand/proper nouns and English-only organizer panel only)
+  - [x] Complete production SSR/prerender build
+  - [x] Perform interactive responsive QA at mobile, tablet, and desktop widths
+    - [x] Simplify the narrow mobile header to prevent Mandarin actions from overflowing
+  - [ ] Complete final Simplified Chinese review with a native speaker

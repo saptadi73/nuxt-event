@@ -1,0 +1,67 @@
+{
+  "language": { "label": "语言", "english": "English", "chinese": "简体中文" },
+  "nav": {
+    "home": "首页", "about": "关于论坛", "program": "议程", "speakers": "演讲嘉宾", "packages": "代表套餐",
+    "matching": "商务配对", "exhibition": "展览", "dealRoom": "洽谈室", "participants": "参会者",
+    "contact": "联系我们", "partners": "合作伙伴", "faq": "常见问题", "dashboard": "用户中心", "more": "更多", "menu": "菜单",
+    "managePackages": "套餐管理", "transactions": "交易管理", "manualPayments": "手动付款", "salesReport": "销售报告",
+    "participantsReport": "参会者报告", "manageSpeakers": "嘉宾管理", "manageProgram": "议程管理",
+    "manageUsers": "用户管理", "announcements": "公告", "certificates": "证书",
+    "emailNotifications": "邮件通知", "matchingOperations": "配对运营"
+  },
+  "actions": { "registerNow": "立即注册", "register": "注册", "signIn": "登录", "logOut": "退出登录", "refresh": "刷新", "markAllRead": "全部标为已读" },
+  "inbox": { "title": "收件箱", "activeAccount": "当前账户", "loading": "正在加载收件箱…", "empty": "暂无通知。", "unread": "未读", "unknownUser": "未知用户", "unknownEmail": "未知邮箱" },
+  "footer": {
+    "summary": "连接女性主导的企业与全球市场、金融资源及可信赖的合作伙伴。",
+    "event": "国际女性商业与投资论坛", "datePlace": "2026年10月14日至17日 · 雅加达",
+    "privacy": "隐私政策", "terms": "使用条款", "conduct": "行为准则", "refunds": "退款政策",
+    "copyright": "© 2026 国际女性商业与投资论坛。保留所有权利。"
+  },
+  "legal": { "information": "法律信息", "updated": "最后更新：2026年8月1日。请联系主办方以获取适用于本次活动的政策版本。" },
+  "adminParticipants": {
+    "panel": "主办方控制台", "title": "参会者报告", "lastUpdated": "最后更新：{value}", "role": "角色：{value}",
+    "event": "活动", "allEvents": "全部活动", "package": "套餐", "loadingPackages": "正在加载套餐…", "allPackages": "全部套餐", "paymentStatus": "付款状态", "allStatuses": "全部状态", "reset": "重置",
+    "paidFrom": "付款开始日期", "paidUntil": "付款结束日期", "search": "搜索参会者", "searchPlaceholder": "搜索姓名、邮箱或机构", "filterHelp": "活动、套餐、付款状态和搜索筛选将应用于服务器（延迟 350 毫秒）。日期范围会按当前页面的 paid_at 筛选套餐。", "invalidDateRange": "开始日期不能晚于结束日期。",
+    "participants": "参会者", "downloadCsv": "下载 CSV", "resultCount": "共 {total} 位参会者，显示 {filtered} 位（第 {page} 页）", "perPage": "每页", "participant": "参会者", "organization": "机构", "registration": "注册", "packages": "套餐", "notAvailable": "不适用", "packageFallback": "套餐", "paid": "已付款：{value}", "unpaid": "未付款", "noPackage": "尚未选择套餐", "noData": "当前筛选条件下没有数据。", "first": "首页", "previous": "上一页", "page": "第 {current} / {total} 页", "next": "下一页", "last": "末页", "notLoaded": "尚未加载", "loadError": "无法加载参会者报告。请检查管理员访问令牌或后端服务是否可用。"
+  },
+  "emailNotifications": {
+    "fallbackDescription": "参会者活动的自动邮件", "accountPreferencesUnavailable": "服务器暂不支持参会者个人偏好设置。请确认后端已更新且数据库迁移已完成。", "operationFailed": "无法处理邮件设置。", "settingsSaved": "邮件设置已保存。", "testSent": "测试邮件已发送至 {email}。", "testFailed": "邮件未发送。请检查模板状态和 SMTP 配置。", "preferencesSaved": "已保存 {name} 的邮件设置。",
+    "triggers": {
+      "account_registered": { "title": "账户已创建", "description": "参会者创建账户后发送。" },
+      "registration_submitted": { "title": "已收到注册", "description": "提交注册表后发送。" },
+      "delegate_package_selected": { "title": "已选择代表套餐", "description": "参会者选择代表套餐后发送。" },
+      "exhibitor_package_selected": { "title": "已选择参展商套餐", "description": "参会者选择参展商套餐后发送。" },
+      "payment_confirmed": { "title": "付款已确认", "description": "系统确认付款后发送。" },
+      "business_matching_profile_saved": { "title": "商务配对资料已保存", "description": "参会者保存商务配对资料后发送。" },
+      "meeting_requested": { "title": "新的会面请求", "description": "参会者收到会面请求时发送。" },
+      "meeting_accepted": { "title": "会面已接受", "description": "会面请求被接受时发送。" },
+      "meeting_confirmed": { "title": "会面安排已确认", "description": "确认会面时间和地点后发送。" },
+      "meeting_declined": { "title": "会面已拒绝", "description": "会面请求被拒绝时发送。" },
+      "meeting_cancelled": { "title": "会面已取消", "description": "已创建的会面取消时发送。" },
+      "meeting_reschedule_requested": { "title": "请求改期", "description": "请求更改会面时间时发送。" }
+    },
+    "variables": { "participant_name": "参会者姓名", "event_name": "活动名称", "login_url": "登录链接", "registration_number": "注册编号", "package_name": "套餐名称", "package_code": "套餐代码", "amount": "金额", "currency": "货币", "order_number": "订单编号", "paid_at": "付款时间", "counterparty_name": "会面对象", "meeting_topic": "会面主题", "meeting_schedule": "会面安排", "meeting_venue": "会面地点" }
+  },
+  "adminReports": {
+    "panel": "主办方控制台", "title": "门票销售与收入报告", "lastUpdated": "最后更新：{value}", "role": "角色：{value}", "unknown": "未知", "sessionActive": "会话有效", "loginSession": "登录会话", "copyNameEmail": "复制姓名和邮箱",
+    "event": "活动", "allEvents": "全部活动", "startDate": "开始日期", "endDate": "结束日期", "status": "状态", "allStatuses": "全部状态", "channel": "渠道", "allChannels": "全部渠道", "packageId": "套餐 ID", "loadingPackages": "正在加载套餐…", "allPackages": "全部套餐", "reset": "重置", "today": "今天", "last7Days": "7 天", "last30Days": "30 天", "thisMonth": "本月", "filterHelp": "更改筛选条件后将在 350 毫秒内自动应用。", "invalidDateRange": "开始日期不能晚于结束日期。", "notLoaded": "尚未加载", "loadError": "无法加载付款报告。请检查管理员访问令牌或后端服务是否可用。",
+    "organizerScope": "主办方数据仅限于 {event}。", "accessScope": "根据账户权限和所选筛选条件显示数据。", "newManualReview": "有新的交易需要人工核验（标记为“需要检查”）。", "manualReviewReduced": "同步后需要人工核验的交易数量已减少。", "manualReviewRemain": "仍有交易需要人工核验。请查看“需要检查”标记。", "checkRequired": "需要检查"
+  },
+  "home": {
+    "heroAlt": "IWBIF 2026 雅加达，汇聚女性商业领袖、国际合作、商务配对与投资机遇",
+    "mainEventAction": "活动主要操作", "whyAlt": "印度尼西亚的现代基础设施、制造业、文化遗产、自然胜地与全球贸易联系",
+    "registrationOpen": "报名现已开放", "internationalPresence": "国际影响力",
+    "ecosystemTitle": "值得信赖的全球女性商业生态系统。",
+    "ecosystemBody": "IWBIF 旨在为女性企业家、投资者、商会及生态系统领袖搭建交流平台，共同构建可信、具投资价值的国际合作伙伴关系。",
+    "whyIndonesia": "为什么选择印度尼西亚", "whyTitle": "机遇、互联与文化在此汇聚。",
+    "gateway": "印度尼西亚 · 通往东盟与亚洲的门户", "strategicHome": "增长的战略枢纽", "scale": "规模与全球机遇相遇。",
+    "indonesiaBody": "作为拥有2.83亿人口的二十国集团经济体，印度尼西亚将具有雄心的企业与东盟、亚洲、可信赖的合作伙伴及新的投资途径相连。",
+    "domesticMarket": "国内市场", "globalPower": "全球召集力", "regionalGateway": "区域门户", "discover": "了解为何选择印度尼西亚",
+    "eventExperience": "活动体验", "agenda": "面向交易成果的议程", "programSnapshot": "议程概览", "fourDays": "四天议程，聚焦商业成果",
+    "exploreProgram": "查看完整四日议程", "reviewMatching": "查看商务配对时段与行业", "seeDealRoom": "查看洽谈室流程",
+    "connect": "连接。配对。促成交易。", "closing": "一站式探索新市场、投资机遇、合作伙伴关系与跨境合作。",
+    "exploreParticipants": "查看参会者", "openDealRoom": "进入洽谈室",
+    "stats": ["代表、买家、投资者及生态系统领袖", "全球演讲嘉宾与战略专场", "商务配对行业与渠道", "国际商业网络组织", "深入了解投资的产业参访", "聚焦商业成果的活动日"],
+    "experiences": ["主旨演讲", "专家圆桌讨论", "商务配对", "合作伙伴展览"]
+  }
+}

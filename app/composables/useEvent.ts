@@ -1,6 +1,6 @@
-import type { useApi, ApiResponse } from '~/composables/useApi';
+import type { useApi, ApiResponse, LocalizedContentMeta } from '~/composables/useApi';
 
-export interface EventItem {
+export interface EventItem extends LocalizedContentMeta {
   id: string;
   name: string;
   slug?: string;
@@ -14,7 +14,7 @@ export interface EventItem {
   status?: string;
 }
 
-export interface SpeakerItem {
+export interface SpeakerItem extends LocalizedContentMeta {
   id: string;
   full_name: string;
   professional_title?: string;
@@ -30,7 +30,7 @@ export interface SpeakerItem {
   status?: string;
 }
 
-export interface SessionItem {
+export interface SessionItem extends LocalizedContentMeta {
   id: string;
   event_id: string;
   title: string;
@@ -44,7 +44,7 @@ export interface SessionItem {
   status?: string;
 }
 
-export interface WorkshopTrackItem {
+export interface WorkshopTrackItem extends LocalizedContentMeta {
   id: string;
   event_id: string;
   name: string;
@@ -53,7 +53,7 @@ export interface WorkshopTrackItem {
   order_index?: number;
 }
 
-export interface TicketTypeItem {
+export interface TicketTypeItem extends LocalizedContentMeta {
   id: string;
   event_id: string;
   code: string;
@@ -75,7 +75,7 @@ export interface DelegatePackageItem extends TicketTypeItem {
 }
 
 export type PackageOccupancy = 'sharing' | 'single';
-export interface DelegatePackageRate {
+export interface DelegatePackageRate extends LocalizedContentMeta {
   id: string;
   delegate_package_id?: string;
   product_id: string;
@@ -89,7 +89,7 @@ export interface DelegatePackageRate {
   valid_from?: string | null;
   valid_until?: string | null;
 }
-export interface DelegatePackageFacility {
+export interface DelegatePackageFacility extends LocalizedContentMeta {
   id: string;
   name: string;
   description?: string | null;
@@ -102,7 +102,7 @@ export interface DelegatePackageFacility {
   display_order?: number;
   is_active: boolean;
 }
-export interface DelegatePackageCatalogItem {
+export interface DelegatePackageCatalogItem extends LocalizedContentMeta {
   id: string;
   code: string;
   name: string;
@@ -126,7 +126,7 @@ export interface ActivityItem extends WorkshopTrackItem {
   end_at?: string;
 }
 
-export interface ExhibitorItem {
+export interface ExhibitorItem extends LocalizedContentMeta {
   id: string;
   company_name: string;
   country?: string;

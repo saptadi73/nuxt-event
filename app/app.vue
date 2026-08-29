@@ -29,7 +29,7 @@
           {{ item.label }}
         </NuxtLink>
           <details ref="desktopMenuRef" class="group relative" :open="desktopMenuOpen" @toggle="desktopMenuOpen = ($event.target as HTMLDetailsElement).open">
-            <summary class="nav-link inline-flex cursor-pointer list-none items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none text-slate-200 transition hover:bg-white/5 hover:text-white">More <span class="ml-1 text-[10px] text-amber-200/80">v</span></summary>
+            <summary class="nav-link inline-flex cursor-pointer list-none items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none text-slate-200 transition hover:bg-white/5 hover:text-white">{{ t('nav.more') }} <span class="ml-1 text-[10px] text-amber-200/80">v</span></summary>
             <div class="nav-menu-panel absolute right-0 top-12 grid w-48 gap-1 rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-slate-950/60 backdrop-blur-xl">
               <NuxtLink v-for="item in secondaryNav" :key="item.to" :to="item.to" class="rounded-xl px-4 py-3 text-sm text-slate-200 transition hover:bg-white/5 hover:text-white" @click="closeMenus">{{ item.label }}</NuxtLink>
             </div>
@@ -37,6 +37,10 @@
         </nav>
 
         <div class="header-actions ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:ml-2">
+          <label v-if="!authStore.isAdminOrOrganizer" class="locale-switcher" :aria-label="t('language.label')">
+            <span class="sr-only">{{ t('language.label') }}</span>
+            <select :value="locale" @change="changeLocale"><option value="en">EN</option><option value="zh-CN">中文</option></select>
+          </label>
           <div v-if="isAuthenticated" class="relative">
             <button
               type="button"
@@ -56,24 +60,24 @@
             <div v-if="showInbox" ref="inboxPanelRef" class="inbox-panel absolute right-0 top-12 z-50 w-[min(22rem,85vw)]">
               <div class="rounded-2xl border border-white/15 bg-slate-950/95 p-4 text-sm shadow-2xl backdrop-blur-xl">
                 <div class="mb-3 flex items-center justify-between gap-3">
-                  <p class="text-xs font-bold uppercase tracking-[0.18em] text-amber-200">Inbox</p>
+                  <p class="text-xs font-bold uppercase tracking-[0.18em] text-amber-200">{{ t('inbox.title') }}</p>
                   <div class="flex items-center gap-2">
                     <button class="rounded-full border border-white/15 px-3 py-1 text-[11px] text-slate-200 hover:bg-white/5" type="button" @click="handleRefreshInbox">
-                      Refresh
+                      {{ t('actions.refresh') }}
                     </button>
                     <button v-if="inboxUnreadCount > 0" class="rounded-full border border-emerald-300/35 px-3 py-1 text-[11px] text-emerald-100 hover:bg-emerald-300/10" type="button" @click="handleMarkAllRead">
-                      Tandai semua dibaca
+                      {{ t('actions.markAllRead') }}
                     </button>
                   </div>
                 </div>
                 <div class="mb-3 rounded-xl border border-amber-200/20 bg-amber-100/5 px-3 py-2 text-xs text-amber-100">
-                  <p class="text-[10px] uppercase tracking-[0.12em] text-amber-200">Akun aktif</p>
+                  <p class="text-[10px] uppercase tracking-[0.12em] text-amber-200">{{ t('inbox.activeAccount') }}</p>
                   <p class="mt-1 text-sm font-semibold text-white">{{ activeAccountName }}</p>
                   <p class="text-[11px] text-slate-300">{{ activeAccountEmail }}</p>
                 </div>
                 <p v-if="inboxError" class="mb-2 rounded-lg border border-rose-300/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-100">{{ inboxError }}</p>
-                <div v-if="inboxLoading" class="rounded-lg border border-white/10 px-3 py-4 text-slate-400">Memuat inbox...</div>
-                <p v-else-if="!inboxNotifications.length" class="rounded-lg border border-white/10 px-3 py-4 text-slate-400">Tidak ada notifikasi.</p>
+                <div v-if="inboxLoading" class="rounded-lg border border-white/10 px-3 py-4 text-slate-400">{{ t('inbox.loading') }}</div>
+                <p v-else-if="!inboxNotifications.length" class="rounded-lg border border-white/10 px-3 py-4 text-slate-400">{{ t('inbox.empty') }}</p>
                 <div v-else class="space-y-2">
                   <button
                     v-for="item in inboxNotifications"
@@ -98,7 +102,7 @@
                     <p class="mt-1 text-xs text-slate-200">{{ item.message || item.body || '-' }}</p>
                     <p v-if="item.created_at" class="mt-2 text-[11px] text-slate-400">{{ formatDateTime(item.created_at) }}</p>
                     <span v-if="!item.is_read" class="mt-1 inline-flex rounded-full bg-emerald-300/25 px-2 py-1 text-[10px] font-bold text-emerald-100">
-                      Unread
+                      {{ t('inbox.unread') }}
                     </span>
                   </button>
                 </div>
@@ -106,25 +110,25 @@
             </div>
           </div>
           <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="header-cta hidden whitespace-nowrap rounded-full border border-amber-300/35 bg-gradient-to-r from-amber-300/15 via-amber-200/8 to-cyan-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100 shadow-[0_16px_40px_rgba(216,172,89,0.16)] transition hover:border-amber-200/70 hover:brightness-110 sm:inline-flex">
-            Register Now!
+            {{ t('actions.registerNow') }}
           </NuxtLink>
-          <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="header-cta inline-flex whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:hidden">
-            Register
+          <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="mobile-register-cta header-cta inline-flex whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:hidden">
+            {{ t('actions.register') }}
           </NuxtLink>
           <NuxtLink v-if="isAuthenticated && !isRegistrationPaid" :to="paymentCtaTo" class="header-cta whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:px-5">
-            {{ ctaLabel }}
+            {{ localizedCtaLabel }}
           </NuxtLink>
           <span v-if="isAuthenticated && isRegistrationPaid" class="header-cta whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 opacity-90">
-            {{ ctaLabel }}
+            {{ localizedCtaLabel }}
           </span>
           <button v-if="isAuthenticated" type="button" class="header-cta whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:px-5" @click="handleLogout">
-            Log Out
+            {{ t('actions.logOut') }}
           </button>
           <NuxtLink v-else to="/auth/login" class="header-signin whitespace-nowrap rounded-full border border-cyan-300/30 bg-cyan-400/5 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-100 shadow-[0_12px_30px_rgba(34,211,238,0.12)] transition hover:border-cyan-200/60 hover:bg-cyan-300/10 sm:px-5">
-            Sign In
+            {{ t('actions.signIn') }}
           </NuxtLink>
           <details ref="mobileMenuRef" class="relative xl:hidden" :open="mobileMenuOpen" @toggle="mobileMenuOpen = ($event.target as HTMLDetailsElement).open">
-            <summary aria-label="Open navigation menu" class="menu-button flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-white/15 bg-white/5 text-xs font-bold uppercase tracking-[0.12em] text-slate-100 shadow-lg shadow-slate-950/50 transition hover:border-cyan-300/40 hover:bg-white/10">Menu</summary>
+            <summary :aria-label="t('nav.menu')" class="menu-button flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-white/15 bg-white/5 text-xs font-bold uppercase tracking-[0.12em] text-slate-100 shadow-lg shadow-slate-950/50 transition hover:border-cyan-300/40 hover:bg-white/10">{{ t('nav.menu') }}</summary>
             <nav class="nav-menu-panel absolute right-0 top-12 grid w-[min(80vw,18rem)] gap-1 rounded-2xl border border-white/10 bg-slate-950/95 p-3 shadow-2xl shadow-slate-950/60 backdrop-blur-xl">
               <NuxtLink v-for="item in allNav" :key="item.to" :to="item.to" :class="item.disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'hover:bg-white/5 hover:text-white'" class="rounded-xl px-4 py-3 text-sm text-slate-200 transition" @click="item.disabled ? $event.preventDefault() : closeMenus()">{{ item.label }}</NuxtLink>
             </nav>
@@ -141,20 +145,20 @@
       <div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1fr_1fr_1.35fr] lg:px-8">
         <div>
           <p class="text-xs uppercase tracking-[0.3em] text-amber-200">IWBIF 2026</p>
-          <p class="mt-3 max-w-sm text-sm leading-7 text-slate-400">Connecting women-led businesses with global markets, finance, and trusted partnerships.</p>
+          <p class="mt-3 max-w-sm text-sm leading-7 text-slate-400">{{ t('footer.summary') }}</p>
         </div>
         <div class="grid grid-cols-2 gap-3 text-sm text-slate-300">
-          <NuxtLink to="/about">About</NuxtLink><NuxtLink to="/program">Program</NuxtLink>
-          <NuxtLink to="/speakers">Speakers</NuxtLink><NuxtLink to="/business-matching">Business Matching</NuxtLink>
-          <NuxtLink to="/partners">Partners</NuxtLink><NuxtLink to="/faq">FAQ</NuxtLink>
+          <NuxtLink to="/about">{{ t('nav.about') }}</NuxtLink><NuxtLink to="/program">{{ t('nav.program') }}</NuxtLink>
+          <NuxtLink to="/speakers">{{ t('nav.speakers') }}</NuxtLink><NuxtLink to="/business-matching">{{ t('nav.matching') }}</NuxtLink>
+          <NuxtLink to="/partners">{{ t('nav.partners') }}</NuxtLink><NuxtLink to="/faq">{{ t('nav.faq') }}</NuxtLink>
         </div>
         <div class="text-sm text-slate-400 md:text-right">
-          <p class="md:whitespace-nowrap">International Women Business &amp; Investment Forum</p>
+          <p class="md:whitespace-nowrap">{{ t('footer.event') }}</p>
           <p class="mt-1">14–17 October 2026 · Jakarta</p>
-          <div class="mt-3 flex flex-wrap gap-4 md:justify-end"><NuxtLink to="/privacy">Privacy</NuxtLink><NuxtLink to="/terms">Terms</NuxtLink><NuxtLink to="/code-of-conduct">Code of Conduct</NuxtLink><NuxtLink to="/refund-policy">Refunds</NuxtLink></div>
+          <div class="mt-3 flex flex-wrap gap-4 md:justify-end"><NuxtLink to="/privacy">{{ t('footer.privacy') }}</NuxtLink><NuxtLink to="/terms">{{ t('footer.terms') }}</NuxtLink><NuxtLink to="/code-of-conduct">{{ t('footer.conduct') }}</NuxtLink><NuxtLink to="/refund-policy">{{ t('footer.refunds') }}</NuxtLink></div>
         </div>
       </div>
-      <p class="border-t border-white/10 px-4 py-5 text-center text-xs text-slate-500">© 2026 International Women Business &amp; Investment Forum. All rights reserved.</p>
+      <p class="border-t border-white/10 px-4 py-5 text-center text-xs text-slate-500">{{ t('footer.copyright') }}</p>
     </footer>
   </div>
 </template>
@@ -163,13 +167,34 @@
 import logoSrc from '~/assets/images/logo_iwbif2.png';
 import { useCommunication } from '~/composables/useCommunication';
 const logoHasError = ref(false);
+const { t, locale, setLocale } = useI18n();
+useHead(() => ({ htmlAttrs: { lang: locale.value } }));
+const changeLocale = async (event: Event) => {
+  if (authStore.isAdminOrOrganizer) return;
+  const value = (event.target as HTMLSelectElement).value;
+  if (value !== 'en' && value !== 'zh-CN') return;
+  await setLocale(value);
+  if (authStore.isAuthenticated && !authStore.isAdminOrOrganizer) {
+    try {
+      await updatePreferredLocale(value);
+    } catch {
+      // The locale cookie remains authoritative for this browser session if
+      // synchronizing the account preference is temporarily unavailable.
+    }
+  }
+};
 
 const authStore = useAuthStore();
 const { isAuthenticated } = storeToRefs(authStore);
-const { logout } = useAuth();
+const { logout, updatePreferredLocale } = useAuth();
 const registrationFlow = useRegistrationFlow();
 const { ctaLabel, ctaTo, isPaid: isRegistrationPaid } = registrationFlow;
 const paymentCtaTo = ctaTo;
+const localizedCtaLabel = computed(() => {
+  if (locale.value !== 'zh-CN') return ctaLabel.value;
+  const labels: Record<string,string> = {'Register Now!':'立即注册','Secure Your Seats':'立即预订席位','Complete Profile':'完善资料','Complete Payment':'完成付款','Open Dashboard':'打开用户中心','View Ticket':'查看门票'};
+  return labels[ctaLabel.value] || ctaLabel.value;
+});
 const route = useRoute();
 const routeEventId = computed(() => {
   const queryEventId = route.query.event_id;
@@ -214,8 +239,8 @@ const inboxUnreadCount = ref(0);
 const inboxPoller = ref<number | null>(null);
 const unreadBadgeText = computed(() => (inboxUnreadCount.value > 9 ? '9+' : String(inboxUnreadCount.value)));
 const unreadCount = computed(() => inboxUnreadCount.value);
-const activeAccountName = computed(() => authStore.user?.full_name || authStore.user?.name || 'Unknown user');
-const activeAccountEmail = computed(() => authStore.user?.email || 'Unknown email');
+const activeAccountName = computed(() => authStore.user?.full_name || authStore.user?.name || t('inbox.unknownUser'));
+const activeAccountEmail = computed(() => authStore.user?.email || t('inbox.unknownEmail'));
 
 const formatDateTime = (value?: string) => {
   if (!value) return '';
@@ -480,36 +505,37 @@ const hasDelegatePackageSelected = computed(() => {
 type NavItem = { to: string; label: string; disabled?: boolean };
 
 const primaryNav = computed<NavItem[]>(() => [
-  { to: '/', label: 'Home' },
-  { to: '/about', label: 'About' },
-  { to: '/program', label: 'Program' },
-  { to: '/speakers', label: 'Speakers' },
-  { to: '/tickets', label: 'Delegate Packages', disabled: hasDelegatePackageSelected.value }
+  { to: '/', label: t('nav.home') },
+  { to: '/about', label: t('nav.about') },
+  { to: '/program', label: t('nav.program') },
+  { to: '/speakers', label: t('nav.speakers') },
+  { to: '/tickets', label: t('nav.packages'), disabled: hasDelegatePackageSelected.value }
 ]);
 const secondaryNav = computed<NavItem[]>(() => {
   const items: NavItem[] = [
-    { to: '/business-matching', label: 'Business Matching' },
-    { to: '/exhibition', label: 'Exhibition' },
-    { to: '/deal-room', label: 'Deal Room' },
-    { to: '/participants', label: 'Participants' },
-    { to: '/contact', label: 'Contact' },
-    { to: '/faq', label: 'FAQ' },
-    { to: '/dashboard', label: 'Dashboard' }
+    { to: '/business-matching', label: t('nav.matching') },
+    { to: '/exhibition', label: t('nav.exhibition') },
+    { to: '/deal-room', label: t('nav.dealRoom') },
+    { to: '/participants', label: t('nav.participants') },
+    { to: '/contact', label: t('nav.contact') },
+    { to: '/faq', label: t('nav.faq') },
+    { to: '/dashboard', label: t('nav.dashboard') }
   ];
 
   if (authStore.isAdminOrOrganizer) {
-    items.push({ to: '/admin/packages', label: 'Manage Packages' });
-    items.push({ to: '/admin/transactions', label: 'Transactions' });
-    items.push({ to: '/admin/manual-payments', label: 'Manual Payments' });
-    items.push({ to: '/admin/reports', label: 'Sales Report' });
-    items.push({ to: '/admin/participants-report', label: 'Participants Report' });
-    items.push({ to: '/admin/speakers', label: 'Manage Speakers' });
-    items.push({ to: '/admin/program', label: 'Manage Program' });
-    items.push({ to: '/admin/users', label: 'Manage Users' });
-    items.push({ to: '/admin/announcements', label: 'Announcements' });
-    items.push({ to: '/admin/certificates', label: 'Certificates' });
-    items.push({ to: '/admin/email-notifications', label: 'Email Notifications' });
-    items.push({ to: '/admin/business-matching', label: 'Matching Operations' });
+    items.push({ to: '/admin/packages', label: t('nav.managePackages') });
+    items.push({ to: '/admin/transactions', label: t('nav.transactions') });
+    items.push({ to: '/admin/manual-payments', label: t('nav.manualPayments') });
+    items.push({ to: '/admin/reports', label: t('nav.salesReport') });
+    items.push({ to: '/admin/participants-report', label: t('nav.participantsReport') });
+    items.push({ to: '/admin/speakers', label: t('nav.manageSpeakers') });
+    items.push({ to: '/admin/program', label: t('nav.manageProgram') });
+    items.push({ to: '/admin/translations', label: 'Chinese translations' });
+    items.push({ to: '/admin/users', label: t('nav.manageUsers') });
+    items.push({ to: '/admin/announcements', label: t('nav.announcements') });
+    items.push({ to: '/admin/certificates', label: t('nav.certificates') });
+    items.push({ to: '/admin/email-notifications', label: t('nav.emailNotifications') });
+    items.push({ to: '/admin/business-matching', label: t('nav.matchingOperations') });
   }
 
   return items;
@@ -518,6 +544,18 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
 </script>
 
 <style scoped>
+.locale-switcher select {
+  height: 2.25rem;
+  cursor: pointer;
+  border: 1px solid rgb(103 232 249 / 28%);
+  border-radius: 999px;
+  background: rgb(8 25 48 / 88%);
+  padding: 0 .65rem;
+  color: #cffafe;
+  font-size: .7rem;
+  font-weight: 700;
+}
+
 .brand-block {
   transition: transform 180ms ease;
 }
@@ -662,6 +700,11 @@ summary::-webkit-details-marker {
 }
 
 @media (max-width: 639px) {
+  .partner-logos,
+  .mobile-register-cta {
+    display: none;
+  }
+
   .partner-logo {
     width: 1.9rem;
     height: 1.9rem;
@@ -716,6 +759,12 @@ summary::-webkit-details-marker {
     height: 2.5rem;
     padding: 0;
     font-size: 0.54rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .locale-switcher select {
+    padding-inline: 0.5rem;
   }
 }
 </style>

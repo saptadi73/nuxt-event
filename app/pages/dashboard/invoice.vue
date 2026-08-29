@@ -1,29 +1,29 @@
 <template>
   <section class="mx-auto max-w-4xl px-3 py-10 sm:px-6">
-    <p class="text-sm uppercase tracking-[.35em] text-cyan-200">Payment and Invoice</p>
-    <h1 class="mt-3 text-3xl font-black sm:text-4xl">Registration invoice</h1>
+    <p class="text-sm uppercase tracking-[.35em] text-cyan-200">{{ copy.eyebrow }}</p>
+    <h1 class="mt-3 text-3xl font-black sm:text-4xl">{{ copy.title }}</h1>
 
-    <div v-if="pending" class="glass-card mt-8 rounded-[2rem] p-7 text-slate-300">Loading invoice...</div>
+    <div v-if="pending" class="glass-card mt-8 rounded-[2rem] p-7 text-slate-300">{{ copy.loading }}</div>
     <div v-else-if="errorMessage" class="mt-8 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ errorMessage }}</div>
     <div v-else-if="!invoice" class="glass-card mt-8 rounded-[2rem] p-7">
-      <p class="text-lg font-semibold">No invoice is available yet.</p>
+      <p class="text-lg font-semibold">{{ copy.noInvoice }}</p>
       <p class="mt-2 text-slate-400">{{ emptyInvoiceMessage }}</p>
       <p v-if="contextMismatchMessage" class="mt-2 text-amber-200/80">{{ contextMismatchMessage }}</p>
       <NuxtLink :to="emptyInvoiceTo" class="mt-6 inline-flex rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950">{{ emptyInvoiceAction }}</NuxtLink>
     </div>
     <article v-else id="invoice" ref="invoiceElement" class="glass-card mt-8 rounded-[2rem] p-5 sm:p-7">
       <div class="flex flex-wrap justify-between gap-5 border-b border-white/10 pb-6">
-        <div class="min-w-0"><p class="break-words text-sm text-slate-400">{{ invoice.registration.event_name }}</p><p class="mt-1 break-words font-semibold">Invoice {{ invoice.order.order_number }}</p></div>
-        <span class="h-fit rounded-full bg-emerald-300/10 px-4 py-2 text-xs font-semibold uppercase tracking-[.2em] text-emerald-200">Paid</span>
+        <div class="min-w-0"><p class="break-words text-sm text-slate-400">{{ invoice.registration.event_name }}</p><p class="mt-1 break-words font-semibold">{{ copy.invoice }} {{ invoice.order.order_number }}</p></div>
+        <span class="h-fit rounded-full bg-emerald-300/10 px-4 py-2 text-xs font-semibold uppercase tracking-[.2em] text-emerald-200">{{ copy.paid }}</span>
       </div>
       <dl class="mt-6 grid gap-5 sm:grid-cols-2">
-        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Registration number</dt><dd class="mt-2 break-words text-lg font-semibold">{{ invoice.registration.registration_number }}</dd></div>
-        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Participant</dt><dd class="mt-2 break-words text-lg font-semibold">{{ invoice.participant.full_name }}</dd><p class="break-words text-sm text-slate-400">{{ invoice.participant.email }}</p></div>
-        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Delegate package</dt><dd class="mt-2 text-lg font-semibold">{{ invoice.registration.delegate_package_name || invoice.registration.ticket_type_name || '-' }}</dd></div>
-        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">Payment status</dt><dd class="mt-2 text-lg font-semibold text-emerald-300">Paid</dd><p class="text-sm text-slate-400">{{ formatDate(invoice.payment.paid_at) }}</p></div>
+        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">{{ copy.registrationNumber }}</dt><dd class="mt-2 break-words text-lg font-semibold">{{ invoice.registration.registration_number }}</dd></div>
+        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">{{ copy.participant }}</dt><dd class="mt-2 break-words text-lg font-semibold">{{ invoice.participant.full_name }}</dd><p class="break-words text-sm text-slate-400">{{ invoice.participant.email }}</p></div>
+        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">{{ copy.delegatePackage }}</dt><dd class="mt-2 text-lg font-semibold">{{ invoice.registration.delegate_package_name || invoice.registration.ticket_type_name || '-' }}</dd></div>
+        <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">{{ copy.paymentStatus }}</dt><dd class="mt-2 text-lg font-semibold text-emerald-300">{{ copy.paid }}</dd><p class="text-sm text-slate-400">{{ formatDate(invoice.payment.paid_at) }}</p></div>
       </dl>
-      <div class="mt-7 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-6"><span class="text-slate-400">Total paid</span><strong class="break-words text-2xl text-cyan-200">{{ formatCurrency(invoice.order.total_amount, invoice.order.currency) }}</strong></div>
-      <button class="mt-7 w-full rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 print:hidden sm:w-auto" :disabled="downloading" @click="downloadInvoice">{{ downloading ? 'Preparing PDF...' : 'Download invoice PDF' }}</button>
+      <div class="mt-7 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-6"><span class="text-slate-400">{{ copy.totalPaid }}</span><strong class="break-words text-2xl text-cyan-200">{{ formatCurrency(invoice.order.total_amount, invoice.order.currency) }}</strong></div>
+      <button class="mt-7 w-full rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 print:hidden sm:w-auto" :disabled="downloading" @click="downloadInvoice">{{ downloading ? copy.preparingPdf : copy.downloadPdf }}</button>
     </article>
   </section>
 </template>
@@ -34,7 +34,13 @@ import { useRegistration } from '~/composables/useRegistration';
 import { useTicket } from '~/composables/useTicket';
 
 definePageMeta({ middleware: 'auth' });
-useSeoMeta({ title: 'Invoice | IWBIF 2026' });
+const { locale } = useI18n();
+const messages = {
+  en: { eyebrow: 'Payment and Invoice', title: 'Registration invoice', loading: 'Loading invoice…', noInvoice: 'No invoice is available yet.', invoice: 'Invoice', paid: 'Paid', registrationNumber: 'Registration number', participant: 'Participant', delegatePackage: 'Delegate package', paymentStatus: 'Payment status', totalPaid: 'Total paid', preparingPdf: 'Preparing PDF…', downloadPdf: 'Download invoice PDF', finishProfile: 'Your payment is complete. Finish your profile so the backend can link this order to your registration and generate the invoice.', awaitingInvoice: 'Your invoice will appear after your payment and registration have been confirmed.', mismatchProfile: 'No invoice was found for this payment context yet. Please complete your profile if it is still pending.', mismatch: 'No invoice was found for this specific payment context yet.', completeExhibitor: 'Complete Exhibitor Profile', completeDelegate: 'Complete Delegate Profile', checkStatus: 'Check payment status', goPayment: 'Go to payment', unavailable: 'Your invoice is not available yet. Please contact the event organizer if your payment has already been confirmed.', printError: 'Unable to open print window.', exportError: 'The PDF export could not be prepared. Please try again.', invoiceSuffix: 'Invoice', seo: 'Invoice' },
+  zh: { eyebrow: '付款与发票', title: '注册发票', loading: '正在加载发票…', noInvoice: '目前尚无可用发票。', invoice: '发票', paid: '已付款', registrationNumber: '注册编号', participant: '参与者', delegatePackage: '代表套餐', paymentStatus: '付款状态', totalPaid: '已付总额', preparingPdf: '正在准备 PDF…', downloadPdf: '下载发票 PDF', finishProfile: '您的付款已完成。请完善个人资料，以便后端将此订单关联到您的注册并生成发票。', awaitingInvoice: '付款和注册确认后，您的发票将显示在此处。', mismatchProfile: '尚未找到与此次付款对应的发票。如果资料仍未完成，请先完善资料。', mismatch: '尚未找到与此次付款信息对应的发票。', completeExhibitor: '完善参展商资料', completeDelegate: '完善代表资料', checkStatus: '查看付款状态', goPayment: '前往付款', unavailable: '您的发票目前尚不可用。如果付款已确认，请联系活动主办方。', printError: '无法打开打印窗口。', exportError: '无法准备 PDF 导出，请重试。', invoiceSuffix: '发票', seo: '发票' }
+} as const;
+const copy = computed(() => locale.value === 'zh-CN' ? messages.zh : messages.en);
+useSeoMeta({ title: () => `${copy.value.seo} | IWBIF 2026` });
 
 const { getMyInvoices, getInvoiceByRegistration } = usePayment();
 const registrationFlow = useRegistrationFlow();
@@ -49,8 +55,8 @@ const downloading = ref(false);
 const errorMessage = ref('');
 const pendingProfileType = computed(() => registrationFlow.profilePendingType.value);
 const emptyInvoiceMessage = computed(() => pendingProfileType.value
-  ? 'Your payment is complete. Finish your profile so the backend can link this order to your registration and generate the invoice.'
-  : 'Your invoice will appear after your payment and registration have been confirmed.');
+  ? copy.value.finishProfile
+  : copy.value.awaitingInvoice);
 const hasInvoiceContext = computed(() => Boolean(
   getOrderIdFromQuery().trim() ||
   getRegistrationIdFromQuery().trim() ||
@@ -59,13 +65,13 @@ const hasInvoiceContext = computed(() => Boolean(
 const contextMismatchMessage = computed(() => {
   if (!hasInvoiceContext.value) return '';
   return pendingProfileType.value
-    ? 'No invoice was found for this payment context yet. Please complete your profile if it is still pending.'
-    : 'No invoice was found for this specific payment context yet.';
+    ? copy.value.mismatchProfile
+    : copy.value.mismatch;
 });
 const emptyInvoiceAction = computed(() => {
-  if (pendingProfileType.value) return `Complete ${pendingProfileType.value === 'exhibitor' ? 'Exhibitor' : 'Delegate'} Profile`;
-  if (hasInvoiceContext.value) return 'Check payment status';
-  return 'Go to payment';
+  if (pendingProfileType.value) return pendingProfileType.value === 'exhibitor' ? copy.value.completeExhibitor : copy.value.completeDelegate;
+  if (hasInvoiceContext.value) return copy.value.checkStatus;
+  return copy.value.goPayment;
 });
 const emptyInvoiceTo = computed(() => {
   if (pendingProfileType.value) return `/register/${pendingProfileType.value}`;
@@ -217,7 +223,7 @@ onMounted(async () => {
     }
   } catch {
     if (!invoice.value) {
-      errorMessage.value = 'Your invoice is not available yet. Please contact the event organizer if your payment has already been confirmed.';
+      errorMessage.value = copy.value.unavailable;
     }
   } finally {
     pending.value = false;
@@ -227,8 +233,8 @@ onMounted(async () => {
   }
 });
 
-const formatCurrency = (amount: number, currency: string) => new Intl.NumberFormat('id-ID', { style: 'currency', currency }).format(amount);
-const formatDate = (value?: string | null) => value ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'long', timeStyle: 'short' }).format(new Date(value)) : '-';
+const formatCurrency = (amount: number, currency: string) => new Intl.NumberFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'id-ID', { style: 'currency', currency }).format(amount);
+const formatDate = (value?: string | null) => value ? new Intl.DateTimeFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'id-ID', { dateStyle: 'long', timeStyle: 'short' }).format(new Date(value)) : '-';
 
 const downloadInvoice = async () => {
   if (!invoiceElement.value || !invoice.value) return;
@@ -237,15 +243,15 @@ const downloadInvoice = async () => {
 
   try {
     const printWindow = window.open('', '_blank', 'width=960,height=1200');
-    if (!printWindow) throw new Error('Unable to open print window.');
+    if (!printWindow) throw new Error(copy.value.printError);
 
     const invoiceMarkup = invoiceElement.value.outerHTML;
     const closingScriptTag = '</scr' + 'ipt>';
-    const invoiceTitle = `${invoice.value.registration.registration_number || invoice.value.order.order_number} Invoice`;
+    const invoiceTitle = `${invoice.value.registration.registration_number || invoice.value.order.order_number} ${copy.value.invoiceSuffix}`;
 
     printWindow.document.write(`
       <!doctype html>
-      <html lang="en">
+      <html lang="${locale.value === 'zh-CN' ? 'zh-CN' : 'en'}">
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -340,7 +346,7 @@ const downloadInvoice = async () => {
     `);
     printWindow.document.close();
   } catch {
-    errorMessage.value = 'The PDF export could not be prepared. Please try again.';
+    errorMessage.value = copy.value.exportError;
   } finally {
     downloading.value = false;
   }

@@ -16,20 +16,20 @@
 
     <div class="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p class="text-xs uppercase tracking-[0.28em] text-amber-200">Organizer Panel</p>
-        <h1 class="mt-3 text-3xl font-black sm:text-4xl">Ticket sales & revenue report</h1>
-        <p class="mt-2 text-xs text-slate-400">Last updated: {{ lastUpdatedLabel }}</p>
+        <p class="text-xs uppercase tracking-[0.28em] text-amber-200">{{ t('adminReports.panel') }}</p>
+        <h1 class="mt-3 text-3xl font-black sm:text-4xl">{{ t('adminReports.title') }}</h1>
+        <p class="mt-2 text-xs text-slate-400">{{ t('adminReports.lastUpdated', { value: lastUpdatedLabel }) }}</p>
       </div>
       <div class="rounded-full border border-amber-300/30 bg-amber-300/10 px-4 py-2 text-sm font-medium text-amber-100">
         <div class="inline-flex items-center">
-          <span>Role: {{ authStore.userRole || 'unknown' }}</span>
+          <span>{{ t('adminReports.role', { value: authStore.userRole || t('adminReports.unknown') }) }}</span>
           <button
             type="button"
             class="user-login-badge ml-3 inline-flex h-7 w-7 items-center justify-center rounded-full border border-amber-100/40 relative"
             :title="loggedInUserInfo"
             @click="showLoggedInUserInfo = !showLoggedInUserInfo"
           >
-            <span v-if="authStore.isAuthenticated" class="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" title="Session active"></span>
+            <span v-if="authStore.isAuthenticated" class="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-slate-900" :title="t('adminReports.sessionActive')"></span>
             <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-amber-300/20 text-xs text-amber-100 font-bold">
               {{ loggedInUserInitial }}
             </span>
@@ -40,7 +40,7 @@
           v-if="showLoggedInUserInfo"
           class="mt-2 rounded-lg border border-amber-200/40 bg-slate-900/90 px-3 py-2 text-xs text-amber-100"
         >
-          <p class="font-semibold text-amber-50">Sesi login</p>
+          <p class="font-semibold text-amber-50">{{ t('adminReports.loginSession') }}</p>
           <p class="mt-1">{{ loggedInUserName }}</p>
           <p class="text-amber-200/90">{{ loggedInUserEmail }}</p>
           <button
@@ -48,7 +48,7 @@
             class="mt-2 rounded-full border border-amber-200/40 px-2 py-1 text-[11px] font-bold"
             @click.stop="copyLoggedInUserInfo"
           >
-            Salin nama & email
+            {{ t('adminReports.copyNameEmail') }}
           </button>
         </div>
       </div>
@@ -56,26 +56,26 @@
 
       <div class="report-filters mb-6 grid gap-3 rounded-3xl border border-amber-300/20 bg-white/5 p-4 sm:grid-cols-[1fr_1fr_1fr_auto]">
         <label class="grid gap-2 text-sm">
-          <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Event</span>
+          <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminReports.event') }}</span>
           <select v-model="eventFilter" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" :disabled="eventsLoading">
-            <option value="">Semua event</option>
+            <option value="">{{ t('adminReports.allEvents') }}</option>
             <option v-for="event in events" :key="event.id" :value="event.id">
               {{ event.name }}
             </option>
           </select>
         </label>
         <label class="grid gap-2 text-sm">
-          <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Tanggal mulai</span>
+          <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminReports.startDate') }}</span>
           <input v-model="dateFrom" type="date" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" />
         </label>
       <label class="grid gap-2 text-sm">
-        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Tanggal selesai</span>
+        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminReports.endDate') }}</span>
         <input v-model="dateTo" type="date" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" />
       </label>
       <label class="grid gap-2 text-sm">
-        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Status</span>
+        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminReports.status') }}</span>
         <select v-model="statusFilter" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none">
-          <option value="">Semua status</option>
+          <option value="">{{ t('adminReports.allStatuses') }}</option>
           <option value="created">created</option>
           <option value="pending">pending</option>
           <option value="success">success</option>
@@ -84,18 +84,18 @@
         </select>
       </label>
       <label class="grid gap-2 text-sm">
-        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Channel</span>
+        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminReports.channel') }}</span>
         <select v-model="channelFilter" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none">
-          <option value="">Semua channel</option>
+          <option value="">{{ t('adminReports.allChannels') }}</option>
           <option v-for="option in channelOptions" :key="option" :value="option">
             {{ option }}
           </option>
         </select>
       </label>
       <label class="grid gap-2 text-sm">
-        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">Package ID</span>
+        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminReports.packageId') }}</span>
         <select v-model="packageIdFilter" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" :disabled="!eventFilter || packageLoading">
-          <option value="" :disabled="packageLoading">{{ packageLoading ? 'Memuat package...' : 'Semua package' }}</option>
+          <option value="" :disabled="packageLoading">{{ packageLoading ? t('adminReports.loadingPackages') : t('adminReports.allPackages') }}</option>
           <option v-for="option in packageOptions" :key="option.id" :value="option.id">
             {{ option.name }}
           </option>
@@ -103,24 +103,24 @@
       </label>
       <div class="flex items-end gap-2">
         <button :disabled="loading || !hasActiveFilters" class="rounded-full border border-white/20 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50" @click="resetFilters">
-          Reset
+          {{ t('adminReports.reset') }}
         </button>
       </div>
       <div class="sm:col-span-6 flex flex-wrap gap-2">
         <button class="rounded-full border border-white/20 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10" @click="setDatePreset('today')">
-          Hari ini
+          {{ t('adminReports.today') }}
         </button>
         <button class="rounded-full border border-white/20 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10" @click="setDatePreset('last7')">
-          7 hari
+          {{ t('adminReports.last7Days') }}
         </button>
         <button class="rounded-full border border-white/20 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10" @click="setDatePreset('last30')">
-          30 hari
+          {{ t('adminReports.last30Days') }}
         </button>
         <button class="rounded-full border border-white/20 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10" @click="setDatePreset('month')">
-          Bulan ini
+          {{ t('adminReports.thisMonth') }}
         </button>
       </div>
-      <p class="text-xs text-slate-400 sm:col-span-6">Filter diterapkan otomatis setelah kamu selesai mengubah pilihan (dengan delay 350ms).</p>
+      <p class="text-xs text-slate-400 sm:col-span-6">{{ t('adminReports.filterHelp') }}</p>
       <p class="text-xs text-cyan-200 sm:col-span-6">{{ reportScopeLabel }}</p>
     </div>
 
@@ -285,6 +285,7 @@ import { useEvent, type DelegatePackageItem, type EventItem } from '~/composable
 const route = useRoute();
 const router = useRouter();
 const config = useRuntimeConfig();
+const { locale, t } = useI18n();
 
 definePageMeta({ middleware: ['auth', 'admin'] });
 useSeoMeta({ title: 'Sales Report | IWBIF 2026' });
@@ -393,15 +394,15 @@ const report = ref<PaymentReportResponse>(defaultReport);
 const pending = computed(() => loading.value);
 const lastUpdated = ref<Date | null>(null);
 const isOrganizer = computed(() => authStore.userRole === 'organizer');
-const selectedEventName = computed(() => events.value.find((item) => item.id === eventFilter.value)?.name || 'event aktif');
+const selectedEventName = computed(() => events.value.find((item) => item.id === eventFilter.value)?.name || t('adminReports.event'));
 const reportScopeLabel = computed(() => isOrganizer.value && eventFilter.value
-  ? `Data organizer dibatasi untuk ${selectedEventName.value}.`
-  : 'Menampilkan data sesuai akses akun dan filter yang dipilih.');
+  ? t('adminReports.organizerScope', { event: selectedEventName.value })
+  : t('adminReports.accessScope'));
 
 const formatDateShort = (value: string) => {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
+  return new Intl.DateTimeFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' }).format(date);
 };
 
 const buildReportParams = () => {
@@ -507,7 +508,7 @@ const loadReport = async () => {
   const storageKey = `${storagePrefix}${manualReviewStateKey.value}`;
   const previousStoredManualReviewCount = getStoredManualReviewCount(storageKey);
   if (hasDateRangeInvalid.value) {
-    errorMessage.value = 'Tanggal mulai tidak boleh lebih besar dari tanggal selesai.';
+    errorMessage.value = t('adminReports.invalidDateRange');
     loading.value = false;
     return;
   }
@@ -526,18 +527,18 @@ const loadReport = async () => {
       }
 
       if (nextManualReviewCount > previousStoredManualReviewCount) {
-        showManualReviewAlert('Baru ada transaksi yang perlu verifikasi manual (ditandai Perlu cek).');
+        showManualReviewAlert(t('adminReports.newManualReview'));
       } else if (nextManualReviewCount < previousStoredManualReviewCount) {
-        showManualReviewAlert('Jumlah transaksi perlu verifikasi manual berkurang setelah sinkronisasi.');
+        showManualReviewAlert(t('adminReports.manualReviewReduced'));
       } else if (nextManualReviewCount > 0) {
-        showManualReviewAlert('Masih ada transaksi yang perlu verifikasi manual. Silakan cek indikator Perlu cek.');
+        showManualReviewAlert(t('adminReports.manualReviewRemain'));
       }
     }
     if (currentPage.value !== 1) {
       currentPage.value = 1;
     }
   } catch (error) {
-    errorMessage.value = 'Unable to load payment report. Please check your admin access token or backend availability.';
+    errorMessage.value = t('adminReports.loadError');
     console.error(error);
   } finally {
     loading.value = false;
@@ -769,8 +770,8 @@ const hasActiveFilters = computed(() => {
 });
 
 const lastUpdatedLabel = computed(() => {
-  if (!lastUpdated.value) return 'belum dimuat';
-  return new Intl.DateTimeFormat('en-GB', {
+  if (!lastUpdated.value) return t('adminReports.notLoaded');
+  return new Intl.DateTimeFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'en-GB', {
     dateStyle: 'medium',
     timeStyle: 'short'
   }).format(lastUpdated.value);
@@ -832,7 +833,7 @@ const copyReference = async (value: string | null | undefined) => {
 const showManualReviewAlert = (message: string) => {
   if (!import.meta.client) return;
   manualReviewToast.value = message;
-  manualReviewToastClass.value = message.includes('berkurang')
+  manualReviewToastClass.value = message === t('adminReports.manualReviewReduced')
     ? 'border-cyan-300/35 bg-cyan-300/10 text-cyan-100'
     : 'border-rose-300/35 bg-rose-300/10 text-rose-100';
   if (manualReviewToastTimer) {

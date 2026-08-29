@@ -3,17 +3,17 @@
     <section class="relative mx-auto max-w-7xl px-3 pb-16 pt-10 sm:px-6 sm:pt-20 lg:px-8">
       <div class="program-glow" aria-hidden="true" />
       <div class="relative max-w-5xl">
-        <p class="program-eyebrow">Live Event Program</p>
-        <h1 class="mt-5 text-3xl font-black leading-[1.08] text-[#f8f6f1] sm:text-5xl lg:text-6xl">Four days from meaningful insight to <span class="text-[#e6c477]">deal execution.</span></h1>
+        <p class="program-eyebrow">{{ copy.eyebrow }}</p>
+        <h1 class="mt-5 text-3xl font-black leading-[1.08] text-[#f8f6f1] sm:text-5xl lg:text-6xl">{{ copy.titleLead }} <span class="text-[#e6c477]">{{ copy.titleHighlight }}</span></h1>
         <div class="mt-8 flex flex-wrap gap-3">
-          <span class="program-meta">14–17 October 2026</span>
+          <span class="program-meta">{{ copy.date }}</span>
           <span class="program-meta">Hotel Kempinski Indonesia</span>
-          <span class="program-meta">Jakarta, Indonesia</span>
+          <span class="program-meta">{{ copy.place }}</span>
         </div>
-        <p class="mt-6 max-w-3xl text-sm leading-7 text-[#aeb9c8] sm:text-base">Sessions are delivered by forum leaders and updated from the official event operations source. Prepare your business materials early for every matching window.</p>
+        <p class="mt-6 max-w-3xl text-sm leading-7 text-[#aeb9c8] sm:text-base">{{ copy.intro }}</p>
       </div>
 
-      <div v-if="pending" class="mt-10 space-y-8" role="status" aria-live="polite" aria-label="Loading event program">
+      <div v-if="pending" class="mt-10 space-y-8" role="status" aria-live="polite" :aria-label="copy.loading">
         <section v-for="day in 2" :key="day" class="day-block" aria-hidden="true">
           <div class="flex items-center gap-4">
             <div class="skeleton h-3 w-16 rounded-full" />
@@ -34,14 +34,14 @@
             </article>
           </div>
         </section>
-        <span class="sr-only">Loading event program...</span>
+        <span class="sr-only">{{ copy.loading }}</span>
       </div>
-      <div v-else-if="error" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">The event schedule could not be loaded.</div>
-      <div v-else-if="!groupedSessions.length" class="mt-10 rounded-3xl border border-white/10 bg-white/5 p-6 text-slate-200">No program sessions have been published yet.</div>
+      <div v-else-if="error" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ copy.error }}</div>
+      <div v-else-if="!groupedSessions.length" class="mt-10 rounded-3xl border border-white/10 bg-white/5 p-6 text-slate-200">{{ copy.empty }}</div>
       <div v-else class="mt-10 space-y-10">
         <section v-for="(day, dayIndex) in groupedSessions" :key="day.date" class="day-block">
           <div class="day-heading">
-            <span class="day-number">Day {{ String(dayIndex + 1).padStart(2, '0') }}</span>
+            <span class="day-number">{{ copy.day }} {{ String(dayIndex + 1).padStart(2, '0') }}{{ copy.daySuffix }}</span>
             <p>{{ day.date }}</p>
           </div>
           <div class="mt-5 space-y-4">
@@ -66,10 +66,10 @@
 <script setup lang="ts">
 import { useEvent, type SessionItem } from '~/composables/useEvent';
 
-useSeoMeta({
-  title: 'Program | IWBIF 2026',
-  description: 'Live event schedule loaded from the IWBIF 2026 session source.'
-});
+const {locale}=useI18n();
+const messages={en:{eyebrow:'Live Event Program',titleLead:'Four days from meaningful insight to',titleHighlight:'deal execution.',date:'14–17 October 2026',place:'Jakarta, Indonesia',intro:'Sessions are delivered by forum leaders and updated from the official event operations source. Prepare your business materials early for every matching window.',loading:'Loading event program...',error:'The event schedule could not be loaded.',empty:'No program sessions have been published yet.',day:'Day',daySuffix:'',session:'session'},'zh-CN':{eyebrow:'实时活动议程',titleLead:'四天议程，从深度洞察走向',titleHighlight:'交易落地。',date:'2026年10月14日至17日',place:'印度尼西亚·雅加达',intro:'各专场由论坛领袖主导，并从官方活动运营数据源实时更新。请提前为每个配对时段准备商业资料。',loading:'正在加载活动议程…',error:'无法加载活动日程。',empty:'尚未发布议程专场。',day:'第',daySuffix:' 天',session:'专场'}} as const;
+const copy=computed(()=>messages[locale.value==='zh-CN'?'zh-CN':'en']);
+useSeoMeta({title:()=>`${copy.value.eyebrow} | IWBIF 2026`,description:()=>copy.value.intro});
 
 const config = useRuntimeConfig();
 const { getEventSessions, getSessionsByEventId, getEvents } = useEvent();
@@ -93,9 +93,10 @@ const resolveEventSessions = async () => {
   }
 };
 
-const { data: response, pending, error, refresh } = await useAsyncData(
+const { data: response, pending, error } = await useAsyncData(
   `public-event-sessions-${eventSlug}`,
-  resolveEventSessions
+  resolveEventSessions,
+  { watch: [locale] }
 );
 
 const sessions = computed(() => response.value ?? []);
@@ -108,7 +109,7 @@ const groupedSessions = computed(() => {
     const parsedDate = new Date(item.start_at);
     if (Number.isNaN(parsedDate.getTime())) continue;
 
-    const date = new Intl.DateTimeFormat('en-GB', {
+    const date = new Intl.DateTimeFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'en-GB', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
@@ -126,7 +127,7 @@ const formatTime = (iso: string) => {
   const parsed = new Date(iso);
   if (Number.isNaN(parsed.getTime())) return '—';
 
-  return new Intl.DateTimeFormat('en-GB', {
+  return new Intl.DateTimeFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'en-GB', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
@@ -134,7 +135,7 @@ const formatTime = (iso: string) => {
   }).format(parsed);
 };
 
-const label = (value?: string) => (value ?? 'session').replaceAll('_', ' ');
+const label = (value?: string) => (value ?? copy.value.session).replaceAll('_', ' ');
 </script>
 
 <style scoped>
