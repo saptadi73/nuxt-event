@@ -3,6 +3,7 @@
     <p class="text-sm uppercase tracking-[.35em] text-amber-200">{{ copy.eyebrow }}</p>
     <h1 class="mt-4 text-4xl font-black sm:text-5xl">{{ copy.title }}</h1>
     <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">{{ copy.description }}</p>
+    <div v-if="offlinePayment" class="mt-6 rounded-2xl border border-emerald-300/25 bg-emerald-300/10 p-4 text-sm leading-7 text-emerald-100"><strong>Offline payment selected.</strong> Complete and submit this registration. After the organizer receives your cash, transfer, EDC, or other approved offline payment, an admin will create the payment using your registration ID and issue the ticket only after full settlement.</div>
 
     <div v-if="pending" class="mt-10 h-60 animate-pulse rounded-[2rem] bg-white/5" />
     <div v-else-if="optionsError" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ optionsError.message }}</div>
@@ -68,6 +69,8 @@ import {useRegistration,type RegistrationPayload} from '~/composables/useRegistr
 
 definePageMeta({ middleware: 'auth' });
 const { locale } = useI18n();
+const route = useRoute();
+const offlinePayment = computed(() => route.query.payment === 'offline');
 
 const messages = {
   en: {
@@ -283,7 +286,7 @@ const submit = async () => {
       : await createRegistration(payload as RegistrationPayload);
     success.value = true;
     feedback.value = copy.value.saved.replace('{number}', result.data.registration_number);
-    await navigateTo('/dashboard');
+    await navigateTo(offlinePayment.value ? '/dashboard/payment-status' : '/dashboard');
   } catch (error) {
     const value = error as { data?: { message?: string; errors?: Array<{ message: string }> } };
     feedback.value = value.data?.errors?.[0]?.message || value.data?.message || (error instanceof Error ? error.message : copy.value.saveError);

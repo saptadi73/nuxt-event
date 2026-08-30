@@ -268,6 +268,26 @@ Khusus Midtrans, keberadaan `provider_order_id` atau
 menentukan hasil dari `transaction_status`; ID gateway hanya ditampilkan sebagai
 referensi invoice, report admin, atau troubleshooting.
 
+## Pembayaran cash/offline assisted oleh organizer
+
+Untuk peserta yang sudah terdaftar tetapi membayar di luar platform, admin UI
+memilih registrasi lalu memanggil:
+
+```http
+POST /api/v1/admin/registrations/{registration_id}/offline-payments
+```
+
+Gunakan metode `cash`, `manual_transfer`, `manual_qr_code`, `edc`, atau
+`other_offline`, serta nomor kuitansi unik. `amount` boleh dikosongkan agar
+backend menggunakan seluruh sisa tagihan. Jika peserta sebelumnya sudah sukses
+membayar sebagian di gateway, jangan kirim total awal; tampilkan sisa dari detail
+order atau biarkan backend mengisinya.
+
+Response sukses berisi `order`, `payment`, dan `ticket`, sehingga admin dapat
+langsung merender atau mencetak ticket. Endpoint ini berbeda dari rekonsiliasi
+webhook hilang: transaksi gateway yang sebenarnya sukses tetap dikonfirmasi lewat
+`PATCH /api/v1/admin/transactions/{payment_id}/status`, bukan dibuat sebagai cash.
+
 ## 5b. Laporan participant untuk admin/organizer
 
 Panel admin dapat mengambil laporan participant lengkap dengan semua package dan

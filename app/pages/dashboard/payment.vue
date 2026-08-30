@@ -11,9 +11,12 @@
         <div v-if="isPartial" class="mt-5 rounded-2xl border border-amber-300/25 bg-amber-300/5 p-4 text-sm leading-6 text-amber-100">A payment part was received. Continue payment for the remaining {{ money(order?.remaining_amount || 0, order?.currency || 'IDR') }}. Tickets are not available yet.</div>
         <p v-if="unsupportedOrderCurrency" class="mt-5 rounded-2xl border border-red-400/30 bg-red-950/30 p-4 text-sm text-red-100">{{ copy.currencyError }}</p>
         <NuxtLink v-if="isPaid" :to="paidDestination" class="mt-6 inline-flex w-full justify-center rounded-full bg-emerald-300 px-6 py-3 text-center font-bold text-slate-950 sm:w-auto">{{ paidActionLabel }}</NuxtLink>
-        <div v-else class="mt-6 grid gap-4 md:grid-cols-2">
+        <div v-else class="mt-6 grid gap-4 md:grid-cols-3">
           <NuxtLink :to="`/dashboard/payment-manual?order_id=${encodeURIComponent(orderId)}`" class="payment-choice payment-choice-bank" :class="{ 'payment-choice--disabled': paymentDisabled }" :aria-disabled="paymentDisabled" @click="preventDisabledNavigation">
             <span class="payment-choice__tag">{{ copy.bankTag }}</span><strong>{{ copy.bankTitle }}</strong><p>{{ copy.bankDescription }}</p><span class="payment-choice__action">{{ copy.bankAction }} <span aria-hidden="true">→</span></span>
+          </NuxtLink>
+          <NuxtLink :to="`/register/delegate?payment=offline&order_id=${encodeURIComponent(orderId)}`" class="payment-choice payment-choice-offline">
+            <span class="payment-choice__tag">Organizer assisted</span><strong>Offline Payment</strong><p>Complete your registration first, then pay outside the platform. An administrator or organizer will create the verified payment from your registration.</p><span class="payment-choice__action">Complete registration <span aria-hidden="true">→</span></span>
           </NuxtLink>
           <article class="payment-choice payment-choice-doku">
             <span class="payment-choice__tag">{{ copy.gatewayTag }}</span><strong>{{ copy.onlineTitle }}</strong><p>{{ onlineDescription }}</p><button class="payment-choice__action disabled:cursor-not-allowed disabled:opacity-60" :disabled="submitting || paymentDisabled" @click="startPayment">{{ onlineAction }} <span aria-hidden="true">→</span></button>
@@ -55,6 +58,7 @@ onMounted(async()=>{orderId.value=queryValue(route.query.order_id)||sessionStora
 .payment-choice--disabled:hover { transform:none; border-color:rgba(255,255,255,.12); box-shadow:none; }
 .payment-choice-bank { background:linear-gradient(145deg,rgba(230,196,119,.12),rgba(4,21,45,.72)); }
 .payment-choice-qr { background:linear-gradient(145deg,rgba(34,211,238,.12),rgba(4,21,45,.72)); }
+.payment-choice-offline { background:linear-gradient(145deg,rgba(52,211,153,.12),rgba(4,21,45,.72)); }
 .payment-choice-doku { background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(4,21,45,.78)); }
 .payment-choice__tag { color:#d8ac59; font-size:.65rem; font-weight:800; letter-spacing:.2em; text-transform:uppercase; }
 .payment-choice strong { margin-top:1rem; color:#fff; font-size:1.3rem; }

@@ -85,6 +85,21 @@ export interface ManualPaymentConfirmPayload {
   paid_at?: string | null;
 }
 
+export type OfflinePaymentMethod = 'cash' | 'manual_transfer' | 'manual_qr_code' | 'edc' | 'other_offline';
+export interface OfflineRegistrationPaymentPayload {
+  payment_method: OfflinePaymentMethod;
+  amount?: number | null;
+  currency: string;
+  receipt_number: string;
+  paid_at?: string | null;
+  notes?: string | null;
+}
+export interface OfflineRegistrationPaymentResult {
+  order: Record<string, unknown>;
+  payment: PaymentReportTransaction;
+  ticket?: Record<string, unknown> | null;
+}
+
 export interface ParticipantReportPackage {
   event_id: string;
   package_id: string;
@@ -106,6 +121,8 @@ export interface ParticipantReportPackage {
 
 export interface ParticipantReportItem {
   participant_id: string;
+  registration_id?: string;
+  registration_number?: string;
   user_id?: string;
   full_name?: string;
   email?: string;
@@ -164,6 +181,11 @@ export function useAdminReport() {
       method: 'POST',
       body: payload
     });
+  const createOfflineRegistrationPayment = (registrationId: string, payload: OfflineRegistrationPaymentPayload) =>
+    api<ApiResponse<OfflineRegistrationPaymentResult>>(`/admin/registrations/${encodeURIComponent(registrationId)}/offline-payments`, {
+      method: 'POST',
+      body: payload
+    });
 
   const getManualPaymentReport = (params: Record<string, string | number | undefined> = {}) => {
     const query = new URLSearchParams();
@@ -192,6 +214,7 @@ export function useAdminReport() {
     deleteTransaction,
     bulkTransactionAction,
     confirmManualPayment,
+    createOfflineRegistrationPayment,
     getManualPaymentReport,
     downloadManualProof,
     getParticipantReport,

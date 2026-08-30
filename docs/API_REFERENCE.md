@@ -681,6 +681,31 @@ POST /api/v1/store/admin/events/{event_id}/products
 PUT /api/v1/store/admin/products/{product_id}
 ```
 
+### Offline/cash payment oleh organizer
+
+Peserta wajib sudah mempunyai registrasi. Admin/organizer dapat melunasi main
+order dan langsung memperoleh ticket melalui:
+
+```http
+POST /api/v1/admin/registrations/{registration_id}/offline-payments
+```
+
+```json
+{
+  "payment_method":"cash",
+  "amount":7500000,
+  "currency":"IDR",
+  "receipt_number":"CASH-IWBIF-2026-00125",
+  "paid_at":"2026-08-30T15:30:00+07:00",
+  "notes":"Cash received by organizer"
+}
+```
+
+`amount` opsional dan jika dikirim wajib sama dengan sisa tagihan setelah seluruh
+payment gateway sukses diperhitungkan. Response berisi `order`, `payment`, dan
+`ticket`. Nomor kuitansi unik menjadi idempotency key. Detail operasional ada di
+`docs/OFFLINE_REGISTRATION_PAYMENT.md`.
+
 ## 7. Documents
 
 Upload — **Auth**:
