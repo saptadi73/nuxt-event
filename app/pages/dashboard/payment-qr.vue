@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { usePayment, type OrderItem } from '~/composables/usePayment';
+import type { OrderItem } from '~/composables/usePayment';
 definePageMeta({ middleware: 'auth' });
 const { locale } = useI18n();
 const messages = {
@@ -35,12 +35,11 @@ const messages = {
 const copy = computed(() => locale.value === 'zh-CN' ? messages.zh : messages.en);
 useSeoMeta({ title: () => `QR Code Direct | IWBIF 2026` });
 const route = useRoute();
-const { getOrder } = usePayment();
 const orderId = ref('');
 const order = ref<OrderItem | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');
 const queryValue = (value: unknown) => Array.isArray(value) ? String(value[0] || '') : typeof value === 'string' ? value : '';
-onMounted(async () => { orderId.value = queryValue(route.query.order_id) || sessionStorage.getItem('iwbif-store-order-id') || ''; if (!orderId.value) { errorMessage.value = copy.value.missing; loading.value = false; return; } try { order.value = (await getOrder(orderId.value)).data; } catch (error) { const value = error as { data?: { message?: string } }; errorMessage.value = value.data?.message || (error instanceof Error ? error.message : copy.value.loadError); } finally { loading.value = false; } });
+onMounted(async () => { orderId.value = queryValue(route.query.order_id) || sessionStorage.getItem('iwbif-store-order-id') || ''; await navigateTo(orderId.value ? `/dashboard/payment?order_id=${encodeURIComponent(orderId.value)}` : '/dashboard/payment', { replace: true }); });
 const money = (amount: number, currency: string) => new Intl.NumberFormat('id-ID', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount);
 </script>

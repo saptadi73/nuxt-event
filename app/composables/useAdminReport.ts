@@ -33,6 +33,13 @@ export interface PaymentReportTransaction {
   transaction_status?: string;
   status?: string;
   gross_amount?: number;
+  payment_sequence?: number | null;
+  payment_sequence_count?: number | null;
+  payment_amount?: number | null;
+  paid_amount?: number;
+  remaining_amount?: number;
+  is_payment_complete?: boolean;
+  provider_reference_no?: string | null;
   currency?: string;
   paid_at?: string | null;
   created_at?: string | null;

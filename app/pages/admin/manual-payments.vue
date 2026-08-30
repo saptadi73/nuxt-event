@@ -13,7 +13,7 @@
       <form class="glass-card rounded-[2rem] p-5 sm:p-7" @submit.prevent="submitConfirmation">
         <div class="rounded-2xl border border-amber-300/20 bg-amber-300/5 p-4 text-sm leading-6 text-amber-100"><strong>Verification required.</strong> This action changes the backend order to paid. Confirm the bank mutation before submitting.</div>
         <div class="mt-6 space-y-5">
-          <label class="field"><span>Payment method</span><select v-model="form.payment_method"><option value="manual_transfer">Manual Bank Transfer</option><option value="manual_qr_code">QR Code Direct</option></select></label>
+          <label class="field"><span>Payment method</span><select v-model="form.payment_method"><option value="manual_transfer">Manual Bank Transfer</option></select></label>
           <label class="field"><span>Order ID</span><input v-model.trim="form.orderId" required placeholder="Order UUID" autocomplete="off"></label>
           <label class="field"><span>Transfer reference</span><input v-model.trim="form.transfer_reference" required minlength="3" maxlength="128" placeholder="BCA-20260819-001" autocomplete="off"></label>
           <label class="field"><span>Paid at <small>(optional)</small></span><input v-model="form.paid_at" type="datetime-local"></label>
@@ -51,7 +51,7 @@ definePageMeta({ middleware: ['auth', 'admin'] });
 useSeoMeta({ title: 'Confirm Manual Payment | IWBIF 2026' });
 
 const { confirmManualPayment, getManualPaymentReport, downloadManualProof } = useAdminReport();
-const form = reactive<{ payment_method: 'manual_transfer' | 'manual_qr_code'; orderId: string; transfer_reference: string; notes: string; paid_at: string }>({ payment_method: 'manual_transfer', orderId: '', transfer_reference: '', notes: '', paid_at: '' });
+const form = reactive<{ payment_method: 'manual_transfer'; orderId: string; transfer_reference: string; notes: string; paid_at: string }>({ payment_method: 'manual_transfer', orderId: '', transfer_reference: '', notes: '', paid_at: '' });
 const confirmed = ref(false);
 const submitting = ref(false);
 const feedback = ref('');

@@ -10,11 +10,14 @@
         <p v-if="payment" class="mt-2 text-sm text-slate-400">
           {{ copy.provider }}: {{ payment.provider }} · {{ copy.amount }}: {{ currency(payment.gross_amount, payment.currency) }}
         </p>
+        <p v-if="payment?.payment_sequence && payment?.payment_sequence_count" class="mt-2 text-sm text-slate-300">Payment part {{ payment.payment_sequence }} of {{ payment.payment_sequence_count }}</p>
+        <div v-if="order" class="mt-4 grid grid-cols-2 gap-3 border-t border-white/10 pt-4 text-sm"><div><span class="text-slate-400">Paid</span><strong class="block text-emerald-300">{{ currency(order.paid_amount || 0, order.currency) }}</strong></div><div><span class="text-slate-400">Remaining</span><strong class="block text-amber-200">{{ currency(order.remaining_amount ?? order.total_amount, order.currency) }}</strong></div></div>
         <p v-if="polling" class="mt-3 text-sm text-amber-200">{{ copy.checkingConfirmation.replace('{provider}', paymentProviderLabel) }}</p>
       </div>
       <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <NuxtLink v-if="status === 'success'" :to="invoiceTo" class="rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950">{{ copy.viewInvoice }}</NuxtLink>
-        <NuxtLink v-else-if="terminal" to="/dashboard/payment" class="rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950">{{ copy.tryAgain }}</NuxtLink>
+        <button v-else-if="status === 'partially_paid'" class="rounded-full bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="checking" @click="continuePayment">Continue remaining payment</button>
+        <NuxtLink v-else-if="terminal" :to="`/dashboard/payment?order_id=${encodeURIComponent(orderId)}`" class="rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950">{{ copy.tryAgain }}</NuxtLink>
         <button v-else class="rounded-full border border-white/20 px-5 py-3" :disabled="checking" @click="checkStatus">{{ checking ? copy.checking : copy.checkAgain }}</button>
         <NuxtLink to="/dashboard" class="rounded-full border border-white/20 px-5 py-3">{{ copy.dashboard }}</NuxtLink>
       </div>
@@ -27,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { usePayment, type PaymentItem } from '~/composables/usePayment';
+import { usePayment, type OrderItem, type PaymentItem } from '~/composables/usePayment';
 
 definePageMeta({ middleware: 'auth' });
 const { locale } = useI18n();
@@ -49,6 +52,7 @@ const paymentId = ref('');
 const registrationId = ref('');
 const orderId = ref('');
 const payment = ref<PaymentItem | null>(null);
+const order = ref<OrderItem | null>(null);
 const status = ref('pending');
 const polling = ref(false);
 const checking = ref(false);
@@ -62,9 +66,11 @@ const terminalStatuses = ['success', 'failed', 'expired', 'canceled'];
 const terminal = computed(() => terminalStatuses.includes(status.value));
 const paymentProviderLabel = computed(() => payment.value?.provider?.toUpperCase() || paymentApi.paymentProviderLabel || copy.value.payment);
 const statusLabel = computed(() => (copy.value.statuses as Record<string, string>)[status.value] || status.value);
-const heading = computed(() => status.value === 'success' ? copy.value.received : terminal.value ? copy.value.notCompleted : copy.value.processing);
+const heading = computed(() => status.value === 'success' ? copy.value.received : status.value === 'partially_paid' ? 'Payment partially received' : terminal.value ? copy.value.notCompleted : copy.value.processing);
 const description = computed(() => status.value === 'success'
   ? copy.value.verified.replace('{provider}', paymentProviderLabel.value)
+  : status.value === 'partially_paid'
+    ? 'The order is not fully paid. Tickets and subsequent registration stay locked until the remaining payment is completed.'
   : terminal.value
     ? copy.value.retry.replace('{provider}', paymentProviderLabel.value)
     : copy.value.wait);
@@ -85,6 +91,22 @@ const apiError = (error: unknown) => {
   const value = error as { data?: { message?: string; request_id?: string } };
   requestId.value = value.data?.request_id || '';
   return value.data?.message || (error instanceof Error ? error.message : copy.value.retrievalError);
+};
+const continuePayment = async () => {
+  if (!orderId.value || checking.value) return;
+  checking.value = true;
+  errorMessage.value = '';
+  try {
+    const checkout = (await paymentApi.continueOrderPayment(orderId.value)).data;
+    paymentId.value = checkout.payment_id || '';
+    if (paymentId.value) sessionStorage.setItem(STORAGE_PAYMENT, paymentId.value);
+    if (checkout.payment_url) window.location.assign(checkout.payment_url);
+    else await checkStatus();
+  } catch (error) {
+    errorMessage.value = apiError(error);
+  } finally {
+    checking.value = false;
+  }
 };
 const handleSuccess = async () => {
   if (successHandled.value) return;
@@ -122,6 +144,12 @@ const checkStatus = async () => {
       status.value = response.data.status.toLowerCase() === 'paid' ? 'success' : response.data.status.toLowerCase();
     } else {
       throw new Error(copy.value.missingReference);
+    }
+    if (orderId.value) {
+      const orderResponse = await paymentApi.getOrder(orderId.value);
+      order.value = orderResponse.data;
+      const orderStatus = orderResponse.data.status.toLowerCase();
+      status.value = orderResponse.data.is_payment_complete === true || orderStatus === 'paid' ? 'success' : orderStatus;
     }
     if (status.value === 'success') await handleSuccess();
     else if (terminal.value) stop();

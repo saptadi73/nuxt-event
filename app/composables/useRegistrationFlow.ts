@@ -104,7 +104,7 @@ export function useRegistrationFlow() {
   const activeOrder = computed(() => {
     const orders = Array.isArray(state.value?.orders) ? state.value.orders : [];
     const matching = orders.filter(order => orderMatchesType(order, primaryType.value));
-    return matching.find(order => ['pending', 'draft', 'payment_pending'].includes(order.status?.toLowerCase() || '')) || matching[0] || null;
+    return matching.find(order => ['pending', 'partially_paid', 'draft', 'payment_pending'].includes(order.status?.toLowerCase() || '')) || matching[0] || null;
   });
 
   const activeOrderId = computed(() => activeOrder.value?.order_id || activeOrder.value?.id || '');

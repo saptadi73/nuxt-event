@@ -3,6 +3,52 @@
 Backend menjadi pemilik Server Key, nominal, pembuatan transaksi, dan verifikasi
 notification. Frontend tidak boleh menyimpan atau mengirim Server Key.
 
+## Pembayaran tersegmentasi QRIS
+
+Backend memakai kurs tetap **USD 1 = IDR 18.000** dan membagi tagihan di atas
+USD 500 menjadi bagian maksimal IDR 9.000.000. Satu order platform dapat memiliki
+beberapa payment Midtrans dengan `order_id` provider yang berbeda.
+
+Response checkout/detail menyediakan `payment_sequence`,
+`payment_sequence_count`, `payment_amount`, `paid_amount`, dan
+`remaining_amount`. Setelah Snap mengembalikan sukses, frontend wajib mengambil
+ulang detail order. Jangan menerbitkan ticket atau menampilkan status lunas hanya
+berdasarkan callback JavaScript satu payment.
+
+Jika `order.status === "partially_paid"`, tampilkan sisa tagihan dan tombol
+`continue-payment`. Eligibility hanya aktif jika `order.status === "paid"` atau
+`is_payment_complete === true`.
+
+Tampilkan penjelasan bahwa pembagian diberlakukan karena batas QRIS Bank
+Indonesia Rp10.000.000 per transaksi, dengan batas operasional platform
+Rp9.000.000 berdasarkan USD 500 pada kurs tetap penyelenggara.
+
+### Resume dan source of truth
+
+Simpan `order_id` platform segera setelah checkout paket. Jika browser ditutup,
+koneksi putus, atau pengguna kembali tanpa hasil yang jelas:
+
+1. Ambil `GET /api/v1/orders/{order_id}/detail`.
+2. Jangan kembali ke pemilihan paket.
+3. Untuk `pending`/`partially_paid`, panggil
+   `POST /api/v1/orders/{order_id}/continue-payment` dengan
+   `{"provider":"midtrans"}`.
+4. Backend akan memakai token aktif atau membuat attempt baru untuk sequence yang
+   belum lunas. Sequence sukses tidak ditagih ulang.
+
+Callback JavaScript dan browser return bukan bukti pembayaran. Refresh/poll
+detail order sampai webhook mengubah parent order. UI hanya boleh membuka ticket
+dan tahap selanjutnya untuk parent `paid`.
+
+### Rekonsiliasi organizer
+
+Jika dashboard Midtrans sukses tetapi webhook tidak diterima, organizer harus
+mencocokkan `payment_id`, Midtrans `order_id`, `transaction_id`, dan nominal.
+Konfirmasi bagian tersebut melalui
+`PATCH /api/v1/admin/transactions/{payment_id}/status` dengan `status: success`,
+`paid_at`, dan catatan verifikasi. Jangan gunakan endpoint konfirmasi transfer
+manual karena endpoint tersebut menyatakan pembayaran manual penuh.
+
 ## Memilih gateway
 
 Frontend dapat menampilkan metode aktif dari `GET /api/v1/payments/methods` lalu

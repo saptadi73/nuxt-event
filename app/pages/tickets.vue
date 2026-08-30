@@ -9,7 +9,7 @@
     <div v-if="pending" class="mt-8 grid gap-5 md:grid-cols-2"><div v-for="n in 2" :key="n" class="h-80 animate-pulse rounded-3xl bg-white/5" /></div>
     <div v-else-if="error" class="mt-8 rounded-3xl border border-rose-400/30 bg-rose-500/10 p-6 text-rose-100">{{ error.message }}</div>
     <template v-else-if="selectedType === 'delegate'">
-      <section class="mt-9">
+      <section v-if="!postRegistrationAdditional" class="mt-9">
         <div class="flex flex-wrap items-end justify-between gap-3"><div><p class="text-xs uppercase tracking-[.28em] text-amber-200">{{ copy.required }}</p><h2 class="mt-2 text-2xl font-black">{{ copy.selectMain }}</h2></div><span v-if="!selection.mainProductId" class="text-xs font-semibold text-rose-200">{{ copy.selectionRequired }}</span></div>
         <div class="mt-5 grid gap-5 lg:grid-cols-2">
           <article v-for="pkg in catalog.main_packages" :key="pkg.id" class="rounded-3xl border p-5 transition sm:p-7" :class="selection.mainPackageId === pkg.id ? 'border-amber-300 bg-amber-300/10' : 'border-white/10 bg-white/5'">
@@ -27,13 +27,14 @@
       <section v-if="catalog.additional_packages.length" class="mt-9">
         <div><p class="text-xs uppercase tracking-[.28em] text-cyan-200">{{ copy.optional }}</p><h2 class="mt-2 text-2xl font-black">{{ copy.additionalTrip }}</h2></div>
         <article v-for="pkg in catalog.additional_packages" :key="pkg.id" class="mt-5 rounded-3xl border p-5 sm:p-7" :class="selection.bandungSelected ? 'border-cyan-300/60 bg-cyan-300/10' : 'border-white/10 bg-white/5'">
-          <label class="flex cursor-pointer items-start gap-3"><input type="checkbox" :checked="selection.bandungSelected" :disabled="mutating" class="mt-1 h-5 w-5 shrink-0 accent-cyan-300" @change="toggleAdditional(pkg, ($event.target as HTMLInputElement).checked)"><span class="min-w-0"><span class="break-words text-xl font-bold">{{ pkg.name }}</span><span class="mt-1 block break-words text-sm text-slate-400">{{ copy.addTrip }}</span></span></label>
+          <label class="flex items-start gap-3" :class="canBuyAdditional(pkg) ? 'cursor-pointer' : 'cursor-not-allowed opacity-75'"><input type="checkbox" :checked="selection.bandungSelected" :disabled="mutating || !canBuyAdditional(pkg)" class="mt-1 h-5 w-5 shrink-0 accent-cyan-300" @change="toggleAdditional(pkg, ($event.target as HTMLInputElement).checked)"><span class="min-w-0"><span class="break-words text-xl font-bold">{{ pkg.name }}</span><span class="mt-1 block break-words text-sm text-slate-400">{{ copy.addTrip }}</span></span></label>
+          <div v-if="postRegistrationAdditional && additionalState(pkg)" class="mt-4 rounded-2xl border border-white/10 bg-slate-950/50 p-4 text-sm"><strong class="uppercase tracking-wider text-cyan-200">{{ additionalState(pkg)?.purchase_status?.replace('_', ' ') }}</strong><p v-if="additionalState(pkg)?.reason" class="mt-2 text-slate-400">{{ additionalState(pkg)?.reason }}</p><button v-if="['pending','partially_paid'].includes(additionalState(pkg)?.purchase_status || '')" type="button" class="mt-3 rounded-full bg-cyan-300 px-5 py-2 font-bold text-slate-950 disabled:opacity-50" :disabled="Boolean(resumingOrderId)" @click="continueAdditionalPayment(pkg)">{{ resumingOrderId === additionalState(pkg)?.existing_order_id ? copy.updating : 'Continue Payment' }}</button><span v-else-if="additionalState(pkg)?.purchase_status === 'owned'" class="mt-3 block font-semibold text-emerald-300">Already purchased</span></div>
           <button type="button" class="mt-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-cyan-300/10 px-4 py-2 text-xs font-bold text-cyan-100 transition hover:bg-cyan-300/20" @click="openSchedule('additional')">{{ copy.bandungItinerary }} <span aria-hidden="true">→</span></button>
-          <div v-if="selection.bandungSelected" class="mt-5 grid gap-3 sm:grid-cols-2"><label v-for="rate in activeRates(pkg)" :key="rate.id" class="cursor-pointer rounded-2xl border p-4" :class="selection.bandungRateId === rate.id ? 'border-cyan-300/70 bg-slate-950/70' : 'border-white/10'"><input type="radio" name="bandung-rate" :checked="selection.bandungRateId === rate.id" :disabled="mutating" class="accent-cyan-300" @change="selectAdditionalRate(rate)"><span class="ml-2 font-semibold">{{ occupancyLabel(rate.occupancy_type) }}</span><strong class="mt-2 block text-2xl">{{ usd(rate.amount) }}</strong><span class="text-xs text-slate-400">{{ rate.payment_amount_idr == null ? copy.idrUnavailable : copy.paidAs.replace('{amount}', idr(rate.payment_amount_idr)) }}</span></label></div>
+          <div v-if="selection.bandungSelected" class="mt-5 grid gap-3 sm:grid-cols-2"><label v-for="rate in activeRates(pkg)" :key="rate.id" class="rounded-2xl border p-4" :class="[selection.bandungRateId === rate.id ? 'border-cyan-300/70 bg-slate-950/70' : 'border-white/10', canBuyAdditionalRate(rate) ? 'cursor-pointer' : 'cursor-not-allowed opacity-50']"><input type="radio" name="bandung-rate" :checked="selection.bandungRateId === rate.id" :disabled="mutating || !canBuyAdditionalRate(rate)" class="accent-cyan-300" @change="selectAdditionalRate(rate)"><span class="ml-2 font-semibold">{{ occupancyLabel(rate.occupancy_type) }}</span><strong class="mt-2 block text-2xl">{{ usd(rate.amount) }}</strong><span class="text-xs text-slate-400">{{ rate.payment_amount_idr == null ? copy.idrUnavailable : copy.paidAs.replace('{amount}', idr(rate.payment_amount_idr)) }}</span></label></div>
           <ul v-if="selection.bandungSelected" class="mt-5 grid gap-2 text-sm text-slate-300 sm:grid-cols-2"><li v-for="facility in activeFacilities(pkg)" :key="facility.id" class="flex gap-2"><span class="text-cyan-300">✓</span><span>{{ facility.name }}</span></li></ul>
         </article>
       </section>
-      <div class="sticky bottom-4 mt-8 flex flex-col gap-3 rounded-2xl border border-white/10 bg-slate-950/90 p-4 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:justify-between"><p class="text-sm" :class="paymentConfigurationReady ? 'text-slate-300' : 'text-rose-200'">{{ selectionMessage }}</p><NuxtLink to="/dashboard/cart" class="rounded-full bg-amber-300 px-6 py-3 text-center font-bold text-slate-950" :class="!selection.mainProductId || mutating || !paymentConfigurationReady ? 'pointer-events-none opacity-50' : ''">{{ mutating ? copy.updating : copy.review }}</NuxtLink></div>
+      <div class="sticky bottom-4 mt-8 flex flex-col gap-3 rounded-2xl border border-white/10 bg-slate-950/90 p-4 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:justify-between"><p class="text-sm" :class="paymentConfigurationReady ? 'text-slate-300' : 'text-rose-200'">{{ selectionMessage }}</p><NuxtLink to="/dashboard/cart" class="rounded-full bg-amber-300 px-6 py-3 text-center font-bold text-slate-950" :class="(!postRegistrationAdditional && !selection.mainProductId) || (postRegistrationAdditional && !selection.bandungProductId) || mutating || !paymentConfigurationReady ? 'pointer-events-none opacity-50' : ''">{{ mutating ? copy.updating : copy.review }}</NuxtLink></div>
     </template>
     <div v-else class="mt-9 rounded-3xl border border-white/10 bg-white/5 p-6 text-slate-300">{{ copy.exhibitorUnavailable }}</div>
 
@@ -59,7 +60,8 @@
 
 <script setup lang="ts">
 import { useEvent, type DelegatePackageCatalog, type DelegatePackageCatalogItem, type DelegatePackageRate } from '~/composables/useEvent';
-import { useStore, type StoreCart } from '~/composables/useStore';
+import { useStore, type PersonalizedAdditionalProduct, type StoreCart } from '~/composables/useStore';
+import { usePayment } from '~/composables/usePayment';
 import { delegatePackageSchedules, delegatePackageSchedulesZh, type PackageScheduleDetail } from '~/config/delegatePackageSchedules';
 
 const {locale}=useI18n();
@@ -74,7 +76,10 @@ const selectedType = computed(() => route.query.type === 'exhibitor' ? 'exhibito
 const auth = useAuthStore();
 const { getEvents, getDelegatePackageCatalog } = useEvent();
 const store = useStore();
+const paymentApi = usePayment();
 const eventId = ref(''), cart = ref<StoreCart | null>(null), mutating = ref(false), notice = ref(''), noticeTone = ref<'success' | 'error'>('success');
+const personalizedAdditional = ref<PersonalizedAdditionalProduct[]>([]);
+const resumingOrderId = ref('');
 const activeSchedule = ref<PackageScheduleDetail | null>(null);
 const emptyCatalog: DelegatePackageCatalog = { main_packages: [], additional_packages: [] };
 const selection = reactive({ mainPackageId: null as string | null, mainRateId: null as string | null, mainProductId: null as string | null, bandungSelected: false, bandungRateId: null as string | null, bandungProductId: null as string | null });
@@ -82,10 +87,12 @@ const { data, pending, error } = await useAsyncData('delegate-package-selector',
   const event = (await getEvents(1, 1)).data[0];
   if (!event) throw new Error(copy.value.noEvent);
   eventId.value = event.id;
-  const [catalogResponse, productsResponse] = await Promise.all([
+  const [catalogResponse, productsResponse, additionalResponse] = await Promise.all([
     getDelegatePackageCatalog(event.id),
-    store.getProducts(event.id)
+    store.getProducts(event.id),
+    auth.isAuthenticated ? store.getMyAdditionalProducts(event.id).catch(() => null) : Promise.resolve(null)
   ]);
+  personalizedAdditional.value = additionalResponse?.data || [];
   const productsById = new Map(productsResponse.data.map(product => [product.id, product]));
   const packages = [...catalogResponse.data.main_packages, ...catalogResponse.data.additional_packages];
   for (const pkg of packages) {
@@ -110,7 +117,44 @@ const isRatePreviewSelected = (pkg: DelegatePackageCatalogItem, rate: DelegatePa
 const findRateByProduct = (productId: string) => [...catalog.value.main_packages, ...catalog.value.additional_packages].flatMap(pkg => pkg.rates.map(rate => ({ pkg, rate }))).find(item => item.rate.product_id === productId);
 const selectedRates = computed(() => [selection.mainProductId, selection.bandungProductId].filter(Boolean).map(productId => findRateByProduct(productId!)?.rate).filter((rate): rate is DelegatePackageRate => Boolean(rate)));
 const paymentConfigurationReady = computed(() => selectedRates.value.every(rate => rate.payment_amount_idr != null));
+const postRegistrationAdditional = computed(() => personalizedAdditional.value.some(item => !['registration_required'].includes(item.purchase_status)));
+const additionalProductsFor = (pkg: DelegatePackageCatalogItem) => {
+  const ids = new Set(pkg.rates.map(rate => rate.product_id));
+  return personalizedAdditional.value.filter(product => ids.has(product.id));
+};
+const additionalState = (pkg: DelegatePackageCatalogItem) => {
+  const products = additionalProductsFor(pkg);
+  const priority = ['partially_paid', 'pending', 'owned', 'available', 'main_payment_required', 'registration_required', 'unavailable'];
+  return products.sort((a, b) => priority.indexOf(a.purchase_status) - priority.indexOf(b.purchase_status))[0] || null;
+};
+const canBuyAdditional = (pkg: DelegatePackageCatalogItem) => !postRegistrationAdditional.value || additionalProductsFor(pkg).some(item => item.purchase_status === 'available' && item.is_purchasable);
+const canBuyAdditionalRate = (rate: DelegatePackageRate) => {
+  if (!postRegistrationAdditional.value) return true;
+  const product = personalizedAdditional.value.find(item => item.id === rate.product_id);
+  return product?.purchase_status === 'available' && product.is_purchasable;
+};
+const continueAdditionalPayment = async (pkg: DelegatePackageCatalogItem) => {
+  const state = additionalState(pkg);
+  const orderId = state?.existing_order_id;
+  if (!orderId || resumingOrderId.value) return;
+  resumingOrderId.value = orderId;
+  notice.value = '';
+  try {
+    sessionStorage.setItem('iwbif-store-order-id', orderId);
+    const checkout = (await paymentApi.continueOrderPayment(orderId)).data;
+    if (checkout.payment_id) sessionStorage.setItem('iwbif-payment-id', checkout.payment_id);
+    if (checkout.payment_url) window.location.assign(checkout.payment_url);
+    else await navigateTo(`/dashboard/payment-status?order_id=${encodeURIComponent(orderId)}&payment_id=${encodeURIComponent(checkout.payment_id || '')}`);
+  } catch (error) {
+    noticeTone.value = 'error';
+    notice.value = apiError(error);
+  } finally {
+    resumingOrderId.value = '';
+  }
+};
 const selectionMessage = computed(() => {
+  if (postRegistrationAdditional.value && !selection.bandungProductId) return 'Select an available additional package to continue.';
+  if (postRegistrationAdditional.value) return 'Additional package selected. Checkout creates a separate order linked to your existing registration.';
   if (!selection.mainProductId) return copy.value.selectMessage;
   if (!paymentConfigurationReady.value) return copy.value.paymentMissing;
   return copy.value.selected;
@@ -120,7 +164,7 @@ const apiError = (error: unknown) => { const value = error as { data?: { message
 const addRate = async (rate: DelegatePackageRate) => { if (!auth.isAuthenticated) { await navigateTo('/auth/register'); return false; } if (!eventId.value || mutating.value) return false; mutating.value = true; notice.value = ''; try { cart.value = (await store.addCartItem(eventId.value, rate.product_id, 1)).data; syncFromCart(cart.value); noticeTone.value = 'success'; notice.value = copy.value.saved; return true; } catch (error) { noticeTone.value = 'error'; notice.value = apiError(error); return false; } finally { mutating.value = false; } };
 const selectMainPackage = async (pkg: DelegatePackageCatalogItem) => { const rate = defaultRate(pkg); if (rate) await addRate(rate); };
 const selectMainRate = async (pkg: DelegatePackageCatalogItem, rate: DelegatePackageRate) => { if (selection.mainPackageId === pkg.id) await addRate(rate); };
-const toggleAdditional = async (pkg: DelegatePackageCatalogItem, checked: boolean) => { if (checked) { const rate = defaultRate(pkg); if (rate) await addRate(rate); return; } if (!selection.bandungProductId || !eventId.value) return; mutating.value = true; try { cart.value = (await store.removeCartItem(eventId.value, selection.bandungProductId)).data; syncFromCart(cart.value); notice.value = copy.value.removed; } catch (error) { noticeTone.value = 'error'; notice.value = apiError(error); } finally { mutating.value = false; } };
+const toggleAdditional = async (pkg: DelegatePackageCatalogItem, checked: boolean) => { if (checked) { const rates=activeRates(pkg);const rate=postRegistrationAdditional.value?rates.find(canBuyAdditionalRate):defaultRate(pkg); if (rate) await addRate(rate); return; } if (!selection.bandungProductId || !eventId.value) return; mutating.value = true; try { cart.value = (await store.removeCartItem(eventId.value, selection.bandungProductId)).data; syncFromCart(cart.value); notice.value = copy.value.removed; } catch (error) { noticeTone.value = 'error'; notice.value = apiError(error); } finally { mutating.value = false; } };
 const selectAdditionalRate = (rate: DelegatePackageRate) => addRate(rate);
 const occupancyLabel = (occupancyType: DelegatePackageRate['occupancy_type']) => occupancyType === 'single' ? copy.value.single : copy.value.sharing;
 const usd = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
@@ -128,7 +172,7 @@ const idr = (amount: number) => new Intl.NumberFormat('id-ID', { style: 'currenc
 const openSchedule = (key: 'main' | 'additional') => { activeSchedule.value = (locale.value === 'zh-CN' ? delegatePackageSchedulesZh : delegatePackageSchedules)[key]; if (import.meta.client) document.body.style.overflow = 'hidden'; };
 const closeSchedule = () => { activeSchedule.value = null; if (import.meta.client) document.body.style.overflow = ''; };
 const handleEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') closeSchedule(); };
-onMounted(async () => { if (!eventId.value) eventId.value = (await getEvents(1, 1)).data[0]?.id || ''; if (auth.isAuthenticated && eventId.value) { try { cart.value = (await store.getCart(eventId.value)).data; syncFromCart(cart.value); } catch { /* a new account may not have a cart yet */ } } });
+onMounted(async () => { if (!eventId.value) eventId.value = (await getEvents(1, 1)).data[0]?.id || ''; if (auth.isAuthenticated && eventId.value) { try { const [cartResponse, additionalResponse] = await Promise.all([store.getCart(eventId.value), store.getMyAdditionalProducts(eventId.value)]); cart.value = cartResponse.data; personalizedAdditional.value = additionalResponse.data || []; syncFromCart(cart.value); } catch { /* a new account may not have a cart or eligible registration yet */ } } });
 onMounted(() => window.addEventListener('keydown', handleEscape));
 onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); document.body.style.overflow = ''; });
 </script>

@@ -4,6 +4,8 @@ Kontrak kerja frontend untuk backend IWBIF 2026. Referensi mesin tersedia di
 `GET /openapi.json` dan Swagger UI di `GET /docs`; dokumen ini menjelaskan
 payload, respons, workflow, dan mekanisme integrasi.
 
+Status kelengkapan implementasi bilingual dan acceptance checklist tersedia di
+`docs/BILINGUAL_BACKEND_TODO.md`.
 Panduan implementasi editor frontend untuk speaker dan agenda tersedia di
 `docs/FRONTEND_BILINGUAL_CONTENT_INTEGRATION.md`.
 
@@ -44,17 +46,15 @@ WebSocket   : ws:// atau wss:// mengikuti protokol backend
 - Response HTTP mengirim `Content-Language` dan `Vary: Accept-Language`.
 - OpenAPI menampilkan parameter global `locale`. Untuk language switch frontend,
   gunakan query; `Accept-Language` tetap menjadi fallback.
-- Antarmuka dan request frontend route `/admin` menggunakan English-only:
-  frontend mengirim `locale=en` dan `Accept-Language: en`. Ketentuan ini tidak
-  membatasi endpoint content translation admin yang menyimpan translation pada
-  path `/zh-CN`.
 - Konten dinamis menggunakan fallback `locale diminta -> en -> field sumber`.
   Resource yang dilokalkan menyertakan `content_locale` dan
   `translation_fallback`.
 - Status data per 2026-08-29: tabel `content_translations` belum berisi data
   `zh-CN` untuk event live manapun. Mekanisme fallback sudah aktif, tetapi
   konten publik masih akan tampil dalam bahasa sumber sampai admin mengisi
-  translation lewat `PUT /api/v1/admin/content-translations/...`.
+  translation lewat `PUT /api/v1/admin/content-translations/...`. Lihat
+  `docs/BILINGUAL_BACKEND_TODO.md` bagian 3.1 untuk daftar entity yang perlu
+  diisi.
 
 Contoh payload akun:
 
@@ -87,21 +87,6 @@ Daftar entity dan field yang boleh diterjemahkan:
 
 ```http
 GET /api/v1/admin/content-translations/entities
-```
-
-Response `data` berisi seluruh entity aktif dan whitelist field yang dapat
-diterjemahkan. Frontend `/admin/translations` menggunakan daftar ini untuk
-membuat form dan tidak boleh mengirim field lain:
-
-```json
-{
-  "success": true,
-  "data": [
-    { "entity_type": "event", "fields": ["name", "description", "venue_name"] },
-    { "entity_type": "announcement", "fields": ["title", "body"] },
-    { "entity_type": "certificate", "fields": ["title"] }
-  ]
-}
 ```
 
 Membuat atau mengganti translation:
@@ -146,12 +131,8 @@ Contoh data localized:
 }
 ```
 
-Status tetap canonical. Arti metadata locale adalah:
-
-- `content_locale: "zh-CN"`: translation Mandarin dipakai.
-- `content_locale: "source"`: field source English dipakai.
-- `translation_fallback: true`: locale yang diminta tidak memiliki translation.
-- `translation_fallback: false`: locale yang diminta atau source canonical dipakai.
+Status tetap canonical. Jika Mandarin belum tersedia, backend menggunakan
+translation English atau field sumber dan mengirim `translation_fallback: true`.
 
 Error envelope:
 
@@ -636,11 +617,19 @@ total.
 
 ```http
 GET /api/v1/store/events/{event_id}/products
+GET /api/v1/store/events/{event_id}/additional-products/me
 GET /api/v1/store/events/{event_id}/cart
 POST /api/v1/store/events/{event_id}/cart/items
 DELETE /api/v1/store/events/{event_id}/cart/items/{product_id}
 POST /api/v1/store/events/{event_id}/checkout
 ```
+
+Endpoint `additional-products/me` adalah katalog personalized untuk pembelian
+add-on setelah registrasi. Response menambahkan `purchase_status`,
+`is_purchasable`, `existing_order_id`, `registration_id`, dan `reason`.
+`available` dapat dibeli; `pending`/`partially_paid` harus dilanjutkan dari order
+yang ada; `owned` tidak boleh dibeli ulang; `registration_required` atau
+`main_payment_required` berarti prasyarat belum terpenuhi.
 
 Payload add item:
 
@@ -662,8 +651,11 @@ POST /api/v1/payments/midtrans/checkout
 {"order_id":"order-uuid"}
 ```
 
-Checkout cart tidak memerlukan registration. Order baru selalu menyimpan
+Checkout cart awal tidak memerlukan registration. Order baru selalu menyimpan
 `user_id`; `registration_id` dapat kosong sampai form Delegate selesai dibuat.
+Checkout additional-only setelah main lunas membuat order terpisah dengan
+`order_kind=additional` dan langsung memakai `registration_id` lama. Backend
+memeriksa selection dan order aktif agar additional yang sama tidak dibeli ulang.
 Untuk product `delegate`, metadata berisi:
 
 ```json
@@ -1127,9 +1119,15 @@ Response memiliki pagination `page`, `size`, `total`, `pages`. Setiap item:
   "latest_payment": {
     "id": "payment-uuid",
     "provider": "midtrans",
+    "payment_sequence": 1,
+    "payment_sequence_count": 2,
+    "gross_amount": 9000000,
     "transaction_status": "expired"
   },
-  "payment_attempts": []
+  "payment_attempts": [],
+  "paid_amount": 9000000,
+  "remaining_amount": 7500000,
+  "is_payment_complete": false
 }
 ```
 
@@ -1143,8 +1141,10 @@ POST /api/v1/orders/{order_id}/continue-payment
 
 Nilai provider adalah `doku` atau `midtrans`. Attempt aktif yang belum expired
 dapat menggunakan URL/token lama; attempt gagal/expired tetap tersimpan dan
-attempt baru dibuat pada order yang sama. Webhook gagal/expired tidak lagi
-membatalkan order, sehingga order tetap `pending` dan payable.
+attempt baru dibuat pada order yang sama dan sequence sukses tidak diulang.
+Webhook gagal/expired tidak lagi membatalkan order, sehingga order tetap
+`pending` atau `partially_paid` dan payable. Simpan `order_id` sebagai resume key;
+jangan menyimpan gateway token sebagai identitas transaksi utama.
 
 `DELETE /api/v1/orders/{order_id}` melakukan soft-cancel terhadap order belum
 lunas serta attempt `created/pending`. Payload body opsional:
@@ -1155,9 +1155,31 @@ dengan `409 PAID_ORDER_CANCEL_FORBIDDEN`. Soft-canceled order memiliki
 
 Payment fields: IDs/provider references, `payment_type`, `gross_amount`,
 `currency`, `transaction_status`, `paid_at`, `channel_code`,
-`virtual_account_no`, `payment_instructions_url`. Order status: `draft`,
-`pending`, `paid`, `expired`, `canceled`. Payment status: `created`, `pending`,
+`virtual_account_no`, `payment_instructions_url`, `payment_sequence`, dan
+`payment_sequence_count`. Order detail juga menyediakan `paid_amount`,
+`remaining_amount`, dan `is_payment_complete`. Order status: `draft`,
+`pending`, `partially_paid`, `paid`, `expired`, `canceled`. Payment status: `created`, `pending`,
 `success`, `failed`, `expired`, `refunded`, `canceled`.
+
+Frontend hanya menganggap pembayaran selesai jika parent order `paid` atau
+`is_payment_complete=true`. Child payment `success` dapat berarti baru satu
+bagian. Selama `partially_paid`, ticket dan proses registrasi lanjutan harus
+disembunyikan dan pengguna diarahkan ke `continue-payment`.
+
+Jika provider sudah sukses tetapi webhook hilang, organizer memverifikasi ID dan
+nominal di portal provider lalu memakai:
+
+```http
+PATCH /api/v1/admin/transactions/{payment_id}/status
+```
+
+```json
+{"status":"success","paid_at":"2026-08-30T14:30:00+07:00","notes":"Verified in provider portal; webhook missing"}
+```
+
+Endpoint tersebut hanya mengonfirmasi payment part terkait dan menyimpan audit
+event. Jangan memakai `confirm-manual-payment` untuk rekonsiliasi Midtrans/DOKU;
+endpoint itu khusus pembayaran manual penuh.
 
 Server-to-server; **jangan dipanggil frontend**:
 

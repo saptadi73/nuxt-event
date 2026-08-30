@@ -4,6 +4,38 @@
 > API SNAP Virtual Account digunakan oleh alur registration-first yang sudah
 > memiliki `registration_id`.
 
+## Pembayaran tersegmentasi
+
+Satu order platform dapat memiliki beberapa invoice DOKU. Dengan kurs tetap
+**USD 1 = IDR 18.000**, tagihan di atas USD 500 dibagi menjadi payment maksimal
+IDR 9.000.000. Setiap `invoice_number` DOKU berbeda, tetapi seluruhnya tetap
+merujuk ke `order_id` platform yang sama.
+
+Gunakan `payment_sequence`, `payment_sequence_count`, `payment_amount`,
+`paid_amount`, dan `remaining_amount` dari API. Status `partially_paid` berarti
+peserta harus menjalankan `continue-payment`; ticket dan proses lanjutan belum
+eligible. Hanya status parent order `paid` yang menyatakan pelunasan.
+
+### Resume dan source of truth
+
+Frontend wajib menyimpan `order_id` platform. Jika checkout DOKU ditutup atau
+koneksi putus, ambil `GET /api/v1/orders/{order_id}/detail`, lalu panggil
+`POST /api/v1/orders/{order_id}/continue-payment` dengan `{"provider":"doku"}`
+untuk parent `pending` atau `partially_paid`. Backend menggunakan kembali URL
+aktif atau membuat attempt baru untuk sequence belum lunas, tanpa meminta peserta
+memilih paket ulang.
+
+Browser return bukan konfirmasi settlement. UI harus menunggu hasil parent order
+yang diperbarui webhook dan hanya membuka ticket/tahap registrasi ketika `paid`.
+
+### Rekonsiliasi organizer
+
+Jika portal DOKU menunjukkan sukses tetapi webhook hilang, cocokkan `payment_id`,
+`invoice_number`/partner reference, request/reference ID, dan nominal. Gunakan
+`PATCH /api/v1/admin/transactions/{payment_id}/status` dengan `status: success`,
+`paid_at`, dan notes. Jangan gunakan `confirm-manual-payment` untuk payment DOKU;
+endpoint itu khusus transfer manual atau QR statis penuh.
+
 ## Direct VA flow
 
 `GET /api/v1/payments/doku/direct/methods` mengembalikan bank yang tersedia.
@@ -349,7 +381,7 @@ export interface DokuCheckoutData {
   expires_at: string | null;
   already_paid: boolean;
   payment_id: string | null;
-  order_status: "draft" | "pending" | "paid" | "expired" | "canceled";
+  order_status: "draft" | "pending" | "partially_paid" | "paid" | "expired" | "canceled";
   requires_payment: boolean;
 }
 ```

@@ -1,4 +1,4 @@
-import { useApi, type ApiResponse } from '~/composables/useApi';
+import type { useApi, ApiResponse } from '~/composables/useApi';
 
 export interface StoreProduct {
   id: string;
@@ -14,6 +14,15 @@ export interface StoreProduct {
   max_quantity?: number | null;
   inclusions?: string[];
   metadata_json?: Record<string, unknown> | null;
+}
+
+export type AdditionalPurchaseStatus = 'available' | 'pending' | 'partially_paid' | 'owned' | 'registration_required' | 'main_payment_required' | 'unavailable';
+export interface PersonalizedAdditionalProduct extends StoreProduct {
+  purchase_status: AdditionalPurchaseStatus;
+  is_purchasable: boolean;
+  existing_order_id?: string | null;
+  registration_id?: string | null;
+  reason?: string | null;
 }
 
 export interface StoreCartItem {
@@ -45,14 +54,20 @@ export interface StoreOrder {
   currency: string;
   status: string;
   registration_id?: string;
+  order_kind?: 'main_registration' | 'additional' | string;
+  paid_amount?: number;
+  remaining_amount?: number;
+  is_payment_complete?: boolean;
+  payment_sequence_count?: number;
 }
 
 export function useStore() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
   const getProducts = (eventId: string) => api<ApiResponse<StoreProduct[]>>(`/store/events/${eventId}/products`);
+  const getMyAdditionalProducts = (eventId: string) => api<ApiResponse<PersonalizedAdditionalProduct[]>>(`/store/events/${eventId}/additional-products/me`);
   const getCart = (eventId: string) => api<ApiResponse<StoreCart>>(`/store/events/${eventId}/cart`);
   const addCartItem = (eventId: string, productId: string, quantity = 1) => api<ApiResponse<StoreCart>>(`/store/events/${eventId}/cart/items`, { method: 'POST', body: { product_id: productId, quantity } });
   const removeCartItem = (eventId: string, productId: string) => api<ApiResponse<StoreCart>>(`/store/events/${eventId}/cart/items/${encodeURIComponent(productId)}`, { method: 'DELETE' });
   const checkout = (eventId: string) => api<ApiResponse<StoreOrder>>(`/store/events/${eventId}/checkout`, { method: 'POST' });
-  return { getProducts, getCart, addCartItem, removeCartItem, checkout };
+  return { getProducts, getMyAdditionalProducts, getCart, addCartItem, removeCartItem, checkout };
 }

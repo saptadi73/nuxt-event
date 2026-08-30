@@ -7,8 +7,14 @@ export interface DokuCheckoutData {
   expires_at: string | null;
   already_paid: boolean;
   payment_id: string | null;
-  order_status: 'draft' | 'pending' | 'paid' | 'expired' | 'canceled';
+  order_status: 'draft' | 'pending' | 'partially_paid' | 'paid' | 'expired' | 'canceled';
   requires_payment: boolean;
+  payment_sequence?: number | null;
+  payment_sequence_count?: number | null;
+  payment_amount?: number | null;
+  paid_amount?: number;
+  remaining_amount?: number;
+  is_payment_complete?: boolean;
 }
 
 export type PaymentCategory = 'virtual_account' | 'qris' | 'e_wallet' | 'direct_debit' | string;
@@ -23,6 +29,10 @@ export interface OrderItem {
   id: string; event_id?: string; registration_id: string; order_number: string; subtotal: number;
   discount_amount: number; tax_amount: number; service_fee: number;
   total_amount: number; currency: string; status: string; expires_at?: string;
+  paid_amount?: number; remaining_amount?: number; is_payment_complete?: boolean;
+  payment_sequence?: number | null; payment_sequence_count?: number | null;
+  payment_amount?: number | null;
+  order_kind?: 'main_registration' | 'additional' | string;
   allowed_actions?: Array<'continue_payment' | 'cancel'>;
 }
 
@@ -45,6 +55,8 @@ export interface PaymentItem {
   payment_type?: string | null; gross_amount: number; currency: string;
   transaction_status: 'created' | 'pending' | 'success' | 'failed' | 'expired' | string;
   fraud_status?: string | null; paid_at?: string | null;
+  payment_sequence?: number | null; payment_sequence_count?: number | null;
+  payment_amount?: number | null; provider_reference_no?: string | null;
 }
 
 export type ManualPaymentMethod = 'manual_transfer' | 'manual_qr_code';
@@ -93,7 +105,7 @@ export function usePayment() {
     return createDokuCheckout(orderId);
   };
   const getOrder = (orderId: string) => api<ApiResponse<OrderItem>>(`/orders/${orderId}`);
-  const getPendingOrders = (eventId?: string, page = 1, size = 20) => api<ApiResponse<PendingOrderRecord[]>>('/orders', { query: { status: 'pending', ...(eventId ? { event_id: eventId } : {}), page, size } });
+  const getPendingOrders = (eventId?: string, page = 1, size = 20, status = 'pending') => api<ApiResponse<PendingOrderRecord[]>>('/orders', { query: { status, ...(eventId ? { event_id: eventId } : {}), page, size } });
   const getOrderDetail = (orderId: string) => api<ApiResponse<PendingOrderRecord>>(`/orders/${encodeURIComponent(orderId)}/detail`);
   const continueOrderPayment = (orderId: string, provider = runtimeProvider.provider) => api<ApiResponse<DokuCheckoutData>>(`/orders/${encodeURIComponent(orderId)}/continue-payment`, { method: 'POST', body: { provider } });
   const cancelPendingOrder = (orderId: string, reason?: string) => api<ApiResponse<Record<string, unknown>>>(`/orders/${encodeURIComponent(orderId)}`, { method: 'DELETE', body: reason ? { reason } : undefined });

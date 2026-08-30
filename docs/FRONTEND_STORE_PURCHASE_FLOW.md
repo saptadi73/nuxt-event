@@ -49,6 +49,17 @@ GET /api/v1/store/events/{event_id}/products
 Product memiliki `product_type` `delegate`, `exhibitor`, atau `additional`.
 Jangan hard-code UUID, harga, currency, atau batas quantity.
 
+Untuk membeli additional setelah registrasi/main package selesai, gunakan:
+
+```http
+GET /api/v1/store/events/{event_id}/additional-products/me
+```
+
+Tampilkan Beli hanya untuk `purchase_status=available`. Untuk `pending` atau
+`partially_paid`, gunakan `existing_order_id` dan tampilkan Lanjutkan Pembayaran.
+Untuk `owned`, nonaktifkan pembelian. Backend memeriksa ulang saat add-to-cart
+dan checkout sehingga frontend tidak dapat melewati validasi.
+
 Untuk IWBIF Delegate, katalog menyediakan `DELEGATE_A`, `DELEGATE_B`, dan
 `DELEGATE_C`. Harga `price` dan `currency` adalah nominal yang ditagihkan
 (saat ini IDR). Tampilkan harga sumber dari `metadata_json.display_amount` dan
@@ -94,6 +105,11 @@ baru menautkan `registration_id` ketika user menyelesaikan form Delegate dengan
 package yang dibeli. Simpan `order_id` dan `order_number` dari response.
 Checkout menghapus item dari cart dan membuat snapshot di `order_items`,
 sehingga histori tidak berubah jika admin mengubah harga katalog.
+
+Untuk checkout additional-only setelah registrasi, backend mencari registrasi
+aktif milik user, memastikan main order sudah `paid`, membuat order baru dengan
+`order_kind=additional`, dan menautkannya ke registrasi lama. Main order yang
+sudah dibayar tidak pernah diedit.
 
 Cart yang kosong setelah checkout tidak berarti pilihan package hilang. Package
 sudah berpindah menjadi pending order. Setelah login/refresh, selalu pulihkan
