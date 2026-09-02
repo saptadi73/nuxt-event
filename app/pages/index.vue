@@ -12,9 +12,13 @@
           class="hero-image"
           width="1672"
           height="941"
+          sizes="(max-width: 768px) 100vw, 100vw"
           loading="eager"
           fetchpriority="high"
-        />
+          decoding="async"
+          :style="{ objectPosition: heroObjectPosition }"
+          @error="onHeroImageError"
+        >
         <div class="hero-vignette" />
       </div>
 
@@ -115,8 +119,20 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import englishHero from '~/assets/images/iwbif-2026-hero.jpeg';
+import chineseHero from '~/assets/images/iwbif-2026-hero (china).jpeg';
+
 const { t, tm, locale } = useI18n();
-const heroImage = computed(() => locale.value === 'zh-CN' ? '/images/iwbif-2026-hero-zh-CN.png' : '/images/iwbif-2026-hero.jpg');
+const heroImage = computed(() => locale.value === 'zh-CN' ? chineseHero : englishHero);
+const heroObjectPosition = computed(() => locale.value === 'zh-CN' ? 'center center' : 'center 36%');
+const heroFallbackImage = computed(() => englishHero);
+const onHeroImageError = (event: Event) => {
+  const target = event.target as HTMLImageElement | null;
+  if (!target) return;
+  if (target.src !== new URL(heroFallbackImage.value, window.location.origin).toString()) {
+    target.src = heroFallbackImage.value;
+  }
+};
 const authStore = useAuthStore();
 const { isAuthenticated } = storeToRefs(authStore);
 const registrationFlow = useRegistrationFlow();
@@ -146,7 +162,7 @@ useSeoMeta({
   description: 'Join IWBIF 2026 in Jakarta for global collaboration, women-led investment and market access, and curated business matching.',
   ogTitle: 'International Women Business & Investment Forum 2026',
   ogDescription: 'Empowering Women Entrepreneurs Through Finance, Global Collaboration, and Digital Transformation.',
-  ogImage: '/images/iwbif-2026-hero.jpg'
+  ogImage: englishHero
 })
 
 const statValues = [{ value: 500, suffix: '+' }, { value: 9, suffix: '+' }, { value: 6, suffix: '' }, { value: 3, suffix: '' }, { value: 1, suffix: '' }, { value: 4, suffix: '' }];
@@ -220,7 +236,7 @@ onMounted(() => {
 <style scoped>
 .hero-stage { position: relative; margin-inline: auto; max-width: 1600px; padding: clamp(1rem, 2.5vw, 2.5rem); }
   .hero-frame { position: relative; isolation: isolate; overflow: hidden; aspect-ratio: 1672 / 941; border: 1px solid rgba(216, 172, 89, .22); border-radius: clamp(1.25rem, 3vw, 3rem); background: #04152d; box-shadow: 0 45px 120px rgba(2, 10, 24, .68), 0 0 80px rgba(224, 177, 98, .08); }
-.hero-image { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(.2, .7, .2, 1); }
+.hero-image { width: 100%; height: 100%; object-fit: cover; object-position: center center; transition: transform 1.2s cubic-bezier(.2, .7, .2, 1); }
 .hero-frame:hover .hero-image { transform: scale(1.012); }
 .hero-vignette { position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(2, 10, 24, .08), transparent 22%, transparent 78%, rgba(2, 10, 24, .08)); box-shadow: inset 0 0 55px rgba(1, 8, 20, .18); pointer-events: none; }
   .hero-live-dot { width: .5rem; height: .5rem; border-radius: 50%; background: var(--premium-gold); box-shadow: 0 0 0 4px rgba(232, 198, 125, .14), 0 0 18px var(--premium-gold); }
@@ -301,6 +317,10 @@ onMounted(() => {
 @media (max-width: 767px) {
   .hero-stage {
     padding-inline: 0.75rem;
+  }
+
+  .hero-image {
+    object-position: center 35%;
   }
 
   .hero-action-dock {

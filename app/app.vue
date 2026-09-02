@@ -4,17 +4,17 @@
     <div class="ambient ambient-two"></div>
 
     <header class="sticky top-0 z-50 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl">
-      <div class="mx-auto flex w-full max-w-[1440px] items-center gap-2 px-3 py-3 sm:gap-4 sm:px-6 lg:px-8">
+      <div class="mx-auto flex w-full max-w-[1440px] items-center gap-1.5 px-2 py-2 sm:gap-4 sm:px-6 lg:px-8">
         <NuxtLink to="/" class="brand-block flex min-w-0 shrink-0 items-center gap-3">
           <span class="brand-mark flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-amber-300/40 bg-white/10 p-1.5 shadow-lg shadow-cyan-950/20 sm:h-14 sm:w-14">
             <img v-if="!logoHasError" :src="logoSrc" alt="IWBIF 2026" width="56" height="56" class="h-full w-full object-contain" @error="logoHasError = true" />
             <span v-else class="brand-fallback text-sm font-black">IWBIF</span>
           </span>
-          <span class="hidden sm:block">
+          <span class="brand-copy hidden sm:block">
             <span class="brand-kicker block whitespace-nowrap text-[10px] uppercase tracking-[0.24em] text-amber-200/75">AWEC &amp; IWAPI PRESENTS</span>
             <span class="brand-name block whitespace-nowrap text-base font-semibold tracking-[0.08em] text-white">IWBIF 2026</span>
           </span>
-          <span class="partner-logos flex shrink-0 items-center gap-1.5 border-l border-white/10 pl-2 sm:gap-2 sm:pl-3" aria-label="Presented by AWEC and IWAPI">
+          <span class="partner-logos flex shrink-0 items-center gap-1 border-l border-white/10 pl-1 sm:gap-2 sm:pl-3" aria-label="Presented by AWEC and IWAPI">
             <span class="partner-logo partner-logo--awec" title="Asian Women Entrepreneurs Council">
               <img src="/images/logo-awec.webp" alt="AWEC" width="44" height="44" />
             </span>
@@ -36,7 +36,7 @@
           </details>
         </nav>
 
-        <div class="header-actions ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:ml-2">
+        <div class="header-actions ml-auto flex shrink-0 items-center gap-1 sm:gap-2 xl:ml-2">
           <label v-if="!authStore.isAdminOrOrganizer" class="locale-switcher" :aria-label="t('language.label')">
             <span class="sr-only">{{ t('language.label') }}</span>
             <select :value="locale" @change="changeLocale"><option value="en">EN</option><option value="zh-CN">中文</option></select>
@@ -112,7 +112,7 @@
           <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="header-cta hidden whitespace-nowrap rounded-full border border-amber-300/35 bg-gradient-to-r from-amber-300/15 via-amber-200/8 to-cyan-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100 shadow-[0_16px_40px_rgba(216,172,89,0.16)] transition hover:border-amber-200/70 hover:brightness-110 sm:inline-flex">
             {{ t('actions.registerNow') }}
           </NuxtLink>
-          <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="mobile-register-cta header-cta inline-flex whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:hidden">
+          <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="mobile-register-cta header-cta inline-flex whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:hidden">
             {{ t('actions.register') }}
           </NuxtLink>
           <NuxtLink v-if="isAuthenticated && !isRegistrationPaid" :to="paymentCtaTo" class="header-cta whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:px-5">
@@ -574,14 +574,14 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
 
 .partner-logo {
   display: grid;
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 1.2rem;
+  height: 1.2rem;
   place-items: center;
   overflow: hidden;
   border: 1px solid rgb(252 211 77 / 18%);
-  border-radius: .8rem;
+  border-radius: .5rem;
   background: rgb(255 255 255 / 5%);
-  padding: .2rem;
+  padding: .08rem;
 }
 
 .partner-logo img {
@@ -593,10 +593,62 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
 .partner-logo--awec img { transform: scale(1.08); }
 .partner-logo--iwapi img { transform: scale(1.1); }
 
+@media (max-width: 360px) {
+  .brand-block {
+    gap: .2rem;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .brand-copy {
+    display: none !important;
+  }
+
+  .brand-mark {
+    width: 2.15rem;
+    height: 2.15rem;
+  }
+
+  .header-actions {
+    gap: .2rem;
+  }
+
+  .locale-switcher {
+    display: none;
+  }
+
+  .mobile-register-cta {
+    padding-inline: .55rem;
+    font-size: .56rem;
+    letter-spacing: .12em;
+  }
+
+  .partner-logos {
+    display: flex;
+    flex-shrink: 0;
+    gap: .2rem;
+    padding-left: .3rem;
+  }
+
+  .partner-logo {
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: .38rem;
+    padding: .06rem;
+  }
+}
+
 @media (min-width: 640px) {
   .brand-mark {
     width: 3.5rem;
     height: 3.5rem;
+  }
+
+  .partner-logo {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: .8rem;
+    padding: .2rem;
   }
 }
 
@@ -700,15 +752,21 @@ summary::-webkit-details-marker {
 }
 
 @media (max-width: 639px) {
-  .partner-logos,
   .mobile-register-cta {
     display: none;
   }
 
+  .partner-logos {
+    display: flex;
+    flex-shrink: 0;
+    gap: .2rem;
+    padding-left: .35rem;
+  }
+
   .partner-logo {
-    width: 1.9rem;
-    height: 1.9rem;
-    border-radius: .65rem;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: .5rem;
   }
 
   .brand-block .brand-mark {
