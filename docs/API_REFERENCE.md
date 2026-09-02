@@ -176,6 +176,37 @@ POST /api/v1/auth/register
 Registrasi awal hanya membuat akun. `full_name` dan profile participant/delegate
 belum wajib pada tahap ini.
 
+Email akun bersifat unik dan dibandingkan dalam bentuk lowercase. Jika email
+sudah digunakan, endpoint mengembalikan HTTP `409 Conflict` dengan kode
+`USER_EXISTS` dan menunjuk field `email`:
+
+```json
+{
+  "success": false,
+  "message": "Email sudah terdaftar",
+  "errors": [
+    {
+      "field": "email",
+      "code": "USER_EXISTS",
+      "message": "Email sudah terdaftar"
+    }
+  ],
+  "request_id": "request-uuid",
+  "timestamp": "2026-09-02T12:00:00Z"
+}
+```
+
+Frontend harus membaca pesan dari body respons, bukan hanya status text atau
+URL request. Contoh dengan Axios:
+
+```javascript
+const message = error.response?.data?.message ?? "Registrasi gagal";
+```
+
+Untuk menandai input yang bermasalah, frontend dapat menggunakan
+`errors[0].field === "email"`. Pengguna dengan kode `USER_EXISTS` sebaiknya
+diarahkan untuk login atau menggunakan alur lupa password.
+
 Jika `EMAIL_ENABLED=true`, backend mengirim email konfirmasi registrasi dari
 alamat pada `EMAIL_FROM_ADDRESS` melalui Titan Email SMTP. Nilai tersebut harus
 sama dengan mailbox pada `EMAIL_SMTP_USERNAME`. Email berisi konfirmasi

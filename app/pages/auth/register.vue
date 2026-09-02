@@ -14,7 +14,7 @@
 
           <label class="block">
             <span class="mb-2 block text-sm text-slate-300">{{ copy.email }}</span>
-            <input v-model.trim="form.email" type="email" autocomplete="email" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" placeholder="you@example.com" required />
+            <input v-model.trim="form.email" type="email" autocomplete="email" class="w-full rounded-2xl border bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:outline-none focus:ring-2" :class="emailError ? 'border-red-300/60 focus:border-red-300/70 focus:ring-red-300/20' : 'border-white/10 focus:border-amber-300/60 focus:ring-amber-300/20'" :aria-invalid="emailError ? 'true' : undefined" placeholder="you@example.com" required />
           </label>
 
           <div class="space-y-4">
@@ -96,6 +96,31 @@ const flow = useRegistrationFlow();
 const submitting = ref(false);
 const message = ref('');
 const messageTone = ref<'neutral' | 'success' | 'error'>('neutral');
+const emailError = ref(false);
+
+type ApiErrorDetail = { field?: string; code?: string; message?: string };
+type ApiErrorPayload = {
+  message?: string;
+  errors?: ApiErrorDetail[];
+  request_id?: string;
+};
+type ApiError = {
+  data?: ApiErrorPayload;
+  response?: { _data?: ApiErrorPayload };
+};
+
+const registrationError = (error: unknown) => {
+  const apiError = error as ApiError;
+  const payload = apiError.data ?? apiError.response?._data;
+  const detail = payload?.errors?.find(item => item.message);
+
+  emailError.value = payload?.errors?.some(item => item.field === 'email' || item.code === 'USER_EXISTS') ?? false;
+
+  return {
+    message: payload?.message || detail?.message || (error instanceof Error ? error.message : copy.value.failed),
+    requestId: payload?.request_id
+  };
+};
 const isValidEmail = (value: string) => {
   const parts = value.split('@');
   return parts.length === 2 && Boolean(parts[0]) && Boolean(parts[1]?.includes('.')) && !value.includes(' ');
@@ -114,6 +139,8 @@ watch(() => form.country, (countryName) => {
 });
 
 const onSubmit = async () => {
+  emailError.value = false;
+
   if (!form.full_name.trim() || !form.email || !form.country || !form.phoneLocal || !form.password || !form.confirmPassword) {
     message.value = copy.value.required;
     messageTone.value = 'error';
@@ -169,7 +196,8 @@ const onSubmit = async () => {
     message.value = result.message || copy.value.failed;
     messageTone.value = 'error';
   } catch (error) {
-    message.value = error instanceof Error ? error.message : copy.value.failed;
+    const apiError = registrationError(error);
+    message.value = apiError.message;
     messageTone.value = 'error';
   } finally {
     submitting.value = false;
