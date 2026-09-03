@@ -1,37 +1,37 @@
 <template>
   <div class="site-shell min-h-screen text-white">
-    <div class="ambient ambient-one"></div>
-    <div class="ambient ambient-two"></div>
+    <div class="ambient ambient-one" />
+    <div class="ambient ambient-two" />
 
-    <header class="sticky top-0 z-50 border-b border-white/10 bg-slate-950/75 backdrop-blur-xl">
+    <header class="sticky top-0 z-50 border-b border-sky-100 bg-white/95 shadow-[0_18px_45px_rgba(15,65,120,0.08)] backdrop-blur-xl">
       <div class="mx-auto flex w-full max-w-[1440px] items-center gap-1.5 px-2 py-2 sm:gap-4 sm:px-6 lg:px-8">
         <NuxtLink to="/" class="brand-block flex min-w-0 shrink-0 items-center gap-3">
-          <span class="brand-mark flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-amber-300/40 bg-white/10 p-1.5 shadow-lg shadow-cyan-950/20 sm:h-14 sm:w-14">
-            <img v-if="!logoHasError" :src="logoSrc" alt="IWBIF 2026" width="56" height="56" class="h-full w-full object-contain" @error="logoHasError = true" />
+          <span class="brand-mark flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-sky-100 bg-white p-0.5 shadow-sm shadow-sky-900/10 sm:h-14 sm:w-14">
+            <img v-if="!logoHasError" :src="logoSrc" alt="IWBIF 2026" width="56" height="56" class="h-full w-full object-contain" @error="logoHasError = true">
             <span v-else class="brand-fallback text-sm font-black">IWBIF</span>
           </span>
           <span class="brand-copy hidden sm:block">
-            <span class="brand-kicker block whitespace-nowrap text-[10px] uppercase tracking-[0.24em] text-amber-200/75">AWEC &amp; IWAPI PRESENTS</span>
-            <span class="brand-name block whitespace-nowrap text-base font-semibold tracking-[0.08em] text-white">IWBIF 2026</span>
+            <span class="brand-kicker block whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.18em] text-[#07518f]">AWEC &amp; IWAPI PRESENTS</span>
+            <span class="brand-name block whitespace-nowrap text-base font-extrabold tracking-[0.04em] text-[#073b78]">IWBIF 2026</span>
           </span>
-          <span class="partner-logos flex shrink-0 items-center gap-1 border-l border-white/10 pl-1 sm:gap-2 sm:pl-3" aria-label="Presented by AWEC and IWAPI">
+          <span class="partner-logos flex shrink-0 items-center gap-1 border-l border-sky-100 pl-1 sm:gap-2 sm:pl-3" aria-label="Presented by AWEC and IWAPI">
             <span class="partner-logo partner-logo--awec" title="Asian Women Entrepreneurs Council">
-              <img src="/images/logo-awec.webp" alt="AWEC" width="44" height="44" />
+              <img :src="awecLogoSrc" alt="AWEC" width="44" height="44">
             </span>
             <span class="partner-logo partner-logo--iwapi" title="IWAPI">
-              <img src="/images/logo-iwapi-icon.png" alt="IWAPI" width="44" height="44" />
+              <img :src="iwapiLogoSrc" alt="IWAPI" width="44" height="44">
             </span>
           </span>
         </NuxtLink>
 
-      <nav class="hidden items-center gap-1 text-sm text-slate-300 xl:ml-auto xl:flex">
-        <NuxtLink v-for="item in primaryNav" :key="item.to" :to="item.to" :class="item.disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'hover:bg-white/5 hover:text-white'" class="nav-link inline-flex items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none" @click="item.disabled ? $event.preventDefault() : closeMenus()">
+      <nav class="hidden items-center gap-1 text-sm font-bold text-[#073b78] xl:ml-auto xl:flex">
+        <NuxtLink v-for="item in primaryNav" :key="item.to" :to="item.to" :class="item.disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'hover:bg-sky-50 hover:text-sky-700'" class="nav-link inline-flex items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none" @click="item.disabled ? $event.preventDefault() : closeMenus()">
           {{ item.label }}
         </NuxtLink>
           <details ref="desktopMenuRef" class="group relative" :open="desktopMenuOpen" @toggle="desktopMenuOpen = ($event.target as HTMLDetailsElement).open">
-            <summary class="nav-link inline-flex cursor-pointer list-none items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none text-slate-200 transition hover:bg-white/5 hover:text-white">{{ t('nav.more') }} <span class="ml-1 text-[10px] text-amber-200/80">v</span></summary>
-            <div class="nav-menu-panel absolute right-0 top-12 grid w-48 gap-1 rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-slate-950/60 backdrop-blur-xl">
-              <NuxtLink v-for="item in secondaryNav" :key="item.to" :to="item.to" class="rounded-xl px-4 py-3 text-sm text-slate-200 transition hover:bg-white/5 hover:text-white" @click="closeMenus">{{ item.label }}</NuxtLink>
+            <summary class="nav-link inline-flex cursor-pointer list-none items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none text-[#073b78] transition hover:bg-sky-50 hover:text-sky-700">{{ t('nav.more') }} <span class="ml-1 text-[10px] text-[#07518f]">v</span></summary>
+            <div class="nav-menu-panel absolute right-0 top-12 grid w-48 gap-1 rounded-2xl border border-sky-100 bg-white/95 p-2 shadow-2xl shadow-sky-900/15 backdrop-blur-xl">
+              <NuxtLink v-for="item in secondaryNav" :key="item.to" :to="item.to" class="rounded-xl px-4 py-3 text-sm text-sky-900 transition hover:bg-sky-50 hover:text-sky-700" @click="closeMenus">{{ item.label }}</NuxtLink>
             </div>
           </details>
         </nav>
@@ -44,14 +44,14 @@
           <div v-if="isAuthenticated" class="relative">
             <button
               type="button"
-              class="inbox-trigger header-cta relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-amber-300/35 bg-amber-300/10 p-0 text-amber-100"
+              class="inbox-trigger header-cta relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-sky-200 bg-sky-50 p-0 text-sky-800"
               :title="`Inbox${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`"
               @click="openInbox"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M22 5.5V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5.5L12 12Z"></path>
-                <path d="M22 5.5 12 12 2 5.5"></path>
-                <path d="M6.5 10.5V11l.2.2L12 14l5.3-2.8V10.5"></path>
+                <path d="M22 5.5V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5.5L12 12Z" />
+                <path d="M22 5.5 12 12 2 5.5" />
+                <path d="M6.5 10.5V11l.2.2L12 14l5.3-2.8V10.5" />
               </svg>
               <span v-if="unreadCount > 0" class="inbox-badge">
                 {{ unreadBadgeText }}
@@ -109,28 +109,28 @@
               </div>
             </div>
           </div>
-          <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="header-cta hidden whitespace-nowrap rounded-full border border-amber-300/35 bg-gradient-to-r from-amber-300/15 via-amber-200/8 to-cyan-400/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-100 shadow-[0_16px_40px_rgba(216,172,89,0.16)] transition hover:border-amber-200/70 hover:brightness-110 sm:inline-flex">
+          <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="header-cta hidden whitespace-nowrap rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-800 shadow-[0_16px_40px_rgba(14,116,144,0.10)] transition hover:border-sky-300 hover:bg-sky-100 sm:inline-flex">
             {{ t('actions.registerNow') }}
           </NuxtLink>
-          <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="mobile-register-cta header-cta inline-flex whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:hidden">
+          <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="mobile-register-cta header-cta inline-flex whitespace-nowrap rounded-full bg-sky-700 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-800 sm:hidden">
             {{ t('actions.register') }}
           </NuxtLink>
-          <NuxtLink v-if="isAuthenticated && !isRegistrationPaid" :to="paymentCtaTo" class="header-cta whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:px-5">
+          <NuxtLink v-if="isAuthenticated && !isRegistrationPaid" :to="paymentCtaTo" class="header-cta whitespace-nowrap rounded-full bg-sky-700 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-800 sm:px-5">
             {{ localizedCtaLabel }}
           </NuxtLink>
-          <span v-if="isAuthenticated && isRegistrationPaid" class="header-cta whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 opacity-90">
+          <span v-if="isAuthenticated && isRegistrationPaid" class="header-cta whitespace-nowrap rounded-full bg-sky-700 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-sky-500/20 opacity-90">
             {{ localizedCtaLabel }}
           </span>
-          <button v-if="isAuthenticated" type="button" class="header-cta whitespace-nowrap rounded-full bg-gradient-to-r from-amber-300 to-amber-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950 shadow-lg shadow-amber-500/20 transition hover:brightness-110 sm:px-5" @click="handleLogout">
+          <button v-if="isAuthenticated" type="button" class="header-cta whitespace-nowrap rounded-full bg-sky-700 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-800 sm:px-5" @click="handleLogout">
             {{ t('actions.logOut') }}
           </button>
-          <NuxtLink v-else to="/auth/login" class="header-signin whitespace-nowrap rounded-full border border-cyan-300/30 bg-cyan-400/5 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-100 shadow-[0_12px_30px_rgba(34,211,238,0.12)] transition hover:border-cyan-200/60 hover:bg-cyan-300/10 sm:px-5">
+          <NuxtLink v-else to="/auth/login" class="header-signin whitespace-nowrap rounded-full border border-sky-200 bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-800 shadow-[0_12px_30px_rgba(14,116,144,0.08)] transition hover:border-sky-300 hover:bg-sky-50 sm:px-5">
             {{ t('actions.signIn') }}
           </NuxtLink>
           <details ref="mobileMenuRef" class="relative xl:hidden" :open="mobileMenuOpen" @toggle="mobileMenuOpen = ($event.target as HTMLDetailsElement).open">
-            <summary :aria-label="t('nav.menu')" class="menu-button flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-white/15 bg-white/5 text-xs font-bold uppercase tracking-[0.12em] text-slate-100 shadow-lg shadow-slate-950/50 transition hover:border-cyan-300/40 hover:bg-white/10">{{ t('nav.menu') }}</summary>
-            <nav class="nav-menu-panel absolute right-0 top-12 grid w-[min(80vw,18rem)] gap-1 rounded-2xl border border-white/10 bg-slate-950/95 p-3 shadow-2xl shadow-slate-950/60 backdrop-blur-xl">
-              <NuxtLink v-for="item in allNav" :key="item.to" :to="item.to" :class="item.disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'hover:bg-white/5 hover:text-white'" class="rounded-xl px-4 py-3 text-sm text-slate-200 transition" @click="item.disabled ? $event.preventDefault() : closeMenus()">{{ item.label }}</NuxtLink>
+            <summary :aria-label="t('nav.menu')" class="menu-button flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-xs font-bold uppercase tracking-[0.12em] text-sky-800 shadow-lg shadow-sky-900/10 transition hover:border-sky-300 hover:bg-sky-100">{{ t('nav.menu') }}</summary>
+            <nav class="nav-menu-panel absolute right-0 top-12 grid w-[min(80vw,18rem)] gap-1 rounded-2xl border border-sky-100 bg-white/95 p-3 shadow-2xl shadow-sky-900/15 backdrop-blur-xl">
+              <NuxtLink v-for="item in allNav" :key="item.to" :to="item.to" :class="item.disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'hover:bg-sky-50 hover:text-sky-700'" class="rounded-xl px-4 py-3 text-sm text-sky-900 transition" @click="item.disabled ? $event.preventDefault() : closeMenus()">{{ item.label }}</NuxtLink>
             </nav>
           </details>
         </div>
@@ -164,7 +164,9 @@
 </template>
 
 <script setup lang="ts">
-import logoSrc from '~/assets/images/logo_iwbif2.png';
+import awecLogoSrc from '~/assets/images/awec_white.png';
+import iwapiLogoSrc from '~/assets/images/iwapi_transparant.png';
+import logoSrc from '~/assets/images/logo_iwbif_white.png';
 import { useCommunication } from '~/composables/useCommunication';
 const logoHasError = ref(false);
 const { t, locale, setLocale } = useI18n();
@@ -547,13 +549,13 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
 .locale-switcher select {
   height: 2.25rem;
   cursor: pointer;
-  border: 1px solid rgb(103 232 249 / 28%);
+  border: 1px solid rgb(2 132 199 / 28%);
   border-radius: 999px;
-  background: rgb(8 25 48 / 88%);
+  background: #fff;
   padding: 0 .65rem;
-  color: #cffafe;
+  color: #073b78;
   font-size: .7rem;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .brand-block {
@@ -578,10 +580,10 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
   height: 1.2rem;
   place-items: center;
   overflow: hidden;
-  border: 1px solid rgb(252 211 77 / 18%);
-  border-radius: .5rem;
-  background: rgb(255 255 255 / 5%);
-  padding: .08rem;
+  border: 1px solid rgb(2 132 199 / 16%);
+  border-radius: .45rem;
+  background: transparent;
+  padding: 0;
 }
 
 .partner-logo img {
@@ -591,6 +593,7 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
 }
 
 .partner-logo--awec img { transform: scale(1.08); }
+.partner-logo--iwapi { background: transparent; }
 .partner-logo--iwapi img { transform: scale(1.1); }
 
 @media (max-width: 360px) {
@@ -654,7 +657,7 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
 
 .brand-fallback {
   line-height: 1;
-  color: #fef08a;
+  color: #073b78;
   font-size: 0.65rem;
   font-size: clamp(0.62rem, 1.8vw, 0.75rem);
 }
@@ -673,7 +676,7 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
 }
 
 .brand-kicker {
-  text-shadow: 0 0 18px rgba(216, 172, 89, 0.18);
+  text-shadow: none;
 }
 
 .brand-name {
@@ -712,8 +715,10 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
 }
 
 .nav-link {
-  letter-spacing: 0.12em;
-  font-size: 11px;
+  color: #073b78;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  font-size: 12px;
   line-height: 1;
   transition: background 180ms ease, color 180ms ease, transform 180ms ease;
 }
@@ -739,12 +744,13 @@ summary.nav-link,
 .header-cta,
 .header-signin,
 .menu-button {
+  font-weight: 800;
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, filter 180ms ease;
 }
 
 .nav-menu-panel {
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow: 0 24px 70px rgba(2, 10, 24, 0.55);
+  border: 1px solid rgba(14, 116, 144, 0.12);
+  box-shadow: 0 24px 70px rgba(14, 116, 144, 0.18);
 }
 
 summary::-webkit-details-marker {

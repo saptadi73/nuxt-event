@@ -22,32 +22,38 @@
         <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">{{ copy.delegatePackage }}</dt><dd class="mt-2 text-lg font-semibold">{{ invoice.registration.delegate_package_name || invoice.registration.ticket_type_name || '-' }}</dd></div>
         <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">{{ copy.paymentStatus }}</dt><dd class="mt-2 text-lg font-semibold text-emerald-300">{{ copy.paid }}</dd><p class="text-sm text-slate-400">{{ formatDate(invoice.payment.paid_at) }}</p></div>
       </dl>
-      <div class="mt-7 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-6"><span class="text-slate-400">{{ copy.totalPaid }}</span><strong class="break-words text-2xl text-cyan-200">{{ formatCurrency(invoice.order.total_amount, invoice.order.currency) }}</strong></div>
+      <ul v-if="orderItems.length" class="mt-7 space-y-2 border-t border-white/10 pt-6"><li v-for="item in orderItems" :key="item.id" class="flex justify-between gap-3 text-sm"><span class="min-w-0 break-words text-slate-300">{{ item.product_name }} × {{ item.quantity }}</span><strong class="shrink-0 text-white">{{ usd(displayUnitPrice(item.product_id) * item.quantity) }}</strong></li></ul>
+      <div class="mt-7 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-6"><span class="text-slate-400">{{ copy.packageTotal }}</span><strong class="break-words text-2xl text-cyan-200">{{ displayInvoiceUsdTotal > 0 ? usd(displayInvoiceUsdTotal) : copy.paymentAmountGateway }}</strong></div>
       <button class="mt-7 w-full rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 print:hidden sm:w-auto" :disabled="downloading" @click="downloadInvoice">{{ downloading ? copy.preparingPdf : copy.downloadPdf }}</button>
     </article>
   </section>
 </template>
 
 <script setup lang="ts">
-import { normalizeInvoices, usePayment, type Invoice } from '~/composables/usePayment';
+import { useEvent } from '~/composables/useEvent';
+import { normalizeInvoices, usePayment, type Invoice, type PendingOrderProductItem } from '~/composables/usePayment';
 import { useRegistration } from '~/composables/useRegistration';
 import { useTicket } from '~/composables/useTicket';
 
 definePageMeta({ middleware: 'auth' });
 const { locale } = useI18n();
 const messages = {
-  en: { eyebrow: 'Payment and Invoice', title: 'Registration invoice', loading: 'Loading invoice…', noInvoice: 'No invoice is available yet.', invoice: 'Invoice', paid: 'Paid', registrationNumber: 'Registration number', participant: 'Participant', delegatePackage: 'Delegate package', paymentStatus: 'Payment status', totalPaid: 'Total paid', preparingPdf: 'Preparing PDF…', downloadPdf: 'Download invoice PDF', finishProfile: 'Your payment is complete. Finish your profile so the backend can link this order to your registration and generate the invoice.', awaitingInvoice: 'Your invoice will appear after your payment and registration have been confirmed.', mismatchProfile: 'No invoice was found for this payment context yet. Please complete your profile if it is still pending.', mismatch: 'No invoice was found for this specific payment context yet.', completeExhibitor: 'Complete Exhibitor Profile', completeDelegate: 'Complete Delegate Profile', checkStatus: 'Check payment status', goPayment: 'Go to payment', unavailable: 'Your invoice is not available yet. Please contact the event organizer if your payment has already been confirmed.', printError: 'Unable to open print window.', exportError: 'The PDF export could not be prepared. Please try again.', invoiceSuffix: 'Invoice', seo: 'Invoice' },
-  zh: { eyebrow: '付款与发票', title: '注册发票', loading: '正在加载发票…', noInvoice: '目前尚无可用发票。', invoice: '发票', paid: '已付款', registrationNumber: '注册编号', participant: '参与者', delegatePackage: '代表套餐', paymentStatus: '付款状态', totalPaid: '已付总额', preparingPdf: '正在准备 PDF…', downloadPdf: '下载发票 PDF', finishProfile: '您的付款已完成。请完善个人资料，以便后端将此订单关联到您的注册并生成发票。', awaitingInvoice: '付款和注册确认后，您的发票将显示在此处。', mismatchProfile: '尚未找到与此次付款对应的发票。如果资料仍未完成，请先完善资料。', mismatch: '尚未找到与此次付款信息对应的发票。', completeExhibitor: '完善参展商资料', completeDelegate: '完善代表资料', checkStatus: '查看付款状态', goPayment: '前往付款', unavailable: '您的发票目前尚不可用。如果付款已确认，请联系活动主办方。', printError: '无法打开打印窗口。', exportError: '无法准备 PDF 导出，请重试。', invoiceSuffix: '发票', seo: '发票' }
+  en: { eyebrow: 'Payment and Invoice', title: 'Registration invoice', loading: 'Loading invoice…', noInvoice: 'No invoice is available yet.', invoice: 'Invoice', paid: 'Paid', registrationNumber: 'Registration number', participant: 'Participant', delegatePackage: 'Delegate package', paymentStatus: 'Payment status', packageTotal: 'Package total', paymentAmountGateway: 'Shown by payment gateway', preparingPdf: 'Preparing PDF…', downloadPdf: 'Download invoice PDF', finishProfile: 'Your payment is complete. Finish your profile so the backend can link this order to your registration and generate the invoice.', awaitingInvoice: 'Your invoice will appear after your payment and registration have been confirmed.', mismatchProfile: 'No invoice was found for this payment context yet. Please complete your profile if it is still pending.', mismatch: 'No invoice was found for this specific payment context yet.', completeExhibitor: 'Complete Exhibitor Profile', completeDelegate: 'Complete Delegate Profile', checkStatus: 'Check payment status', goPayment: 'Go to payment', unavailable: 'Your invoice is not available yet. Please contact the event organizer if your payment has already been confirmed.', printError: 'Unable to open print window.', exportError: 'The PDF export could not be prepared. Please try again.', invoiceSuffix: 'Invoice', seo: 'Invoice' },
+  zh: { eyebrow: '付款与发票', title: '注册发票', loading: '正在加载发票…', noInvoice: '目前尚无可用发票。', invoice: '发票', paid: '已付款', registrationNumber: '注册编号', participant: '参与者', delegatePackage: '代表套餐', paymentStatus: '付款状态', packageTotal: '套餐总额', paymentAmountGateway: '由支付网关显示', preparingPdf: '正在准备 PDF…', downloadPdf: '下载发票 PDF', finishProfile: '您的付款已完成。请完善个人资料，以便后端将此订单关联到您的注册并生成发票。', awaitingInvoice: '付款和注册确认后，您的发票将显示在此处。', mismatchProfile: '尚未找到与此次付款对应的发票。如果资料仍未完成，请先完善资料。', mismatch: '尚未找到与此次付款信息对应的发票。', completeExhibitor: '完善参展商资料', completeDelegate: '完善代表资料', checkStatus: '查看付款状态', goPayment: '前往付款', unavailable: '您的发票目前尚不可用。如果付款已确认，请联系活动主办方。', printError: '无法打开打印窗口。', exportError: '无法准备 PDF 导出，请重试。', invoiceSuffix: '发票', seo: '发票' }
 } as const;
 const copy = computed(() => locale.value === 'zh-CN' ? messages.zh : messages.en);
 useSeoMeta({ title: () => `${copy.value.seo} | IWBIF 2026` });
 
-const { getMyInvoices, getInvoiceByRegistration } = usePayment();
+const paymentApi = usePayment();
+const { getMyInvoices, getInvoiceByRegistration } = paymentApi;
+const { getEvents, getDelegatePackageCatalog } = useEvent();
 const registrationFlow = useRegistrationFlow();
 const { getRegistration } = useRegistration();
 const { getMyTickets } = useTicket();
 const route = useRoute();
 const invoice = ref<Invoice | null>(null);
+const orderItems = ref<PendingOrderProductItem[]>([]);
+const usdPricesByProductId = ref(new Map<string, number>());
 const invoiceElement = ref<HTMLElement | null>(null);
 const currentInvoice = useState<Invoice | null>('current-invoice', () => null);
 const pending = ref(true);
@@ -118,6 +124,24 @@ const persistCurrentInvoice = (value: Invoice | null) => {
   }
   currentInvoice.value = value;
   sessionStorage.setItem(CURRENT_INVOICE_KEY, JSON.stringify(value));
+};
+
+const displayUnitPrice = (productId: string) => usdPricesByProductId.value.get(productId) || 0;
+const displayInvoiceUsdTotal = computed(() => orderItems.value.reduce((sum, item) => sum + (displayUnitPrice(item.product_id) * item.quantity), 0));
+const usd = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount || 0);
+const loadUsdInvoiceContext = async () => {
+  if (!invoice.value?.order?.id) return;
+  try {
+    const detail = (await paymentApi.getOrderDetail(invoice.value.order.id)).data;
+    orderItems.value = detail.items || [];
+    let eventId = invoice.value.order.event_id || detail.order.event_id || '';
+    if (!eventId) eventId = (await getEvents(1, 1)).data[0]?.id || '';
+    if (!eventId) return;
+    const catalog = (await getDelegatePackageCatalog(eventId)).data;
+    usdPricesByProductId.value = new Map([...catalog.main_packages, ...catalog.additional_packages].flatMap(pkg => pkg.rates).filter(rate => rate.is_active).map(rate => [rate.product_id, Number(rate.amount)]));
+  } catch {
+    // The invoice can still render without package detail; no backend payment amount is shown.
+  }
 };
 
 const tryInvoiceByIdentifier = async (identifier: string) => {
@@ -220,6 +244,7 @@ onMounted(async () => {
     if (invoice.value) {
       persistCurrentInvoice(invoice.value);
       if (invoice.value.registration?.id) rememberRegistration(invoice.value.registration.id);
+      await loadUsdInvoiceContext();
     }
   } catch {
     if (!invoice.value) {
@@ -233,7 +258,6 @@ onMounted(async () => {
   }
 });
 
-const formatCurrency = (amount: number, currency: string) => new Intl.NumberFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'id-ID', { style: 'currency', currency }).format(amount);
 const formatDate = (value?: string | null) => value ? new Intl.DateTimeFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'id-ID', { dateStyle: 'long', timeStyle: 'short' }).format(new Date(value)) : '-';
 
 const downloadInvoice = async () => {

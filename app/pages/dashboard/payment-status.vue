@@ -8,10 +8,10 @@
         <p class="text-xs uppercase tracking-widest text-slate-400">{{ copy.paymentStatus }}</p>
         <p class="mt-2 text-2xl font-bold" :class="statusClass">{{ statusLabel }}</p>
         <p v-if="payment" class="mt-2 text-sm text-slate-400">
-          {{ copy.provider }}: {{ payment.provider }} · {{ copy.amount }}: {{ currency(payment.gross_amount, payment.currency) }}
+          {{ copy.provider }}: {{ payment.provider }}
         </p>
         <p v-if="payment?.payment_sequence && payment?.payment_sequence_count" class="mt-2 text-sm text-slate-300">Payment part {{ payment.payment_sequence }} of {{ payment.payment_sequence_count }}</p>
-        <div v-if="order" class="mt-4 grid grid-cols-2 gap-3 border-t border-white/10 pt-4 text-sm"><div><span class="text-slate-400">Paid</span><strong class="block text-emerald-300">{{ currency(order.paid_amount || 0, order.currency) }}</strong></div><div><span class="text-slate-400">Remaining</span><strong class="block text-amber-200">{{ currency(order.remaining_amount ?? order.total_amount, order.currency) }}</strong></div></div>
+        <div v-if="displayOrderUsdTotal > 0" class="mt-4 border-t border-white/10 pt-4 text-sm"><span class="text-slate-400">{{ copy.packageTotal }}</span><strong class="block text-xl text-amber-200">{{ usd(displayOrderUsdTotal) }}</strong></div>
         <p v-if="polling" class="mt-3 text-sm text-amber-200">{{ copy.checkingConfirmation.replace('{provider}', paymentProviderLabel) }}</p>
       </div>
       <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -30,19 +30,21 @@
 </template>
 
 <script setup lang="ts">
-import { usePayment, type OrderItem, type PaymentItem } from '~/composables/usePayment';
+import { useEvent } from '~/composables/useEvent';
+import { usePayment, type OrderItem, type PaymentItem, type PendingOrderProductItem } from '~/composables/usePayment';
 
 definePageMeta({ middleware: 'auth' });
 const { locale } = useI18n();
 const messages = {
-  en: { eyebrow: '{provider} Payment Status', paymentStatus: 'Payment status', provider: 'Provider', amount: 'Amount', checkingConfirmation: 'Checking for {provider} confirmation…', viewInvoice: 'View invoice', tryAgain: 'Try payment again', checkAgain: 'Check again', checking: 'Checking…', dashboard: 'Dashboard', reference: 'Reference', payment: 'Payment', statuses: { created: 'Created', pending: 'Awaiting verification', success: 'Payment successful', failed: 'Payment failed', expired: 'Checkout expired', canceled: 'Payment canceled' }, received: 'Payment received', notCompleted: 'Payment not completed', processing: 'Payment processing', verified: '{provider} notification has been verified by the backend.', retry: 'You may safely create a new {provider} checkout.', wait: 'Do not create another checkout while backend verification is in progress.', retrievalError: 'Payment status could not be retrieved.', missingReference: 'Payment reference was not found in this browser.', seo: 'Payment Status' },
-  zh: { eyebrow: '{provider} 付款状态', paymentStatus: '付款状态', provider: '支付服务商', amount: '金额', checkingConfirmation: '正在检查 {provider} 的确认结果…', viewInvoice: '查看发票', tryAgain: '重新付款', checkAgain: '再次检查', checking: '正在检查…', dashboard: '控制面板', reference: '参考编号', payment: '付款', statuses: { created: '已创建', pending: '等待审核', success: '付款成功', failed: '付款失败', expired: '结账已过期', canceled: '付款已取消' }, received: '已收到付款', notCompleted: '付款未完成', processing: '付款处理中', verified: '后端已验证 {provider} 的付款通知。', retry: '您现在可以安全地创建新的 {provider} 付款。', wait: '后端验证期间请勿创建另一个付款。', retrievalError: '无法获取付款状态。', missingReference: '此浏览器中未找到付款参考信息。', seo: '付款状态' }
+  en: { eyebrow: '{provider} Payment Status', paymentStatus: 'Payment status', provider: 'Provider', packageTotal: 'Package total', checkingConfirmation: 'Checking for {provider} confirmation…', viewInvoice: 'View invoice', tryAgain: 'Try payment again', checkAgain: 'Check again', checking: 'Checking…', dashboard: 'Dashboard', reference: 'Reference', payment: 'Payment', statuses: { created: 'Created', pending: 'Awaiting verification', success: 'Payment successful', failed: 'Payment failed', expired: 'Checkout expired', canceled: 'Payment canceled' }, received: 'Payment received', notCompleted: 'Payment not completed', processing: 'Payment processing', verified: '{provider} notification has been verified by the backend.', retry: 'You may safely create a new {provider} checkout.', wait: 'Do not create another checkout while backend verification is in progress.', retrievalError: 'Payment status could not be retrieved.', missingReference: 'Payment reference was not found in this browser.', seo: 'Payment Status' },
+  zh: { eyebrow: '{provider} 付款状态', paymentStatus: '付款状态', provider: '支付服务商', packageTotal: '套餐总额', checkingConfirmation: '正在检查 {provider} 的确认结果…', viewInvoice: '查看发票', tryAgain: '重新付款', checkAgain: '再次检查', checking: '正在检查…', dashboard: '控制面板', reference: '参考编号', payment: '付款', statuses: { created: '已创建', pending: '等待审核', success: '付款成功', failed: '付款失败', expired: '结账已过期', canceled: '付款已取消' }, received: '已收到付款', notCompleted: '付款未完成', processing: '付款处理中', verified: '后端已验证 {provider} 的付款通知。', retry: '您现在可以安全地创建新的 {provider} 付款。', wait: '后端验证期间请勿创建另一个付款。', retrievalError: '无法获取付款状态。', missingReference: '此浏览器中未找到付款参考信息。', seo: '付款状态' }
 } as const;
 const copy = computed(() => locale.value === 'zh-CN' ? messages.zh : messages.en);
 useSeoMeta({ title: () => `${copy.value.seo} | IWBIF 2026` });
 
 const route = useRoute();
 const paymentApi = usePayment();
+const { getEvents, getDelegatePackageCatalog } = useEvent();
 const registrationFlow = useRegistrationFlow();
 const STORAGE_REGISTRATION = 'iwbif-doku-registration-id';
 const STORAGE_PAYMENT = 'iwbif-payment-id';
@@ -53,6 +55,8 @@ const registrationId = ref('');
 const orderId = ref('');
 const payment = ref<PaymentItem | null>(null);
 const order = ref<OrderItem | null>(null);
+const orderItems = ref<PendingOrderProductItem[]>([]);
+const usdPricesByProductId = ref(new Map<string, number>());
 const status = ref('pending');
 const polling = ref(false);
 const checking = ref(false);
@@ -82,6 +86,23 @@ const invoiceTo = computed(() => registrationId.value
     : '/dashboard/invoice');
 
 const queryValue = (value: unknown) => Array.isArray(value) ? String(value[0] || '') : typeof value === 'string' ? value : '';
+const displayUnitPrice = (productId: string) => usdPricesByProductId.value.get(productId) || 0;
+const displayOrderUsdTotal = computed(() => orderItems.value.reduce((sum, item) => sum + (displayUnitPrice(item.product_id) * item.quantity), 0));
+const usd = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount || 0);
+const loadUsdOrderContext = async () => {
+  if (!orderId.value) return;
+  try {
+    const detail = (await paymentApi.getOrderDetail(orderId.value)).data;
+    orderItems.value = detail.items || [];
+    let eventId = order.value?.event_id || detail.order.event_id || '';
+    if (!eventId) eventId = (await getEvents(1, 1)).data[0]?.id || '';
+    if (!eventId) return;
+    const catalog = (await getDelegatePackageCatalog(eventId)).data;
+    usdPricesByProductId.value = new Map([...catalog.main_packages, ...catalog.additional_packages].flatMap(pkg => pkg.rates).filter(rate => rate.is_active).map(rate => [rate.product_id, Number(rate.amount)]));
+  } catch {
+    // Payment status can still be shown; the gateway remains authoritative for settlement.
+  }
+};
 const stop = () => {
   if (timer) clearInterval(timer);
   timer = null;
@@ -148,6 +169,7 @@ const checkStatus = async () => {
     if (orderId.value) {
       const orderResponse = await paymentApi.getOrder(orderId.value);
       order.value = orderResponse.data;
+      await loadUsdOrderContext();
       const orderStatus = orderResponse.data.status.toLowerCase();
       status.value = orderResponse.data.is_payment_complete === true || orderStatus === 'paid' ? 'success' : orderStatus;
     }
@@ -180,5 +202,4 @@ onMounted(async () => {
   }
 });
 onBeforeUnmount(stop);
-const currency = (amount: number, code: string) => new Intl.NumberFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'id-ID', { style: 'currency', currency: code || 'IDR', maximumFractionDigits: 0 }).format(amount);
 </script>
