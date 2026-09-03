@@ -17,6 +17,11 @@ export interface StoreProduct {
 }
 
 export type AdditionalPurchaseStatus = 'available' | 'pending' | 'partially_paid' | 'owned' | 'registration_required' | 'main_payment_required' | 'unavailable';
+export const ADDITIONAL_PURCHASE_MODE_STATUSES: readonly AdditionalPurchaseStatus[] = ['available', 'pending', 'partially_paid', 'owned'];
+
+export const hasMainPackageEntitlement = (products: PersonalizedAdditionalProduct[]) =>
+  products.some(product => ADDITIONAL_PURCHASE_MODE_STATUSES.includes(product.purchase_status));
+
 export interface PersonalizedAdditionalProduct extends StoreProduct {
   purchase_status: AdditionalPurchaseStatus;
   is_purchasable: boolean;

@@ -60,7 +60,7 @@
 
 <script setup lang="ts">
 import { useEvent, type DelegatePackageCatalog, type DelegatePackageCatalogItem, type DelegatePackageRate } from '~/composables/useEvent';
-import { useStore, type PersonalizedAdditionalProduct, type StoreCart } from '~/composables/useStore';
+import { hasMainPackageEntitlement, useStore, type PersonalizedAdditionalProduct, type StoreCart } from '~/composables/useStore';
 import { usePayment } from '~/composables/usePayment';
 import { delegatePackageSchedules, delegatePackageSchedulesZh, type PackageScheduleDetail } from '~/config/delegatePackageSchedules';
 
@@ -117,7 +117,7 @@ const isRatePreviewSelected = (pkg: DelegatePackageCatalogItem, rate: DelegatePa
 const findRateByProduct = (productId: string) => [...catalog.value.main_packages, ...catalog.value.additional_packages].flatMap(pkg => pkg.rates.map(rate => ({ pkg, rate }))).find(item => item.rate.product_id === productId);
 const selectedRates = computed(() => [selection.mainProductId, selection.bandungProductId].filter(Boolean).map(productId => findRateByProduct(productId!)?.rate).filter((rate): rate is DelegatePackageRate => Boolean(rate)));
 const paymentConfigurationReady = computed(() => selectedRates.value.every(rate => rate.payment_amount_idr != null));
-const postRegistrationAdditional = computed(() => personalizedAdditional.value.some(item => !['registration_required'].includes(item.purchase_status)));
+const postRegistrationAdditional = computed(() => hasMainPackageEntitlement(personalizedAdditional.value));
 const additionalProductsFor = (pkg: DelegatePackageCatalogItem) => {
   const ids = new Set(pkg.rates.map(rate => rate.product_id));
   return personalizedAdditional.value.filter(product => ids.has(product.id));
@@ -162,8 +162,8 @@ const selectionMessage = computed(() => {
 const syncFromCart = (value: StoreCart) => { Object.assign(selection, { mainPackageId: null, mainRateId: null, mainProductId: null, bandungSelected: false, bandungRateId: null, bandungProductId: null }); for (const item of value.items || []) { const found = findRateByProduct(item.product_id); if (!found) continue; if (found.pkg.package_type === 'main') Object.assign(selection, { mainPackageId: found.pkg.id, mainRateId: found.rate.id, mainProductId: found.rate.product_id }); else Object.assign(selection, { bandungSelected: true, bandungRateId: found.rate.id, bandungProductId: found.rate.product_id }); } };
 const apiError = (error: unknown) => { const value = error as { data?: { message?: string; errors?: Array<{ message?: string }> } }; return value.data?.errors?.[0]?.message || value.data?.message || copy.value.updateError; };
 const addRate = async (rate: DelegatePackageRate) => { if (!auth.isAuthenticated) { await navigateTo('/auth/register'); return false; } if (!eventId.value || mutating.value) return false; mutating.value = true; notice.value = ''; try { cart.value = (await store.addCartItem(eventId.value, rate.product_id, 1)).data; syncFromCart(cart.value); noticeTone.value = 'success'; notice.value = copy.value.saved; return true; } catch (error) { noticeTone.value = 'error'; notice.value = apiError(error); return false; } finally { mutating.value = false; } };
-const selectMainPackage = async (pkg: DelegatePackageCatalogItem) => { const rate = defaultRate(pkg); if (rate) await addRate(rate); };
-const selectMainRate = async (pkg: DelegatePackageCatalogItem, rate: DelegatePackageRate) => { if (selection.mainPackageId === pkg.id) await addRate(rate); };
+const selectMainPackage = async (pkg: DelegatePackageCatalogItem) => { if (postRegistrationAdditional.value) return; const rate = defaultRate(pkg); if (rate) await addRate(rate); };
+const selectMainRate = async (pkg: DelegatePackageCatalogItem, rate: DelegatePackageRate) => { if (!postRegistrationAdditional.value && selection.mainPackageId === pkg.id) await addRate(rate); };
 const toggleAdditional = async (pkg: DelegatePackageCatalogItem, checked: boolean) => { if (checked) { const rates=activeRates(pkg);const rate=postRegistrationAdditional.value?rates.find(canBuyAdditionalRate):defaultRate(pkg); if (rate) await addRate(rate); return; } if (!selection.bandungProductId || !eventId.value) return; mutating.value = true; try { cart.value = (await store.removeCartItem(eventId.value, selection.bandungProductId)).data; syncFromCart(cart.value); notice.value = copy.value.removed; } catch (error) { noticeTone.value = 'error'; notice.value = apiError(error); } finally { mutating.value = false; } };
 const selectAdditionalRate = (rate: DelegatePackageRate) => addRate(rate);
 const occupancyLabel = (occupancyType: DelegatePackageRate['occupancy_type']) => occupancyType === 'single' ? copy.value.single : copy.value.sharing;

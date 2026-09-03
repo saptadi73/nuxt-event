@@ -34,7 +34,7 @@
 </template>
 <script setup lang="ts">
 import {useEvent} from '~/composables/useEvent';
-import {useStore,type StoreCart} from '~/composables/useStore';
+import {hasMainPackageEntitlement,useStore,type StoreCart} from '~/composables/useStore';
 import {usePayment,type PendingOrderRecord} from '~/composables/usePayment';
 definePageMeta({middleware:'auth'});
 const {locale}=useI18n();
@@ -51,7 +51,7 @@ const items=computed(()=>cart.value?.items||[]);const itemCount=computed(()=>ite
 const mainPackageRequired=computed(()=>items.value.some(item=>item.product?.product_type==='additional')&&!items.value.some(item=>item.product?.product_type==='delegate')&&!additionalOnlyEligible.value);
 const checkoutBlocked=computed(()=>mainPackageRequired.value);
 const apiError=(error:unknown)=>{const value=error as {data?:{message?:string;errors?:Array<{message:string}>}};return value.data?.errors?.[0]?.message||value.data?.message||(error instanceof Error?error.message:copy.value.cartError);};
-const loadCart=async()=>{const events=await getEvents(1,1);const event=events.data[0];if(!event)throw new Error(copy.value.noEvent);eventId.value=event.id;const [cartResponse,additionalResponse,catalogResponse]=await Promise.all([storeApi.getCart(event.id),storeApi.getMyAdditionalProducts(event.id).catch(()=>null),getDelegatePackageCatalog(event.id)]);cart.value=cartResponse.data;usdPricesByProductId.value=new Map([...catalogResponse.data.main_packages,...catalogResponse.data.additional_packages].flatMap(pkg=>pkg.rates).filter(rate=>rate.is_active).map(rate=>[rate.product_id,Number(rate.amount)]));additionalOnlyEligible.value=Boolean(additionalResponse?.data?.some(item=>['available','pending','partially_paid','owned'].includes(item.purchase_status)));};
+const loadCart=async()=>{const events=await getEvents(1,1);const event=events.data[0];if(!event)throw new Error(copy.value.noEvent);eventId.value=event.id;const [cartResponse,additionalResponse,catalogResponse]=await Promise.all([storeApi.getCart(event.id),storeApi.getMyAdditionalProducts(event.id).catch(()=>null),getDelegatePackageCatalog(event.id)]);cart.value=cartResponse.data;usdPricesByProductId.value=new Map([...catalogResponse.data.main_packages,...catalogResponse.data.additional_packages].flatMap(pkg=>pkg.rates).filter(rate=>rate.is_active).map(rate=>[rate.product_id,Number(rate.amount)]));additionalOnlyEligible.value=hasMainPackageEntitlement(additionalResponse?.data||[]);};
 const loadPendingOrders=async()=>{ordersLoading.value=true;try{const responses=await Promise.all([paymentApi.getPendingOrders(eventId.value||undefined,1,100,'pending'),paymentApi.getPendingOrders(eventId.value||undefined,1,100,'partially_paid')]);const records=responses.flatMap(response=>{const data=response.data as PendingOrderRecord[]|{items?:PendingOrderRecord[]};return Array.isArray(data)?data:data.items||[];});pendingOrders.value=[...new Map(records.map(entry=>[entry.order.id,entry])).values()];}catch(error){errorMessage.value=apiError(error);}finally{ordersLoading.value=false;}};
 const displayPendingTotal=(entry:PendingOrderRecord)=>entry.items.reduce((sum,item)=>sum+(displayUnitPrice(item.product_id)*item.quantity),0);
 const remove=async(productId:string)=>{if(!eventId.value||removingId.value)return;removingId.value=productId;errorMessage.value='';try{cart.value=(await storeApi.removeCartItem(eventId.value,productId)).data;}catch(error){errorMessage.value=apiError(error);}finally{removingId.value='';}};
