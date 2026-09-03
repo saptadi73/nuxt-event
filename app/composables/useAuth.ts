@@ -22,6 +22,12 @@ interface ChangePasswordPayload {
   confirm_password: string;
 }
 
+interface ResetPasswordPayload {
+  token: string;
+  password: string;
+  confirm_password: string;
+}
+
 interface AuthUserPayload {
   id?: string;
   email: string;
@@ -95,6 +101,18 @@ export function useAuth() {
   const changePassword = (payload: ChangePasswordPayload) =>
     api<ApiResponse<Record<string, unknown>>>('/auth/password', { method: 'PUT', body: payload });
 
+  const forgotPassword = (email: string) =>
+    api<ApiResponse<Record<string, unknown>>>('/auth/forgot-password', {
+      method: 'POST',
+      body: { email }
+    });
+
+  const resetPassword = (payload: ResetPasswordPayload) =>
+    api<ApiResponse<Record<string, unknown>>>('/auth/reset-password', {
+      method: 'POST',
+      body: payload
+    });
+
   const updatePreferredLocale = async (preferredLocale: 'en' | 'zh-CN') => {
     const result = await api<ApiResponse<AuthUserPayload>>('/auth/me', {
       method: 'PUT',
@@ -104,5 +122,5 @@ export function useAuth() {
     return result;
   };
 
-  return { login, register, logout, changePassword, updatePreferredLocale, authStore };
+  return { login, register, logout, changePassword, forgotPassword, resetPassword, updatePreferredLocale, authStore };
 }

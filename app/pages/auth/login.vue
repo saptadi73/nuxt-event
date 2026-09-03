@@ -21,6 +21,10 @@
             <input v-model="form.password" type="password" autocomplete="current-password" class="w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-white placeholder:text-slate-500 transition focus:border-amber-300/60 focus:outline-none focus:ring-2 focus:ring-amber-300/20" :placeholder="copy.passwordPlaceholder" minlength="8" maxlength="128" required />
           </label>
 
+          <div class="text-right">
+            <NuxtLink to="/auth/forgot-password" class="text-sm font-semibold text-amber-200 underline-offset-4 hover:underline">{{ copy.forgotPassword }}</NuxtLink>
+          </div>
+
           <button type="submit" class="w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3 text-sm font-bold uppercase tracking-[.18em] text-slate-950 shadow-[0_18px_35px_rgba(216,172,89,0.22)] transition duration-200 hover:brightness-110 active:scale-[0.99]">{{ copy.login }}</button>
         </form>
 
@@ -37,7 +41,7 @@
 
 <script setup lang="ts">
 const {locale}=useI18n();
-const messages={en:{member:'Member access',title:'Login to IWBIF',intro:'Access your dashboard, tickets, payment status, and event updates.',email:'Email',password:'Password',passwordPlaceholder:'Enter your password',login:'Log In',needAccount:'Need an account?',create:'Create one',input:'Input',invalid:'Invalid value',processError:'Login could not be processed.',required:'Enter your email address and password.',invalidEmail:'Enter a valid email address.',passwordLength:'Password must be at least 8 characters long.',submitting:'Submitting login...',success:'Login successful.',failed:'Failed'},'zh-CN':{member:'会员入口',title:'登录 IWBIF',intro:'访问您的用户中心、门票、付款状态和活动更新。',email:'电子邮箱',password:'密码',passwordPlaceholder:'请输入密码',login:'登录',needAccount:'还没有账户？',create:'创建账户',input:'输入',invalid:'无效值',processError:'无法处理登录请求。',required:'请输入电子邮箱和密码。',invalidEmail:'请输入有效的电子邮箱地址。',passwordLength:'密码长度必须至少为 8 个字符。',submitting:'正在登录…',success:'登录成功。',failed:'失败'}} as const;
+const messages={en:{member:'Member access',title:'Login to IWBIF',intro:'Access your dashboard, tickets, payment status, and event updates.',email:'Email',password:'Password',passwordPlaceholder:'Enter your password',forgotPassword:'Forgot password?',resetSuccess:'Your password has been reset. You can now log in with your new password.',login:'Log In',needAccount:'Need an account?',create:'Create one',input:'Input',invalid:'Invalid value',processError:'Login could not be processed.',required:'Enter your email address and password.',invalidEmail:'Enter a valid email address.',passwordLength:'Password must be at least 8 characters long.',submitting:'Submitting login...',success:'Login successful.',failed:'Failed'},'zh-CN':{member:'会员入口',title:'登录 IWBIF',intro:'访问您的用户中心、门票、付款状态和活动更新。',email:'电子邮箱',password:'密码',passwordPlaceholder:'请输入密码',forgotPassword:'忘记密码？',resetSuccess:'密码已重置。您现在可以使用新密码登录。',login:'登录',needAccount:'还没有账户？',create:'创建账户',input:'输入',invalid:'无效值',processError:'无法处理登录请求。',required:'请输入电子邮箱和密码。',invalidEmail:'请输入有效的电子邮箱地址。',passwordLength:'密码长度必须至少为 8 个字符。',submitting:'正在登录…',success:'登录成功。',failed:'失败'}} as const;
 const copy=computed(()=>messages[locale.value==='zh-CN'?'zh-CN':'en']);
 useSeoMeta({title:()=>`${copy.value.login} | IWBIF 2026`,description:()=>copy.value.intro});
 const form = reactive({ email: '', password: '' });
@@ -45,6 +49,12 @@ const { login } = useAuth();
 const flow = useRegistrationFlow();
 const message = ref('');
 const messageTone = ref<'neutral' | 'success' | 'error'>('neutral');
+const route = useRoute();
+
+if (route.query.reset === 'success') {
+  message.value = copy.value.resetSuccess;
+  messageTone.value = 'success';
+}
 const isValidEmail = (value: string) => {
   const parts = value.split('@');
   return parts.length === 2 && Boolean(parts[0]) && Boolean(parts[1]?.includes('.')) && !value.includes(' ');
