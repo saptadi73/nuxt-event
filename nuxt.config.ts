@@ -12,6 +12,13 @@ const siteUrl = isDevelopmentRuntime
 const apiBasePath = process.env.NUXT_PUBLIC_API_BASE_PATH || '/api/v1';
 
 export default defineNuxtConfig({
+  hooks: {
+    'pages:extend'(pages) {
+      if (isDevelopmentRuntime) return;
+      const sandboxPage = pages.findIndex(page => page.path === '/dev/doku-sandbox');
+      if (sandboxPage !== -1) pages.splice(sandboxPage, 1);
+    }
+  },
   experimental: {
     appManifest: isDevelopmentRuntime
   },

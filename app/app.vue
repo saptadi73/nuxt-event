@@ -115,13 +115,13 @@
           <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="mobile-register-cta header-cta inline-flex whitespace-nowrap rounded-full bg-sky-700 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-800 sm:hidden">
             {{ t('actions.register') }}
           </NuxtLink>
-          <NuxtLink v-if="isAuthenticated && !isRegistrationPaid" :to="paymentCtaTo" class="header-cta whitespace-nowrap rounded-full bg-sky-700 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-800 sm:px-5">
+          <NuxtLink v-if="isAuthenticated && !isRegistrationPaid" :to="paymentCtaTo" class="header-cta hidden whitespace-nowrap rounded-full bg-sky-700 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-800 sm:px-5 lg:inline-flex">
             {{ localizedCtaLabel }}
           </NuxtLink>
-          <span v-if="isAuthenticated && isRegistrationPaid" class="header-cta whitespace-nowrap rounded-full bg-sky-700 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-sky-500/20 opacity-90">
+          <span v-if="isAuthenticated && isRegistrationPaid" class="header-cta hidden whitespace-nowrap rounded-full bg-sky-700 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-sky-500/20 opacity-90 lg:inline-flex">
             {{ localizedCtaLabel }}
           </span>
-          <button v-if="isAuthenticated" type="button" class="header-cta whitespace-nowrap rounded-full bg-sky-700 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-800 sm:px-5" @click="handleLogout">
+          <button v-if="isAuthenticated" type="button" class="header-cta hidden whitespace-nowrap rounded-full bg-sky-700 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-800 sm:px-5 lg:inline-flex" @click="handleLogout">
             {{ t('actions.logOut') }}
           </button>
           <NuxtLink v-else to="/auth/login" class="header-signin whitespace-nowrap rounded-full border border-sky-200 bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-800 shadow-[0_12px_30px_rgba(14,116,144,0.08)] transition hover:border-sky-300 hover:bg-sky-50 sm:px-5">
@@ -131,6 +131,17 @@
             <summary :aria-label="t('nav.menu')" class="menu-button flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-xs font-bold uppercase tracking-[0.12em] text-sky-800 shadow-lg shadow-sky-900/10 transition hover:border-sky-300 hover:bg-sky-100">{{ t('nav.menu') }}</summary>
             <nav class="nav-menu-panel absolute right-0 top-12 grid w-[min(80vw,18rem)] gap-1 rounded-2xl border border-sky-100 bg-white/95 p-3 shadow-2xl shadow-sky-900/15 backdrop-blur-xl">
               <NuxtLink v-for="item in allNav" :key="item.to" :to="item.to" :class="item.disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'hover:bg-sky-50 hover:text-sky-700'" class="rounded-xl px-4 py-3 text-sm text-sky-900 transition" @click="item.disabled ? $event.preventDefault() : closeMenus()">{{ item.label }}</NuxtLink>
+              <div v-if="isAuthenticated" class="mt-2 grid gap-2 border-t border-sky-100 pt-3 lg:hidden">
+                <NuxtLink v-if="!isRegistrationPaid" :to="paymentCtaTo" class="rounded-xl bg-sky-700 px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-sky-800" @click="closeMenus">
+                  {{ localizedCtaLabel }}
+                </NuxtLink>
+                <span v-else class="rounded-xl bg-sky-50 px-4 py-3 text-center text-sm font-bold text-sky-800">
+                  {{ localizedCtaLabel }}
+                </span>
+                <button type="button" class="rounded-xl border border-sky-200 px-4 py-3 text-left text-sm font-bold text-sky-900 transition hover:bg-sky-50" @click="handleLogout">
+                  {{ t('actions.logOut') }}
+                </button>
+              </div>
             </nav>
           </details>
         </div>

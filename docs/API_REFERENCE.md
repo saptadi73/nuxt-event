@@ -331,8 +331,12 @@ Respons berisi access dan refresh token baru.
 | `POST /api/v1/auth/reset-password` | Tidak | `{ "token", "password", "confirm_password" }` |
 | `POST /api/v1/auth/verify-email` | Tidak | `{ "token": string }` |
 
-Development masih mengembalikan reset token di respons forgot-password. Jangan
-bergantung pada ini di production; production harus mengirim token lewat email.
+`forgot-password` selalu mengembalikan respons sukses yang sama, baik email
+terdaftar maupun tidak, untuk mencegah enumerasi akun. Jika akun ditemukan,
+backend mengirim link `${FRONTEND_RESET_PASSWORD_URL}?token=...` melalui email.
+Token hanya dapat digunakan sekali, disimpan sebagai hash, dan kedaluwarsa
+sesuai `PASSWORD_RESET_EXPIRE_MINUTES` (default 30 menit). Request baru
+membatalkan seluruh token reset lama yang belum digunakan.
 
 ### Detail user dan progres registrasi
 
