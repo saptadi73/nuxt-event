@@ -30,6 +30,7 @@
       <div class="organizer-actions mt-4 flex flex-wrap gap-2.5">
         <NuxtLink to="/admin/packages" class="inline-flex items-center justify-center rounded-full bg-amber-300 px-4 py-2.5 text-xs font-bold text-slate-950 transition hover:brightness-110 sm:px-5 sm:text-sm">Manage packages</NuxtLink>
         <NuxtLink to="/admin/speakers" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-4 py-2.5 text-xs font-bold text-amber-100 transition hover:bg-amber-300/10 sm:px-5 sm:text-sm">Manage speakers</NuxtLink>
+        <NuxtLink to="/admin/hosts" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-4 py-2.5 text-xs font-bold text-amber-100 transition hover:bg-amber-300/10 sm:px-5 sm:text-sm">Manage hosts</NuxtLink>
         <NuxtLink to="/admin/program" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-4 py-2.5 text-xs font-bold text-amber-100 transition hover:bg-amber-300/10 sm:px-5 sm:text-sm">Program & agenda</NuxtLink>
         <NuxtLink to="/admin/users" class="inline-flex items-center justify-center rounded-full border border-amber-300/40 px-4 py-2.5 text-xs font-bold text-amber-100 transition hover:bg-amber-300/10 sm:px-5 sm:text-sm">Manage users</NuxtLink>
         <NuxtLink to="/admin/announcements" class="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2.5 text-xs font-bold text-white transition hover:border-white/40 sm:px-5 sm:text-sm">Announcements</NuxtLink>
