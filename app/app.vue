@@ -39,7 +39,7 @@
           </NuxtLink>
         </template>
           <details ref="desktopMenuRef" class="group relative" :open="desktopMenuOpen" @toggle="desktopMenuOpen = ($event.target as HTMLDetailsElement).open">
-            <summary class="nav-link inline-flex cursor-pointer list-none items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none text-[#073b78] transition hover:bg-sky-50 hover:text-sky-700">{{ t('nav.more') }} <span class="ml-1 text-[10px] text-[#07518f]">v</span></summary>
+            <summary class="nav-link inline-flex cursor-pointer list-none items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none text-[#073b78] transition hover:bg-sky-50 hover:text-sky-700">{{ t('nav.more') }} <span class="ml-1 text-[9px] transition group-open:rotate-180" aria-hidden="true">▼</span></summary>
             <div class="nav-menu-panel absolute right-0 top-12 grid w-48 gap-1 rounded-2xl border border-sky-100 bg-white/95 p-2 shadow-2xl shadow-sky-900/15 backdrop-blur-xl">
               <NuxtLink v-for="item in secondaryNav" :key="item.to" :to="item.to" class="rounded-xl px-4 py-3 text-sm text-sky-900 transition hover:bg-sky-50 hover:text-sky-700" @click="closeMenus">{{ item.label }}</NuxtLink>
             </div>
@@ -540,9 +540,9 @@ const primaryNav = computed<NavItem[]>(() => [
   { to: '/', label: t('nav.home') },
   { to: '/about', label: t('nav.about'), children: [
     { to: '/about', label: t('nav.aboutIwbif') },
-    { to: '/host', label: t('nav.host') }
+    { to: '/host', label: t('nav.host') },
+    { to: '/venue', label: t('nav.theVenue') }
   ] },
-  { to: '/venue', label: t('nav.venue') },
   { to: '/program', label: t('nav.program') },
   { to: '/speakers', label: t('nav.speakers') },
   { to: '/tickets', label: t('nav.packages'), disabled: hasDelegatePackageSelected.value }

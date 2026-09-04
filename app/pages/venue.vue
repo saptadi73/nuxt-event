@@ -82,6 +82,7 @@ import ballroomEmpty from '~/assets/images/venue/Kempinski Grand Ballroom_No Set
 import ballroomSetup from '~/assets/images/venue/Kempinski Grand Ballroom_Setup.jpg.jpeg';
 import ballroomLayout from '~/assets/images/venue/Grand Ballroom Layout.png';
 import kempinskiRoom from '~/assets/images/venue/JKT1_Deluxe Room B.jpg.jpeg';
+import kempinskiTwinSharing from '~/assets/images/Kempinski Deluxe Room – Twin Bed (Sharing).png';
 import mercureLobby from '~/assets/images/venue/MERCURE BANDUNG - LOBBY.png';
 import mercureRoof from '~/assets/images/venue/MERCURE BANDUNG - ROOF TOP.png';
 import mercureSharing from '~/assets/images/venue/MERCURE BANDUNG - SUPERIOR SHARING.png';
@@ -99,7 +100,7 @@ const messages = {
   }
 } as const;
 const copy = computed(() => messages[locale.value === 'zh-CN' ? 'zh-CN' : 'en']);
-const kempinskiRooms = computed(() => [{ src: kempinskiRoom, label: copy.value.twinSharing }, { src: kempinskiRoom, label: copy.value.singleRoom }]);
+const kempinskiRooms = computed(() => [{ src: kempinskiTwinSharing, label: copy.value.twinSharing }, { src: kempinskiRoom, label: copy.value.singleRoom }]);
 const sahidRooms = computed(() => [{ src: sahidSharing, label: copy.value.twinSharing }, { src: sahidSingle, label: copy.value.singleRoom }]);
 const mercureImages = computed(() => [{ src: mercureSharing, label: copy.value.superiorSharing }, { src: mercureSingle, label: copy.value.superiorSingle }, { src: mercureRoof, label: copy.value.rooftop }, { src: mercureLobby, label: copy.value.lobby }]);
 useSeoMeta({ title: () => `${copy.value.eyebrow} | IWBIF 2026`, description: () => copy.value.intro });
