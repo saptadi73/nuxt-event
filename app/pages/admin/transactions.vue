@@ -126,4 +126,27 @@ await loadTransactions();
 .field input,.field select,.field textarea { width: 100%; border: 1px solid rgba(255,255,255,.12); border-radius: 1rem; background: rgba(2,6,23,.82); padding: .75rem 1rem; color: white; outline: none; }
 .field input:focus,.field select:focus,.field textarea:focus { border-color: rgba(252,211,77,.55); }
 button:disabled { cursor: not-allowed; opacity: .4; }
+
+@media (max-width: 767px) {
+  .data-table-shell { overflow: visible; }
+  .data-table-shell table,
+  .data-table-shell thead,
+  .data-table-shell tbody,
+  .data-table-shell tr,
+  .data-table-shell th,
+  .data-table-shell td { display: block; box-sizing: border-box; width: 100%; min-width: 0; }
+  .data-table-shell thead { display: none; }
+  .data-table-shell tbody { display: grid; gap: .75rem; }
+  .data-table-shell tr { border: 1px solid rgba(255,255,255,.1); border-radius: 1rem; padding: .9rem; }
+  .data-table-shell td { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; padding: .4rem 0; }
+  .data-table-shell td:first-child { display: none; }
+  .data-table-shell td::before { flex: 0 0 34%; color: #94a3b8; font-size: .65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .data-table-shell td:nth-child(2)::before { content: 'Order'; }
+  .data-table-shell td:nth-child(3)::before { content: 'Provider'; }
+  .data-table-shell td:nth-child(4)::before { content: 'Status'; }
+  .data-table-shell td:nth-child(5)::before { content: 'Amount'; }
+  .data-table-shell td:nth-child(6)::before { content: 'Time'; }
+  .data-table-shell td:nth-child(7)::before { content: 'Actions'; }
+  .data-table-shell .cell-actions > div { justify-content: flex-end; }
+}
 </style>

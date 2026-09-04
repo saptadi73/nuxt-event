@@ -1,6 +1,6 @@
 <template>
   <article class="overflow-hidden rounded-[2rem] border border-white/10 bg-[#071a34] shadow-2xl shadow-black/20">
-    <div class="grid grid-cols-2 gap-px bg-white/10">
+    <div class="grid grid-cols-1 gap-px bg-white/10 sm:grid-cols-2">
       <figure v-for="image in images" :key="image.label" class="relative bg-[#071a34]">
         <img :src="image.src" :alt="image.label" loading="lazy" class="aspect-[4/3] h-full w-full object-cover">
         <figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#031127] via-[#031127]/80 to-transparent px-4 pb-3 pt-10 text-xs font-bold text-white">{{ image.label }}</figcaption>
