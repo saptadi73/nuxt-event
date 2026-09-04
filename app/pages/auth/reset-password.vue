@@ -6,7 +6,9 @@
         <h1 class="mt-3 text-3xl font-black text-white sm:text-4xl">{{ copy.title }}</h1>
         <p class="mt-3 text-sm leading-7 text-slate-300">{{ copy.intro }}</p>
 
-        <div v-if="!token" class="mt-6 rounded-2xl border border-red-300/30 bg-red-950/30 p-4 text-sm text-red-100" role="alert">
+        <div v-if="!tokenResolved" class="mt-6 h-28 animate-pulse rounded-2xl bg-white/5" aria-label="Checking password reset link" role="status" />
+
+        <div v-else-if="!token" class="mt-6 rounded-2xl border border-red-300/30 bg-red-950/30 p-4 text-sm text-red-100" role="alert">
           <p>{{ copy.missingToken }}</p>
           <NuxtLink to="/auth/forgot-password" class="mt-3 inline-flex font-semibold text-amber-200 underline-offset-4 hover:underline">{{ copy.requestNew }}</NuxtLink>
         </div>
@@ -44,8 +46,13 @@ const copy = computed(() => messages[locale.value === 'zh-CN' ? 'zh-CN' : 'en'])
 useSeoMeta({ title: () => `${copy.value.title} | IWBIF 2026`, description: () => copy.value.intro });
 
 const route = useRoute();
-const queryToken = route.query.token;
-const token = ref(typeof queryToken === 'string' ? queryToken.trim() : Array.isArray(queryToken) ? String(queryToken[0] || '').trim() : '');
+const token = ref('');
+const tokenResolved = ref(false);
+
+onMounted(() => {
+  token.value = new URLSearchParams(window.location.search).get('token')?.trim() || '';
+  tokenResolved.value = true;
+});
 const form = reactive({ password: '', confirmPassword: '' });
 const submitting = ref(false);
 const message = ref('');

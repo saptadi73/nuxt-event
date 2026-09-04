@@ -30,6 +30,20 @@ export interface SpeakerItem extends LocalizedContentMeta {
   status?: string;
 }
 
+export interface CommitteeMemberItem extends LocalizedContentMeta {
+  id: string;
+  event_id: string;
+  full_name: string;
+  role_title?: string;
+  committee_group?: string;
+  organization_name?: string;
+  biography?: string;
+  profile_photo_url?: string;
+  display_order?: number;
+  is_featured?: boolean;
+  status?: string;
+}
+
 export interface SessionItem extends LocalizedContentMeta {
   id: string;
   event_id: string;
@@ -74,7 +88,7 @@ export interface DelegatePackageItem extends TicketTypeItem {
   accommodation_nights?: number;
 }
 
-export type PackageOccupancy = 'sharing' | 'single';
+export type PackageOccupancy = 'sharing' | 'single' | 'standard';
 export interface DelegatePackageRate extends LocalizedContentMeta {
   id: string;
   delegate_package_id?: string;
@@ -107,7 +121,7 @@ export interface DelegatePackageCatalogItem extends LocalizedContentMeta {
   code: string;
   name: string;
   description?: string | null;
-  package_type: 'main' | 'additional';
+  package_type: 'main' | 'additional' | 'exhibitor';
   selection_mode: 'required_one' | 'optional';
   display_order?: number;
   is_active?: boolean;
@@ -117,6 +131,7 @@ export interface DelegatePackageCatalogItem extends LocalizedContentMeta {
 export interface DelegatePackageCatalog {
   main_packages: DelegatePackageCatalogItem[];
   additional_packages: DelegatePackageCatalogItem[];
+  exhibitor_packages: DelegatePackageCatalogItem[];
 }
 
 export interface ActivityItem extends WorkshopTrackItem {
@@ -157,6 +172,9 @@ export function useEvent() {
   const getEventSpeakers = (slug: string) =>
     api<ApiResponse<SpeakerItem[]>>(`/events/${slug}/speakers`);
 
+  const getEventCommittee = (eventId: string) =>
+    api<ApiResponse<CommitteeMemberItem[]>>(`/events/${eventId}/committee`);
+
   const getEventWorkshopTracks = (slug: string) =>
     api<ApiResponse<WorkshopTrackItem[]>>(`/events/${slug}/workshop-tracks`);
 
@@ -181,6 +199,7 @@ export function useEvent() {
     getEventSessions,
     getSessionsByEventId,
     getEventSpeakers,
+    getEventCommittee,
     getEventWorkshopTracks,
     getEventTicketTypes,
     getEventDelegatePackages,

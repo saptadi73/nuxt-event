@@ -9,26 +9,10 @@ Locale yang didukung backend adalah:
 Jangan menerjemahkan nilai mesin seperti status, provider, trigger,
 `error.code`, ID, slug, dan `allowed_actions`.
 
-### Kebijakan admin
-
-Antarmuka administrasi menggunakan English-only. Request dari route `/admin`
-selalu mengirim `locale=en` dan `Accept-Language: en`; admin tetap dapat
-menyimpan translation Mandarin melalui endpoint content translation dengan
-path `/zh-CN`. Source English pada editor harus diminta eksplisit dengan
-`?locale=en`.
-
-Untuk entity tanpa editor bilingual khusus, gunakan `/admin/translations`.
-Halaman ini memuat entity dan whitelist field dari
-`GET /admin/content-translations/entities`. Announcements dan Certificates
-memiliki aksi `Chinese translation` yang mengisi entity dan resource ID secara
-otomatis.
-> **Status data per 2026-08-29:** mekanisme translation sudah aktif, tetapi
-> tabel `content_translations` di database saat ini masih kosong untuk seluruh
-> event live. Selama admin belum mengisi translation lewat endpoint di bagian
-> 2-4, request publik dengan `?locale=zh-CN` akan konsisten mengirim
-`content_locale: "source"` dan `translation_fallback: true`. Ini
-> bukan bug backend; frontend perlu menampilkan badge fallback sesuai
-> rekomendasi di bagian 6 sampai konten Mandarin benar-benar diinput.
+> **Status data:** mekanisme translation sudah aktif. Translasi `zh-CN` untuk
+> package, rate, dan product Exhibitor serta Host disediakan melalui seed dan
+> migrasi `202609040044`. Entitas lain yang belum diterjemahkan tetap mengirim
+> `content_locale: "source"`/`"en"` dan `translation_fallback: true`.
 
 ## 1. Pemilihan bahasa pada request publik
 

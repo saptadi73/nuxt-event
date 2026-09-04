@@ -95,6 +95,10 @@ export default defineNuxtConfig({
     '/code-of-conduct': { prerender: true },
     '/refund-policy': { prerender: true },
     '/directory-consent': { prerender: true },
+    // Password-reset tokens only exist in the browser query string. Rendering
+    // this page client-side prevents a prerendered empty query from winning
+    // during hydration.
+    '/auth/reset-password': { ssr: false },
     '/speakers/**': { ssr: false },
     '/program': { ssr: false },
     '/dashboard/**': { ssr: false },

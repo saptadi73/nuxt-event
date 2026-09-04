@@ -25,9 +25,19 @@
         </NuxtLink>
 
       <nav class="hidden items-center gap-1 text-sm font-bold text-[#073b78] xl:ml-auto xl:flex">
-        <NuxtLink v-for="item in primaryNav" :key="item.to" :to="item.to" :class="item.disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'hover:bg-sky-50 hover:text-sky-700'" class="nav-link inline-flex items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none" @click="item.disabled ? $event.preventDefault() : closeMenus()">
-          {{ item.label }}
-        </NuxtLink>
+        <template v-for="item in primaryNav" :key="item.to">
+          <details v-if="item.children" class="group relative">
+            <summary class="nav-link inline-flex cursor-pointer list-none items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none text-[#073b78] transition hover:bg-sky-50 hover:text-sky-700">
+              {{ item.label }} <span class="ml-1 text-[9px] transition group-open:rotate-180" aria-hidden="true">▼</span>
+            </summary>
+            <div class="nav-menu-panel absolute left-0 top-10 grid w-52 gap-1 rounded-2xl border border-sky-100 bg-white/95 p-2 shadow-2xl shadow-sky-900/15 backdrop-blur-xl">
+              <NuxtLink v-for="child in item.children" :key="child.to" :to="child.to" class="rounded-xl px-4 py-3 text-sm text-sky-900 transition hover:bg-sky-50 hover:text-sky-700" @click="closeMenus">{{ child.label }}</NuxtLink>
+            </div>
+          </details>
+          <NuxtLink v-else :to="item.to" :class="item.disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'hover:bg-sky-50 hover:text-sky-700'" class="nav-link inline-flex items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none" @click="item.disabled ? $event.preventDefault() : closeMenus()">
+            {{ item.label }}
+          </NuxtLink>
+        </template>
           <details ref="desktopMenuRef" class="group relative" :open="desktopMenuOpen" @toggle="desktopMenuOpen = ($event.target as HTMLDetailsElement).open">
             <summary class="nav-link inline-flex cursor-pointer list-none items-center whitespace-nowrap rounded-full px-3 py-2 uppercase tracking-[0.12em] text-[11px] leading-none text-[#073b78] transition hover:bg-sky-50 hover:text-sky-700">{{ t('nav.more') }} <span class="ml-1 text-[10px] text-[#07518f]">v</span></summary>
             <div class="nav-menu-panel absolute right-0 top-12 grid w-48 gap-1 rounded-2xl border border-sky-100 bg-white/95 p-2 shadow-2xl shadow-sky-900/15 backdrop-blur-xl">
@@ -130,7 +140,15 @@
           <details ref="mobileMenuRef" class="relative xl:hidden" :open="mobileMenuOpen" @toggle="mobileMenuOpen = ($event.target as HTMLDetailsElement).open">
             <summary :aria-label="t('nav.menu')" class="menu-button flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-xs font-bold uppercase tracking-[0.12em] text-sky-800 shadow-lg shadow-sky-900/10 transition hover:border-sky-300 hover:bg-sky-100">{{ t('nav.menu') }}</summary>
             <nav class="nav-menu-panel absolute right-0 top-12 grid w-[min(80vw,18rem)] gap-1 rounded-2xl border border-sky-100 bg-white/95 p-3 shadow-2xl shadow-sky-900/15 backdrop-blur-xl">
-              <NuxtLink v-for="item in allNav" :key="item.to" :to="item.to" :class="item.disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'hover:bg-sky-50 hover:text-sky-700'" class="rounded-xl px-4 py-3 text-sm text-sky-900 transition" @click="item.disabled ? $event.preventDefault() : closeMenus()">{{ item.label }}</NuxtLink>
+              <template v-for="item in allNav" :key="item.to">
+                <details v-if="item.children" class="rounded-xl border border-sky-100">
+                  <summary class="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-bold text-sky-900">{{ item.label }} <span class="text-[10px]" aria-hidden="true">▼</span></summary>
+                  <div class="grid gap-1 border-t border-sky-100 p-2">
+                    <NuxtLink v-for="child in item.children" :key="child.to" :to="child.to" class="rounded-lg px-4 py-2.5 text-sm text-sky-800 transition hover:bg-sky-50" @click="closeMenus">{{ child.label }}</NuxtLink>
+                  </div>
+                </details>
+                <NuxtLink v-else :to="item.to" :class="item.disabled ? 'pointer-events-none cursor-not-allowed opacity-50' : 'hover:bg-sky-50 hover:text-sky-700'" class="rounded-xl px-4 py-3 text-sm text-sky-900 transition" @click="item.disabled ? $event.preventDefault() : closeMenus()">{{ item.label }}</NuxtLink>
+              </template>
               <div v-if="isAuthenticated" class="mt-2 grid gap-2 border-t border-sky-100 pt-3 lg:hidden">
                 <NuxtLink v-if="!isRegistrationPaid" :to="paymentCtaTo" class="rounded-xl bg-sky-700 px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-sky-800" @click="closeMenus">
                   {{ localizedCtaLabel }}
@@ -515,11 +533,14 @@ const hasDelegatePackageSelected = computed(() => {
   return ['selected', 'payment_pending', 'paid_profile_incomplete', 'completed'].includes(registrationFlow.delegateStatus.value);
 });
 
-type NavItem = { to: string; label: string; disabled?: boolean };
+type NavItem = { to: string; label: string; disabled?: boolean; children?: NavItem[] };
 
 const primaryNav = computed<NavItem[]>(() => [
   { to: '/', label: t('nav.home') },
-  { to: '/about', label: t('nav.about') },
+  { to: '/about', label: t('nav.about'), children: [
+    { to: '/about', label: t('nav.aboutIwbif') },
+    { to: '/host', label: t('nav.host') }
+  ] },
   { to: '/program', label: t('nav.program') },
   { to: '/speakers', label: t('nav.speakers') },
   { to: '/tickets', label: t('nav.packages'), disabled: hasDelegatePackageSelected.value }
@@ -542,6 +563,7 @@ const secondaryNav = computed<NavItem[]>(() => {
     items.push({ to: '/admin/reports', label: t('nav.salesReport') });
     items.push({ to: '/admin/participants-report', label: t('nav.participantsReport') });
     items.push({ to: '/admin/speakers', label: t('nav.manageSpeakers') });
+    items.push({ to: '/admin/hosts', label: t('nav.manageHosts') });
     items.push({ to: '/admin/program', label: t('nav.manageProgram') });
     items.push({ to: '/admin/translations', label: 'Chinese translations' });
     items.push({ to: '/admin/users', label: t('nav.manageUsers') });

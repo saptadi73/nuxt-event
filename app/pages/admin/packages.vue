@@ -33,7 +33,7 @@
         <div class="mt-5 space-y-4">
           <label class="field"><span>Package name</span><input v-model.trim="form.name" required placeholder="Package A - USD500" /></label>
           <label class="field"><span>Code</span><input v-model.trim="form.code" required maxlength="30" placeholder="A" /></label>
-          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2"><label class="field"><span>Package type</span><select v-model="form.package_type"><option value="main">Main</option><option value="additional">Additional</option></select></label><label class="field"><span>Selection</span><select v-model="form.selection_mode"><option value="required_one">Required one</option><option value="optional">Optional</option></select></label></div>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2"><label class="field"><span>Package type</span><select v-model="form.package_type"><option value="main">Main Delegate</option><option value="additional">Additional Delegate</option><option value="exhibitor">Exhibitor</option></select></label><label class="field"><span>Selection</span><select v-model="form.selection_mode"><option value="required_one">Required one</option><option value="optional">Optional</option></select></label></div>
           <label class="field"><span>Description</span><input v-model.trim="form.description" placeholder="Package description" /></label>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2"><label class="field"><span>Price</span><input v-model.number="form.amount" type="number" min="0.01" step="0.01" required /></label><label class="field"><span>Currency</span><input v-model.trim="form.currency" maxlength="3" required /></label></div>
           <label class="field"><span>Payment amount (IDR)</span><input v-model.number="form.payment_amount_idr" type="number" min="1" step="1" placeholder="8000000" /></label>
@@ -44,7 +44,7 @@
     </div>
 
     <section v-if="selectedPackage" class="mt-8 grid gap-6 lg:grid-cols-2">
-      <article class="glass-card rounded-3xl p-5"><div class="flex flex-wrap items-start justify-between gap-3"><h2 class="min-w-0 text-xl font-bold">{{ editingRateId ? 'Edit rate' : 'Add rate' }} · {{ selectedPackage.name }}</h2><button v-if="editingRateId" class="text-sm text-slate-400" @click="resetRateForm">Cancel</button></div><p class="mt-2 text-xs text-slate-400">Sharing and Single are final package tariffs. Only one rate may be the default.</p><form class="mt-5 space-y-3" @submit.prevent="saveRate"><div class="grid grid-cols-1 gap-3 sm:grid-cols-2"><label class="field"><span>Occupancy</span><select v-model="rateForm.occupancy_type"><option value="sharing">Sharing</option><option value="single">Single</option></select></label><label class="field"><span>Rate name</span><input v-model="rateForm.name" required></label></div><div class="grid grid-cols-1 gap-3 sm:grid-cols-2"><label class="field"><span>Display USD</span><input v-model.number="rateForm.amount" type="number" min="0" required></label><label class="field"><span>Payment IDR</span><input v-model.number="rateForm.payment_amount_idr" type="number" min="1"></label></div><div class="flex flex-col gap-2 text-sm sm:flex-row sm:gap-5"><label><input v-model="rateForm.is_default" type="checkbox" class="accent-amber-300"> Default</label><label><input v-model="rateForm.is_active" type="checkbox" class="accent-amber-300"> Active</label></div><button class="w-full rounded-full bg-amber-300 px-5 py-3 font-bold text-slate-950" :disabled="saving">{{ editingRateId ? 'Update rate' : 'Add rate' }}</button></form></article>
+      <article class="glass-card rounded-3xl p-5"><div class="flex flex-wrap items-start justify-between gap-3"><h2 class="min-w-0 text-xl font-bold">{{ editingRateId ? 'Edit rate' : 'Add rate' }} · {{ selectedPackage.name }}</h2><button v-if="editingRateId" class="text-sm text-slate-400" @click="resetRateForm">Cancel</button></div><p class="mt-2 text-xs text-slate-400">Sharing and Single are delegate tariffs. Exhibitor packages use Standard. Only one rate may be the default.</p><form class="mt-5 space-y-3" @submit.prevent="saveRate"><div class="grid grid-cols-1 gap-3 sm:grid-cols-2"><label class="field"><span>Occupancy</span><select v-model="rateForm.occupancy_type"><option v-if="selectedPackage.package_type !== 'exhibitor'" value="sharing">Sharing</option><option v-if="selectedPackage.package_type !== 'exhibitor'" value="single">Single</option><option v-if="selectedPackage.package_type === 'exhibitor'" value="standard">Standard</option></select></label><label class="field"><span>Rate name</span><input v-model="rateForm.name" required></label></div><div class="grid grid-cols-1 gap-3 sm:grid-cols-2"><label class="field"><span>Display USD</span><input v-model.number="rateForm.amount" type="number" min="0" required></label><label class="field"><span>Payment IDR</span><input v-model.number="rateForm.payment_amount_idr" type="number" min="1"></label></div><div class="flex flex-col gap-2 text-sm sm:flex-row sm:gap-5"><label><input v-model="rateForm.is_default" type="checkbox" class="accent-amber-300"> Default</label><label><input v-model="rateForm.is_active" type="checkbox" class="accent-amber-300"> Active</label></div><button class="w-full rounded-full bg-amber-300 px-5 py-3 font-bold text-slate-950" :disabled="saving">{{ editingRateId ? 'Update rate' : 'Add rate' }}</button></form></article>
       <article class="glass-card rounded-3xl p-5"><h2 class="text-xl font-bold">Add facility</h2><p class="mt-2 text-xs text-slate-400">Facility prices are breakdown information and are not added to checkout totals.</p><form class="mt-5 space-y-3" @submit.prevent="saveFacility"><label class="field"><span>Facility name</span><input v-model="facilityForm.name" required></label><label class="field"><span>Description</span><textarea v-model="facilityForm.description" rows="3" placeholder="Facility description" /></label><div class="grid grid-cols-1 gap-3 sm:grid-cols-2"><label class="field"><span>Quantity</span><input v-model.number="facilityForm.quantity" type="number" min="0"></label><label class="field"><span>Unit</span><input v-model="facilityForm.unit" placeholder="night"></label></div><label class="field"><span>Pricing</span><select v-model="facilityForm.pricing_mode"><option value="included">Included</option><option value="separately_priced">Separately priced</option></select></label><div v-if="facilityForm.pricing_mode === 'separately_priced'" class="grid grid-cols-1 gap-3 sm:grid-cols-2"><label class="field"><span>Sharing USD</span><input v-model.number="facilityForm.sharing_amount" type="number" min="0"></label><label class="field"><span>Single USD</span><input v-model.number="facilityForm.single_amount" type="number" min="0"></label></div><button class="w-full rounded-full bg-cyan-300 px-5 py-3 font-bold text-slate-950" :disabled="saving">Add facility</button></form></article>
     </section>
 
@@ -140,7 +140,7 @@ const saveTranslation = async () => {
     : translationEntityType.value === 'delegate_package_facility'
       ? [['name', translationForm.name], ['description', translationForm.description], ['unit', translationForm.unit]]
       : [['name', translationForm.name], ['description', translationForm.description]];
-  const blankFields = requiredFields.filter(([, value]) => !value.trim()).map(([field]) => field);
+  const blankFields = requiredFields.filter(([, value]) => !String(value || '').trim()).map(([field]) => field);
   if (blankFields.length) {
     feedbackTone.value = 'error';
     feedback.value = `Complete the Chinese ${blankFields.join(', ')} field${blankFields.length > 1 ? 's' : ''} before saving.`;
@@ -166,7 +166,7 @@ const deleteTranslation = async () => {
 const loadPackages = async () => {
   if (!selectedEventId.value) { packages.value = []; return; }
   loading.value = true; feedback.value = '';
-  try { const catalog = (await adminApi.getDelegatePackageCatalog(selectedEventId.value, 'en')).data; packages.value = [...(catalog.main_packages || []), ...(catalog.additional_packages || [])]; await loadTranslationStatuses(); }
+  try { const catalog = (await adminApi.getDelegatePackageCatalog(selectedEventId.value, 'en')).data; packages.value = [...(catalog.main_packages || []), ...(catalog.additional_packages || []), ...(catalog.exhibitor_packages || [])]; await loadTranslationStatuses(); }
   catch (error) { feedbackTone.value = 'error'; feedback.value = apiError(error); }
   finally { loading.value = false; }
 };
@@ -177,6 +177,15 @@ const loadTranslationStatuses = async () => {
   await Promise.all(entities.map(async item => { const key = `${item.type}:${item.id}`; try { const rows = (await adminApi.getContentTranslations(item.type, item.id)).data || []; translationStatuses.value[key] = rows.some(row => row.locale === 'zh-CN') ? 'complete' : 'missing'; } catch { translationStatuses.value[key] = 'error'; } }));
 };
 const resetForm = () => { editingId.value = ''; Object.assign(form, emptyForm()); };
+watch(() => form.package_type, (packageType) => {
+  if (editingId.value) return;
+  form.selection_mode = packageType === 'main' ? 'required_one' : 'optional';
+  if (packageType === 'exhibitor') {
+    if (!form.code) form.code = 'EXHIBITOR';
+    if (!form.name) form.name = 'Exhibitor Package - USD200';
+    if (!form.amount) form.amount = 200;
+  }
+});
 const editPackage = (item: DelegatePackageCatalogItem) => {
   editingId.value = item.id;
   const rate = item.rates.find(value => value.is_default) || item.rates[0];
@@ -193,8 +202,8 @@ const savePackage = async () => {
       const currentPackage = packages.value.find(item => item.id === packageId);
       const defaultRate = currentPackage?.rates.find(rate => rate.is_default) || currentPackage?.rates[0];
       const ratePayload: DelegatePackageRatePayload = {
-        occupancy_type: defaultRate?.occupancy_type || 'sharing',
-        name: defaultRate?.name || 'Twin Sharing Basis',
+        occupancy_type: defaultRate?.occupancy_type || (payload.package_type === 'exhibitor' ? 'standard' : 'sharing'),
+        name: defaultRate?.name || (payload.package_type === 'exhibitor' ? 'Exhibitor Access' : 'Twin Sharing Basis'),
         amount: payload.amount,
         currency: payload.currency,
         payment_amount_idr: payload.payment_amount_idr,
@@ -210,14 +219,14 @@ const savePackage = async () => {
       let createdPackageId: string | undefined = created.data?.id;
       if (!createdPackageId) {
         const catalog = (await adminApi.getDelegatePackageCatalog(selectedEventId.value)).data;
-        const createdPackage = [...(catalog.main_packages || []), ...(catalog.additional_packages || [])]
+        const createdPackage = [...(catalog.main_packages || []), ...(catalog.additional_packages || []), ...(catalog.exhibitor_packages || [])]
           .find(item => item.code.toLowerCase() === payload.code.toLowerCase());
         createdPackageId = createdPackage?.id;
       }
       if (!createdPackageId) throw new Error('Package was created, but its ID was not returned so the tariff could not be saved. Reload the page and add the rate manually.');
       await adminApi.createDelegatePackageRate(selectedEventId.value, createdPackageId, {
-        occupancy_type: 'sharing',
-        name: 'Twin Sharing Basis',
+        occupancy_type: payload.package_type === 'exhibitor' ? 'standard' : 'sharing',
+        name: payload.package_type === 'exhibitor' ? 'Exhibitor Access' : 'Twin Sharing Basis',
         amount: payload.amount,
         currency: payload.currency,
         payment_amount_idr: payload.payment_amount_idr,

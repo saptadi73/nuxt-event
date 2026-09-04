@@ -1,5 +1,5 @@
 import type { useApi, ApiResponse } from '~/composables/useApi';
-import type { DelegatePackageCatalog, DelegatePackageCatalogItem, DelegatePackageFacility, DelegatePackageRate, SessionItem, SpeakerItem } from '~/composables/useEvent';
+import type { CommitteeMemberItem, DelegatePackageCatalog, DelegatePackageCatalogItem, DelegatePackageFacility, DelegatePackageRate, SessionItem, SpeakerItem } from '~/composables/useEvent';
 import type { StoreProduct } from '~/composables/useStore';
 
 export interface DelegatePackageMutationPayload {
@@ -9,14 +9,14 @@ export interface DelegatePackageMutationPayload {
   amount: number;
   payment_amount_idr?: number | null;
   is_active: boolean;
-  package_type?: 'main' | 'additional';
+  package_type?: 'main' | 'additional' | 'exhibitor';
   selection_mode?: 'required_one' | 'optional';
   description?: string | null;
   display_order?: number;
 }
 
 export interface DelegatePackageRatePayload {
-  occupancy_type: 'sharing' | 'single'; name: string; amount: number; currency: string;
+  occupancy_type: 'sharing' | 'single' | 'standard'; name: string; amount: number; currency: string;
   payment_amount_idr: number | null; is_default: boolean; is_active: boolean;
   valid_from?: string | null; valid_until?: string | null;
 }
@@ -64,10 +64,23 @@ export interface SpeakerMutationPayload {
   status?: string;
 }
 
+export interface CommitteeMemberMutationPayload {
+  event_id: string;
+  full_name: string;
+  role_title?: string | null;
+  committee_group?: string | null;
+  organization_name?: string | null;
+  biography?: string | null;
+  display_order: number;
+  is_featured: boolean;
+  status: 'draft' | 'published' | 'archived';
+}
+
 export type TranslatableEntityType =
   | 'event'
   | 'product'
   | 'speaker'
+  | 'committee_member'
   | 'session'
   | 'delegate_package'
   | 'delegate_package_rate'
@@ -119,6 +132,11 @@ export function useAdminContent() {
   const updateSpeaker = (speakerId: string, payload: SpeakerMutationPayload) => api<ApiResponse<SpeakerItem>>(`/speakers/${speakerId}`, { method: 'PUT', body: payload });
   const deleteSpeaker = (speakerId: string) => api(`/speakers/${speakerId}`, { method: 'DELETE' });
   const attachSpeakerToEvent = (speakerId: string, eventId: string) => api(`/speakers/${speakerId}/events`, { method: 'POST', body: { event_id: eventId } });
+  const getCommittee = (eventId: string, locale: 'en' | 'zh-CN' = 'en') => api<ApiResponse<CommitteeMemberItem[]>>('/admin/committee', { query: { event_id: eventId, locale } });
+  const createCommitteeMember = (payload: CommitteeMemberMutationPayload) => api<ApiResponse<CommitteeMemberItem>>('/admin/committee', { method: 'POST', body: payload });
+  const updateCommitteeMember = (memberId: string, payload: CommitteeMemberMutationPayload) => api<ApiResponse<CommitteeMemberItem>>(`/admin/committee/${encodeURIComponent(memberId)}`, { method: 'PUT', body: payload });
+  const uploadCommitteePhoto = (memberId: string, file: File) => { const body = new FormData(); body.append('file', file); return api<ApiResponse<CommitteeMemberItem>>(`/admin/committee/${encodeURIComponent(memberId)}/photo`, { method: 'POST', body }); };
+  const deleteCommitteeMember = (memberId: string) => api<ApiResponse<Record<string, unknown>>>(`/admin/committee/${encodeURIComponent(memberId)}`, { method: 'DELETE' });
 
   const getTranslatableEntities = () => api<ApiResponse<TranslatableEntityDefinition[]>>('/admin/content-translations/entities');
   const getContentTranslations = <TFields extends Record<string, unknown> = Record<string, unknown>>(entityType: TranslatableEntityType, entityId: string) =>
@@ -128,5 +146,5 @@ export function useAdminContent() {
   const deleteContentTranslation = (entityType: TranslatableEntityType, entityId: string) =>
     api<ApiResponse<Record<string, unknown>>>(`/admin/content-translations/${encodeURIComponent(entityType)}/${encodeURIComponent(entityId)}/zh-CN`, { method: 'DELETE' });
 
-  return { getProducts, createProduct, updateProduct, createDelegatePackage, updateDelegatePackage, deleteDelegatePackage, getDelegatePackageCatalog, createDelegatePackageRate, updateDelegatePackageRate, deleteDelegatePackageRate, createDelegatePackageFacility, updateDelegatePackageFacility, deleteDelegatePackageFacility, getSessions, createSession, updateSession, deleteSession, createSpeaker, updateSpeaker, deleteSpeaker, attachSpeakerToEvent, getTranslatableEntities, getContentTranslations, saveContentTranslation, deleteContentTranslation };
+  return { getProducts, createProduct, updateProduct, createDelegatePackage, updateDelegatePackage, deleteDelegatePackage, getDelegatePackageCatalog, createDelegatePackageRate, updateDelegatePackageRate, deleteDelegatePackageRate, createDelegatePackageFacility, updateDelegatePackageFacility, deleteDelegatePackageFacility, getSessions, createSession, updateSession, deleteSession, createSpeaker, updateSpeaker, deleteSpeaker, attachSpeakerToEvent, getCommittee, createCommitteeMember, updateCommitteeMember, uploadCommitteePhoto, deleteCommitteeMember, getTranslatableEntities, getContentTranslations, saveContentTranslation, deleteContentTranslation };
 }

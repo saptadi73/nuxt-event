@@ -1,11 +1,11 @@
 {
   "language": { "label": "语言", "english": "English", "chinese": "简体中文" },
   "nav": {
-    "home": "首页", "about": "关于论坛", "program": "议程", "speakers": "演讲嘉宾", "packages": "代表套餐",
+    "home": "首页", "about": "关于论坛", "aboutIwbif": "关于 IWBIF", "host": "主办团队", "program": "议程", "speakers": "演讲嘉宾", "packages": "代表套餐",
     "matching": "商务配对", "exhibition": "展览", "dealRoom": "洽谈室", "participants": "参会者",
     "contact": "联系我们", "partners": "合作伙伴", "faq": "常见问题", "dashboard": "用户中心", "more": "更多", "menu": "菜单",
     "managePackages": "套餐管理", "transactions": "交易管理", "manualPayments": "手动付款", "salesReport": "销售报告",
-    "participantsReport": "参会者报告", "manageSpeakers": "嘉宾管理", "manageProgram": "议程管理",
+    "participantsReport": "参会者报告", "manageSpeakers": "嘉宾管理", "manageHosts": "主办团队管理", "manageProgram": "议程管理",
     "manageUsers": "用户管理", "announcements": "公告", "certificates": "证书",
     "emailNotifications": "邮件通知", "matchingOperations": "配对运营"
   },
