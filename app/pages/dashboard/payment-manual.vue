@@ -8,14 +8,15 @@
       </div>
       <div class="p-5 sm:p-8">
         <div class="rounded-2xl border border-amber-300/25 bg-amber-300/5 p-4 text-sm leading-6 text-amber-100"><strong>{{ copy.important }}</strong> {{ copy.notice }}</div>
+        <div class="mt-4 rounded-2xl border border-cyan-300/25 bg-cyan-300/5 p-4 text-sm leading-6 text-cyan-100">{{ copy.exchangeNotice }}</div>
         <p v-if="loading" class="mt-6 text-slate-300">{{ copy.loading }}</p>
         <div v-else-if="errorMessage" class="mt-6 rounded-2xl border border-red-400/30 bg-red-950/30 p-4 text-red-100">{{ errorMessage }}</div>
         <template v-else>
           <dl class="mt-6 grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-2">
             <div v-for="detail in bankDetails" :key="detail.label" class="bg-slate-950/75 p-5"><dt class="text-xs uppercase tracking-[.18em] text-slate-500">{{ detail.label }}</dt><dd class="mt-2 break-words text-lg font-bold text-white">{{ detail.value }}</dd></div>
           </dl>
-          <ul v-if="orderItems.length" class="mt-6 space-y-2 rounded-2xl border border-white/10 bg-white/5 p-5"><li v-for="item in orderItems" :key="item.id" class="flex justify-between gap-3 text-sm"><span class="min-w-0 break-words text-slate-300">{{ item.product_name }} × {{ item.quantity }}</span><strong class="shrink-0 text-white">{{ usd(displayUnitPrice(item.product_id) * item.quantity) }}</strong></li></ul>
-          <div class="mt-6 rounded-2xl border border-amber-300/20 bg-amber-300/5 p-5"><p class="text-sm text-slate-400">{{ copy.packageTotal }}</p><p class="mt-2 text-3xl font-black text-amber-200">{{ displayOrderUsdTotal > 0 ? usd(displayOrderUsdTotal) : copy.paymentAmountGateway }}</p></div>
+          <ul v-if="orderItems.length" class="mt-6 space-y-3 rounded-2xl border border-white/10 bg-white/5 p-5"><li v-for="item in orderItems" :key="item.id" class="grid gap-2 border-b border-white/10 pb-3 last:border-0 last:pb-0 sm:grid-cols-[1fr_auto]"><span class="min-w-0 break-words text-sm text-slate-300">{{ item.product_name }} × {{ item.quantity }}</span><div class="sm:text-right"><strong class="text-white">{{ usd(displayUnitPrice(item.product_id) * item.quantity) }}</strong><LocalCurrencyAmounts :amount="displayItemIdr(item)" compact /></div></li></ul>
+          <div class="mt-6 rounded-2xl border border-amber-300/20 bg-amber-300/5 p-5"><p class="text-sm text-slate-400">{{ copy.packageTotal }}</p><p class="mt-2 text-3xl font-black text-amber-200">{{ displayOrderUsdTotal > 0 ? usd(displayOrderUsdTotal) : copy.paymentAmountGateway }}</p><LocalCurrencyAmounts v-if="order?.total_amount" :amount="order.total_amount" show-rate /></div>
           <ol class="mt-7 space-y-3 text-sm leading-7 text-slate-300"><li v-for="step in copy.steps" :key="step">{{ step }}</li></ol>
           <div class="mt-6 rounded-2xl border border-amber-300/20 bg-amber-300/5 p-4 text-sm leading-6 text-amber-100">{{ copy.paymentStatus }}: <strong>{{ copy.pending }}</strong>. {{ copy.verification }}</div>
           <ManualPaymentProofUpload :order-id="orderId" payment-method="manual_transfer" />
@@ -32,8 +33,8 @@ import { usePayment, type OrderItem, type PendingOrderProductItem } from '~/comp
 definePageMeta({ middleware: 'auth' });
 const { locale } = useI18n();
 const messages = {
-  en: { eyebrow: 'Manual Bank Transfer', title: 'Transfer instructions', description: 'Review your USD package total, include your order number as the payment reference, then upload your payment proof below. Your order remains pending until the organizer verifies the transaction.', important: 'Important.', notice: 'Verify the beneficiary name and order reference before transferring. The organizer-supported payment process will confirm the final payable amount.', loading: 'Loading order…', packageTotal: 'Package total', paymentAmountGateway: 'Shown by payment process', paymentStatus: 'Payment status', pending: 'Pending verification', verification: 'Only an authorized administrator or organizer can confirm a manual transfer.', anotherMethod: 'Choose another method', dashboard: 'Return to dashboard', labels: ['Account Name', 'Account Number', 'Bank Name', 'SWIFT Code / BIC', 'Bank Address', 'Beneficiary Address', 'Payment reference'], steps: ["1. Open your bank's mobile banking or internet banking service.", '2. Use the account details shown above for the organizer-supported transfer process.', '3. Enter the order number in the payment reference or transfer notes.', '4. Upload your transfer receipt using the form below.'], missing: 'Order reference was not found. Please return to your cart.', loadError: 'Order could not be loaded.' },
-  zh: { eyebrow: '银行手动转账', title: '转账说明', description: '请核对美元套餐总额，将订单编号填写为付款参考号，然后在下方上传付款凭证。在主办方核实交易之前，订单将保持待处理状态。', important: '重要提示。', notice: '转账前请核对收款人名称和订单参考号。主办方支持的付款流程将确认最终应付金额。', loading: '正在加载订单…', packageTotal: '套餐总额', paymentAmountGateway: '由付款流程显示', paymentStatus: '付款状态', pending: '等待审核', verification: '只有授权管理员或主办方才能确认手动转账。', anotherMethod: '选择其他付款方式', dashboard: '返回控制面板', labels: ['账户名称', '账号', '银行名称', 'SWIFT 代码／BIC', '银行地址', '收款人地址', '付款参考号'], steps: ['1. 打开银行的手机银行或网上银行服务。', '2. 使用上方账户信息完成主办方支持的转账流程。', '3. 在付款参考或转账备注中填写订单编号。', '4. 使用下方表单上传转账回执。'], missing: '未找到订单参考信息，请返回购物车。', loadError: '无法加载订单。' }
+  en: { eyebrow: 'Manual Bank Transfer', title: 'Transfer instructions', description: 'Review your USD package total and the official IDR payment base, include your order number as the payment reference, then upload your payment proof below.', important: 'Important.', notice: 'Verify the beneficiary name, order reference, and currency amount before transferring.', exchangeNotice: 'For participants from China and Malaysia, CNY and MYR equivalents are calculated from the official IDR payment base—not from the displayed USD price.', loading: 'Loading order…', packageTotal: 'Package total', paymentAmountGateway: 'Shown by payment process', paymentStatus: 'Payment status', pending: 'Pending verification', verification: 'Only an authorized administrator or organizer can confirm a manual transfer.', anotherMethod: 'Choose another method', dashboard: 'Return to dashboard', labels: ['Account Name', 'Account Number', 'Bank Name', 'SWIFT Code / BIC', 'Bank Address', 'Beneficiary Address', 'Payment reference'], steps: ["1. Open your bank's mobile banking or internet banking service.", '2. Use the account details and currency equivalent shown above.', '3. Enter the order number in the payment reference or transfer notes.', '4. Upload your transfer receipt using the form below.'], missing: 'Order reference was not found. Please return to your cart.', loadError: 'Order could not be loaded.' },
+  zh: { eyebrow: '银行手动转账', title: '转账说明', description: '请核对美元套餐总额和印尼盾正式付款基准，将订单编号填写为付款参考号，然后上传付款凭证。', important: '重要提示。', notice: '转账前请核对收款人名称、订单参考号和货币金额。', exchangeNotice: '中国和马来西亚参会者的人民币及马来西亚令吉等值金额，均根据印尼盾正式付款基准计算，而非根据页面显示的美元价格计算。', loading: '正在加载订单…', packageTotal: '套餐总额', paymentAmountGateway: '由付款流程显示', paymentStatus: '付款状态', pending: '等待审核', verification: '只有授权管理员或主办方才能确认手动转账。', anotherMethod: '选择其他付款方式', dashboard: '返回控制面板', labels: ['账户名称', '账号', '银行名称', 'SWIFT 代码／BIC', '银行地址', '收款人地址', '付款参考号'], steps: ['1. 打开银行的手机银行或网上银行服务。', '2. 使用上方账户信息和显示的货币等值金额完成转账。', '3. 在付款参考或转账备注中填写订单编号。', '4. 使用下方表单上传转账回执。'], missing: '未找到订单参考信息，请返回购物车。', loadError: '无法加载订单。' }
 } as const;
 const copy = computed(() => locale.value === 'zh-CN' ? messages.zh : messages.en);
 useSeoMeta({ title: () => `${copy.value.eyebrow} | IWBIF 2026` });
@@ -45,6 +46,7 @@ const orderId = ref('');
 const order = ref<OrderItem | null>(null);
 const orderItems = ref<PendingOrderProductItem[]>([]);
 const usdPricesByProductId = ref(new Map<string, number>());
+const idrPricesByProductId = ref(new Map<string, number>());
 const loading = ref(true);
 const errorMessage = ref('');
 const queryValue = (value: unknown) => Array.isArray(value) ? String(value[0] || '') : typeof value === 'string' ? value : '';
@@ -59,6 +61,7 @@ const bankDetails = computed(() => [
 ]);
 const displayUnitPrice = (productId: string) => usdPricesByProductId.value.get(productId) || 0;
 const displayOrderUsdTotal = computed(() => orderItems.value.reduce((sum, item) => sum + (displayUnitPrice(item.product_id) * item.quantity), 0));
+const displayItemIdr = (item: PendingOrderProductItem) => (idrPricesByProductId.value.get(item.product_id) || Number(item.unit_price) || 0) * item.quantity;
 const usd = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount || 0);
 const loadUsdOrderContext = async () => {
   if (!orderId.value) return;
@@ -69,7 +72,9 @@ const loadUsdOrderContext = async () => {
     if (!eventId) eventId = (await getEvents(1, 1)).data[0]?.id || '';
     if (!eventId) return;
     const catalog = (await getDelegatePackageCatalog(eventId)).data;
-    usdPricesByProductId.value = new Map([...catalog.main_packages, ...catalog.additional_packages].flatMap(pkg => pkg.rates).filter(rate => rate.is_active).map(rate => [rate.product_id, Number(rate.amount)]));
+    const rates = [...catalog.main_packages, ...catalog.additional_packages, ...(catalog.exhibitor_packages || [])].flatMap(pkg => pkg.rates).filter(rate => rate.is_active);
+    usdPricesByProductId.value = new Map(rates.map(rate => [rate.product_id, Number(rate.amount)]));
+    idrPricesByProductId.value = new Map(rates.filter(rate => rate.payment_amount_idr != null).map(rate => [rate.product_id, Number(rate.payment_amount_idr)]));
   } catch {
     // Manual proof upload can still proceed; no backend payment amount is shown.
   }

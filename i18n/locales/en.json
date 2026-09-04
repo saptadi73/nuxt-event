@@ -1,7 +1,7 @@
 {
   "language": { "label": "Language", "english": "English", "chinese": "Simplified Chinese" },
   "nav": {
-    "home": "Home", "about": "About", "aboutIwbif": "About IWBIF", "host": "Host", "program": "Program", "speakers": "Speakers", "packages": "Delegate Packages",
+    "home": "Home", "about": "About", "aboutIwbif": "The EVENT", "host": "The HOST", "venue": "Venue", "program": "Program", "speakers": "Speakers", "packages": "Delegate Packages",
     "matching": "Business Matching", "exhibition": "Exhibition", "dealRoom": "Deal Room", "participants": "Participants",
     "contact": "Contact", "partners": "Partners", "faq": "FAQ", "dashboard": "Dashboard", "more": "More", "menu": "Menu",
     "managePackages": "Manage Packages", "transactions": "Transactions", "manualPayments": "Manual Payments", "salesReport": "Sales Report",

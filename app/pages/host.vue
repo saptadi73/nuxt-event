@@ -5,7 +5,7 @@
       <div class="host-orb host-orb-two" aria-hidden="true" />
       <div class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-28">
         <p class="text-xs font-bold uppercase tracking-[.34em] text-[#e6c477]">{{ copy.eyebrow }}</p>
-        <div class="mt-5 grid gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
+        <div class="mt-5 grid gap-8 lg:grid-cols-[minmax(0,36rem)_minmax(0,32rem)] lg:items-end lg:gap-12">
           <h1 class="max-w-4xl font-serif text-4xl font-black leading-[1.08] text-white sm:text-6xl lg:text-7xl">{{ copy.title }}</h1>
           <p class="max-w-xl text-base leading-8 text-slate-300 sm:text-lg">{{ copy.intro }}</p>
         </div>

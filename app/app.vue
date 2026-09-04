@@ -178,7 +178,8 @@
         </div>
         <div class="grid grid-cols-2 gap-3 text-sm text-slate-300">
           <NuxtLink to="/about">{{ t('nav.about') }}</NuxtLink><NuxtLink to="/program">{{ t('nav.program') }}</NuxtLink>
-          <NuxtLink to="/speakers">{{ t('nav.speakers') }}</NuxtLink><NuxtLink to="/business-matching">{{ t('nav.matching') }}</NuxtLink>
+          <NuxtLink to="/venue">{{ t('nav.venue') }}</NuxtLink><NuxtLink to="/speakers">{{ t('nav.speakers') }}</NuxtLink>
+          <NuxtLink to="/business-matching">{{ t('nav.matching') }}</NuxtLink>
           <NuxtLink to="/partners">{{ t('nav.partners') }}</NuxtLink><NuxtLink to="/faq">{{ t('nav.faq') }}</NuxtLink>
         </div>
         <div class="text-sm text-slate-400 md:text-right">
@@ -541,6 +542,7 @@ const primaryNav = computed<NavItem[]>(() => [
     { to: '/about', label: t('nav.aboutIwbif') },
     { to: '/host', label: t('nav.host') }
   ] },
+  { to: '/venue', label: t('nav.venue') },
   { to: '/program', label: t('nav.program') },
   { to: '/speakers', label: t('nav.speakers') },
   { to: '/tickets', label: t('nav.packages'), disabled: hasDelegatePackageSelected.value }
