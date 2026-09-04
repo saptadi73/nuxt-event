@@ -11,6 +11,8 @@
         <label class="grid gap-2 text-sm text-slate-300">
           <span>{{ copy.photo }}</span>
           <input type="file" accept="image/jpeg,image/png,image/webp" @change="uploadPhoto" class="block text-sm text-slate-300 file:mr-3 file:rounded-full file:border-0 file:bg-cyan-400 file:px-4 file:py-2 file:font-semibold file:text-slate-950" />
+          <span class="text-xs text-slate-400">{{ copy.photoRequirements }}</span>
+          <span v-if="photoValidationError" role="alert" class="rounded-xl border border-red-300/30 bg-red-950/30 px-3 py-2 text-sm font-semibold text-red-100">{{ photoValidationError }}</span>
         </label>
       </div>
       <label class="grid gap-2">
@@ -57,8 +59,8 @@ definePageMeta({ middleware: 'auth' });
 
 const { locale } = useI18n();
 const messages = {
-  en: { eyebrow: 'My Profile', title: 'Update your participant profile', description: 'Keep your business identity, biography, and profile photo easy to discover by relevant partners and delegates.', photoAlt: 'Your profile photo', photo: 'Profile photo', fullName: 'Full Name', organization: 'Organization', biography: 'Biography', saveAll: 'Save All', savePartial: 'Save Partial', you: 'You', photoUpdated: 'Profile photo updated.', photoError: 'Profile photo could not be uploaded.', saved: 'Profile saved. ID={id}', saveError: 'Profile could not be saved.', seo: 'My Profile' },
-  zh: { eyebrow: '我的个人资料', title: '更新参与者资料', description: '完善您的商务身份、个人简介和头像，方便相关合作伙伴与代表找到您。', photoAlt: '您的个人头像', photo: '个人头像', fullName: '姓名', organization: '公司／机构', biography: '个人简介', saveAll: '保存全部', savePartial: '保存部分内容', you: '您', photoUpdated: '个人头像已更新。', photoError: '无法上传个人头像。', saved: '个人资料已保存。ID={id}', saveError: '无法保存个人资料。', seo: '我的个人资料' }
+  en: { eyebrow: 'My Profile', title: 'Update your participant profile', description: 'Keep your business identity, biography, and profile photo easy to discover by relevant partners and delegates.', photoAlt: 'Your profile photo', photo: 'Profile photo', photoRequirements: 'JPG, PNG, or WebP; maximum 5 MB.', photoTooLarge: 'Photo size {size} MB exceeds the 5 MB limit.', photoEmpty: 'The selected photo is empty.', photoType: 'Unsupported format. Use JPG, PNG, or WebP.', fullName: 'Full Name', organization: 'Organization', biography: 'Biography', saveAll: 'Save All', savePartial: 'Save Partial', you: 'You', photoUpdated: 'Profile photo updated.', photoError: 'Profile photo could not be uploaded.', saved: 'Profile saved. ID={id}', saveError: 'Profile could not be saved.', seo: 'My Profile' },
+  zh: { eyebrow: '我的个人资料', title: '更新参与者资料', description: '完善您的商务身份、个人简介和头像，方便相关合作伙伴与代表找到您。', photoAlt: '您的个人头像', photo: '个人头像', photoRequirements: '支持 JPG、PNG 或 WebP，文件最大为 5 MB。', photoTooLarge: '照片大小为 {size} MB，超过 5 MB 上限。', photoEmpty: '所选照片为空文件。', photoType: '不支持此格式。请使用 JPG、PNG 或 WebP。', fullName: '姓名', organization: '公司／机构', biography: '个人简介', saveAll: '保存全部', savePartial: '保存部分内容', you: '您', photoUpdated: '个人头像已更新。', photoError: '无法上传个人头像。', saved: '个人资料已保存。ID={id}', saveError: '无法保存个人资料。', seo: '我的个人资料' }
 } as const;
 const copy = computed(() => locale.value === 'zh-CN' ? messages.zh : messages.en);
 useSeoMeta({ title: () => `${copy.value.seo} | IWBIF 2026` });
@@ -72,6 +74,7 @@ const form = reactive({
   biography: ''
 });
 const feedback = ref('');
+const photoValidationError = ref('');
 const profilePhotoUrl = ref('');
 const initials = computed(() => (form.full_name || copy.value.you).split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase());
 
@@ -84,10 +87,27 @@ if (me?.data) {
 }
 
 const uploadPhoto = async (event: Event) => {
-  const file = (event.target as HTMLInputElement).files?.[0];
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
   if (!file) return;
 
   feedback.value = '';
+  photoValidationError.value = '';
+  if (file.size > 5 * 1024 * 1024) {
+    photoValidationError.value = copy.value.photoTooLarge.replace('{size}', (Math.ceil(file.size / 1024 / 1024 * 10) / 10).toString());
+    input.value = '';
+    return;
+  }
+  if (file.size === 0) {
+    photoValidationError.value = copy.value.photoEmpty;
+    input.value = '';
+    return;
+  }
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    photoValidationError.value = copy.value.photoType;
+    input.value = '';
+    return;
+  }
   try {
     const result = await uploadMyPhoto(file);
     profilePhotoUrl.value = result.data.profile_photo_url || profilePhotoUrl.value;
