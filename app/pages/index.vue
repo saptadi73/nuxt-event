@@ -130,7 +130,9 @@ import chineseHeroWebp from '~/assets/images/hero_white_china.webp';
 import chineseHeroWebpSmall from '~/assets/images/hero_white_china_960.webp';
 
 const { t, tm, rt, locale } = useI18n();
+const runtimeConfig = useRuntimeConfig();
 const heroImage = computed(() => locale.value === 'zh-CN' ? chineseHero : englishHero);
+const socialImageUrl = computed(() => new URL(heroImage.value, runtimeConfig.public.canonicalSiteUrl).href);
 const heroWebpImage = computed(() => locale.value === 'zh-CN' ? chineseHeroWebp : englishHeroWebp);
 const heroWebpImageSmall = computed(() => locale.value === 'zh-CN' ? chineseHeroWebpSmall : englishHeroWebpSmall);
 const heroWebpSrcset = computed(() => `${heroWebpImageSmall.value} 960w, ${heroWebpImage.value} 1672w`);
@@ -172,7 +174,15 @@ useSeoMeta({
   description: 'Join IWBIF 2026 in Jakarta for global collaboration, women-led investment and market access, and curated business matching.',
   ogTitle: 'International Women Business & Investment Forum 2026',
   ogDescription: 'Empowering Women Entrepreneurs Through Finance, Global Collaboration, and Digital Transformation.',
-  ogImage: englishHero
+  ogType: 'website',
+  ogImage: () => socialImageUrl.value,
+  ogImageType: 'image/png',
+  ogImageAlt: () => t('home.heroAlt'),
+  twitterCard: 'summary_large_image',
+  twitterTitle: 'International Women Business & Investment Forum 2026',
+  twitterDescription: 'Empowering Women Entrepreneurs Through Finance, Global Collaboration, and Digital Transformation.',
+  twitterImage: () => socialImageUrl.value,
+  twitterImageAlt: () => t('home.heroAlt')
 })
 
 useHead(() => ({

@@ -125,9 +125,6 @@
           <NuxtLink v-if="!isAuthenticated" to="/auth/register" class="mobile-register-cta header-cta inline-flex whitespace-nowrap rounded-full bg-sky-700 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-800 sm:hidden">
             {{ t('actions.register') }}
           </NuxtLink>
-          <NuxtLink v-if="isAuthenticated && !isRegistrationPaid" :to="paymentCtaTo" class="header-cta hidden whitespace-nowrap rounded-full bg-sky-700 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-sky-500/20 transition hover:bg-sky-800 sm:px-5 lg:inline-flex">
-            {{ localizedCtaLabel }}
-          </NuxtLink>
           <span v-if="isAuthenticated && isRegistrationPaid" class="header-cta hidden whitespace-nowrap rounded-full bg-sky-700 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-sky-500/20 opacity-90 lg:inline-flex">
             {{ localizedCtaLabel }}
           </span>
@@ -165,6 +162,17 @@
         </div>
       </div>
     </header>
+
+    <NuxtLink
+      v-if="isAuthenticated && !isRegistrationPaid"
+      :to="paymentCtaTo"
+      class="registration-floating-cta fixed top-1/2 right-6 z-40 hidden max-w-sm -translate-y-1/2 items-center gap-3 rounded-full border border-sky-300/40 bg-sky-700 px-6 py-4 text-sm font-bold text-white shadow-xl shadow-sky-950/30 transition hover:bg-sky-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-500 lg:inline-flex"
+    >
+      <span>{{ localizedCtaLabel }}</span>
+      <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14m-6-6 6 6-6 6" />
+      </svg>
+    </NuxtLink>
 
     <main>
       <NuxtPage />
@@ -704,6 +712,7 @@ const allNav = computed(() => [...primaryNav.value, ...secondaryNav.value]);
 .brand-kicker,
 .brand-name,
 .nav-link,
+.registration-floating-cta,
 .header-cta,
 .header-signin,
 .menu-button {

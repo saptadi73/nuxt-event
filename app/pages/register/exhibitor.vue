@@ -12,13 +12,18 @@
         <legend>{{ copy.companyProfile }}</legend>
         <div class="grid gap-4 md:grid-cols-2">
           <label class="label"><span>{{ copy.companyName }} *</span><input v-model.trim="form.company_name" required class="field" /></label>
-          <label class="label"><span>{{ copy.brand }}</span><input v-model.trim="form.brand" class="field" /></label>
+          <label class="label"><span>{{ copy.brand }} *</span><input v-model.trim="form.brand" required class="field" /></label>
           <label class="label"><span>{{ copy.contactPerson }} *</span><input v-model.trim="form.contact_person" required class="field" /></label>
-          <label class="label"><span>{{ copy.email }} *</span><input v-model.trim="form.email" type="email" required class="field" /></label>
           <label class="label md:col-span-2"><span>{{ copy.products }} *</span><textarea v-model.trim="form.products_to_display" required class="field" rows="3" /></label>
-          <label class="label"><span>{{ copy.boothSize }} *</span><input v-model.trim="form.booth_size_requested" required class="field" /></label>
-          <label class="label"><span>{{ copy.electricity }}</span><input v-model.trim="form.electricity_requirement" class="field" /></label>
-          <label class="label md:col-span-2"><span>{{ copy.special }}</span><textarea v-model.trim="form.special_requirement" class="field" rows="3" /></label>
+          <label class="label">
+            <span>{{ copy.boothNumber }} *</span>
+            <select v-model="form.booth_size_requested" required class="field">
+              <option disabled value="">{{ boothSizeCopy.placeholder }}</option>
+              <option v-for="size in boothSizes" :key="size" :value="size">{{ size }}</option>
+            </select>
+          </label>
+          <label class="label"><span>{{ copy.electricity }} *</span><input v-model.trim="form.electricity_requirement" required class="field" /></label>
+          <label class="label md:col-span-2"><span>{{ copy.special }} *</span><textarea v-model.trim="form.special_requirement" required class="field" rows="3" /></label>
         </div>
       </fieldset>
 
@@ -48,13 +53,17 @@ import { useExhibitor } from '~/composables/useExhibitor';
 definePageMeta({ middleware: 'auth' });
 const { locale } = useI18n();
 const messages = {
-  en: { eyebrow: 'Exhibitor Registration', title: 'Register as an exhibitor', description: 'Submit your company profile and exhibition interest. Your account must already be created before starting.', companyProfile: 'Company profile', companyName: 'Company name', brand: 'Brand', contactPerson: 'Contact person', email: 'Email', products: 'Products to display', boothSize: 'Booth size requested', electricity: 'Electricity requirement', special: 'Special requirement', agreement: 'Agreement', acceptTerms: 'I accept the exhibitor terms and conditions.', saving: 'Saving…', update: 'Update exhibitor registration', create: 'Create exhibitor registration', noEvent: 'No IWBIF event is currently published.', unavailable: 'IWBIF event is not available right now.', loadError: 'Existing exhibitor profile could not be loaded.', success: 'Exhibitor registration created successfully.', saveError: 'Exhibitor registration could not be saved.' },
-  zh: { eyebrow: '参展商注册', title: '注册成为参展商', description: '请提交您的公司资料和参展意向。开始之前，您必须先创建账户。', companyProfile: '公司资料', companyName: '公司名称', brand: '品牌', contactPerson: '联系人', email: '电子邮箱', products: '展示产品', boothSize: '申请展位尺寸', electricity: '用电需求', special: '特殊需求', agreement: '协议', acceptTerms: '我接受参展商条款与条件。', saving: '正在保存…', update: '更新参展商注册', create: '提交参展商注册', noEvent: '目前没有已发布的 IWBIF 活动。', unavailable: 'IWBIF 活动目前不可用。', loadError: '无法加载现有参展商资料。', success: '参展商注册已成功提交。', saveError: '无法保存参展商注册。' }
+  en: { eyebrow: 'Exhibitor Registration', title: 'Register as an exhibitor', description: 'Submit your company profile and exhibition interest. Your account must already be created before starting.', companyProfile: 'Company profile', companyName: 'Company name', brand: 'Brand', contactPerson: 'Contact person', products: 'Products to display', boothNumber: 'Booth number requested', electricity: 'Electricity requirement', special: 'Special requirement', agreement: 'Agreement', acceptTerms: 'I accept the exhibitor terms and conditions.', saving: 'Saving…', update: 'Update exhibitor registration', create: 'Create exhibitor registration', noEvent: 'No IWBIF event is currently published.', unavailable: 'IWBIF event is not available right now.', loadError: 'Existing exhibitor profile could not be loaded.', success: 'Exhibitor registration created successfully.', saveError: 'Exhibitor registration could not be saved.' },
+  zh: { eyebrow: '参展商注册', title: '注册成为参展商', description: '请提交您的公司资料和参展意向。开始之前，您必须先创建账户。', companyProfile: '公司资料', companyName: '公司名称', brand: '品牌', contactPerson: '联系人', products: '展示产品', boothNumber: '申请展位编号', electricity: '用电需求', special: '特殊需求', agreement: '协议', acceptTerms: '我接受参展商条款与条件。', saving: '正在保存…', update: '更新参展商注册', create: '提交参展商注册', noEvent: '目前没有已发布的 IWBIF 活动。', unavailable: 'IWBIF 活动目前不可用。', loadError: '无法加载现有参展商资料。', success: '参展商注册已成功提交。', saveError: '无法保存参展商注册。' }
 } as const;
 const copy = computed(() => locale.value === 'zh-CN' ? messages.zh : messages.en);
+const boothSizes = ['Standard Booth 3x3', 'Premium Booth', 'Custom Booth'];
+const boothSizeCopy = computed(() => locale.value === 'zh-CN'
+  ? { placeholder: '请选择展位规格', invalid: '请选择有效的展位规格。' }
+  : { placeholder: 'Select booth size', invalid: 'Select a valid booth size.' });
 const validationCopy = computed(() => locale.value === 'zh-CN'
-  ? { required: '请填写所有必填字段。', email: '请输入有效的电子邮箱地址。', terms: '您必须接受参展商条款与条件。' }
-  : { required: 'Complete all required fields.', email: 'Enter a valid email address.', terms: 'You must accept the exhibitor terms and conditions.' });
+  ? { required: '请填写所有必填字段。', terms: '您必须接受参展商条款与条件。' }
+  : { required: 'Complete all required fields.', terms: 'You must accept the exhibitor terms and conditions.' });
 useSeoMeta({
   title: () => `${copy.value.eyebrow} | IWBIF 2026`,
   description: () => copy.value.description
@@ -68,7 +77,6 @@ const form = reactive({
   company_name: '',
   brand: '',
   contact_person: '',
-  email: '',
   products_to_display: '',
   booth_size_requested: '',
   electricity_requirement: '',
@@ -80,7 +88,6 @@ const submitting = ref(false);
 const feedback = ref('');
 const success = ref(false);
 const editingExhibitorId = ref('');
-const isValidEmail = (value: string) => { const parts = value.split('@'); return parts.length === 2 && Boolean(parts[0]) && Boolean(parts[1]?.includes('.')) && !value.includes(' '); };
 
 const { data: eventData, pending, error: fetchError } = await useAsyncData('iwbif-exhibitor-event', async () => {
   const response = await getEvents(1, 1);
@@ -121,13 +128,13 @@ const submit = async () => {
     return;
   }
 
-  if ([form.company_name, form.contact_person, form.email, form.products_to_display, form.booth_size_requested].some(value => !value.trim())) {
+  if ([form.company_name, form.brand, form.contact_person, form.products_to_display, form.booth_size_requested, form.electricity_requirement, form.special_requirement].some(value => !value.trim())) {
     feedback.value = validationCopy.value.required;
     success.value = false;
     return;
   }
-  if (!isValidEmail(form.email)) {
-    feedback.value = validationCopy.value.email;
+  if (!boothSizes.includes(form.booth_size_requested)) {
+    feedback.value = boothSizeCopy.value.invalid;
     success.value = false;
     return;
   }
@@ -144,13 +151,12 @@ const submit = async () => {
   try {
     const payload = {
       company_name: form.company_name,
-      brand: form.brand || undefined,
+      brand: form.brand,
       contact_person: form.contact_person,
-      email: form.email,
       products_to_display: form.products_to_display,
       booth_size_requested: form.booth_size_requested,
-      electricity_requirement: form.electricity_requirement || undefined,
-      special_requirement: form.special_requirement || undefined,
+      electricity_requirement: form.electricity_requirement,
+      special_requirement: form.special_requirement,
       exhibition_terms_accepted: form.exhibition_terms_accepted,
       exhibition_terms_version: '2026-01'
     };
@@ -186,6 +192,7 @@ const submit = async () => {
 .card legend { @apply px-2 text-lg font-bold sm:text-xl; }
 .label { @apply grid gap-2 text-sm text-slate-300; }
 .field { @apply rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:border-cyan-300; }
+.field option { @apply bg-slate-950 text-white; }
 .check { @apply flex items-center gap-3 text-sm text-slate-300; }
 .check input { @apply accent-cyan-300; }
 .submit-row { display: flex; justify-content: flex-end; }

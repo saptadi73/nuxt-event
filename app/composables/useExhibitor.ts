@@ -4,7 +4,6 @@ export interface ExhibitorCreatePayload {
   company_name: string;
   brand?: string;
   contact_person: string;
-  email: string;
   products_to_display: string;
   booth_size_requested: string;
   electricity_requirement?: string;

@@ -791,7 +791,7 @@ Payload create/update — **Auth**:
 ```json
 {
   "company_name":"Example SME",
-  "brand":"Example Brand","contact_person":"Contact Name","email":"contact@example.com",
+  "brand":"Example Brand","contact_person":"Contact Name",
   "products_to_display":"Food products",
   "booth_size_requested":"Standard Booth 3x3","electricity_requirement":"220V, 500W",
   "special_requirement":"None","exhibition_terms_accepted":true,
@@ -817,6 +817,15 @@ Create menghasilkan draft. Upload catalogue (`file`, max 10 MB) mengubah status
 menjadi submitted. List event hanya menampilkan submitted. Update/delete hanya
 draft milik user. Satu akun hanya dapat membuat satu exhibitor per event;
 ownership selalu berasal dari access token.
+
+Email tidak perlu diisi atau dikirim pada payload create/update Exhibitor.
+Backend otomatis menggunakan `users.email` dari akun yang login saat create/update;
+field `email` tetap tersedia pada response. Hapus isian dan validasi wajib email
+dari formulir create/edit Exhibitor. Schema request `ExhibitorWrite` tidak lagi
+memiliki field `email`; schema response `ExhibitorRead` tetap memilikinya.
+Jika client lama masih mengirim `email`, nilainya diabaikan dan email akun tetap
+digunakan. Data exhibitor lama tidak diubah secara massal; email disesuaikan
+dengan akun saat draft diperbarui. Email pada user registration tetap wajib.
 
 Country dan nomor telepon tidak dikirim pada payload Delegate maupun Exhibitor.
 Country company diambil dari `users.country`; nomor telepon tetap menjadi data

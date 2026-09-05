@@ -380,6 +380,32 @@ valid; jangan menampilkan form matching sebelum syarat tersebut terpenuhi.
 
 ## 6. Exhibitor
 
+Email sudah diisi saat user registration. Hapus input email dan validasi wajib
+email dari form create/edit Exhibitor, serta jangan sertakan `email` dalam
+payload `POST` atau `PUT`. Backend mengambil email dari akun yang login melalui
+access token setiap kali draft dibuat atau diperbarui.
+
+Contoh payload create/update:
+
+```json
+{
+  "company_name": "Example SME",
+  "brand": "Example Brand",
+  "contact_person": "Contact Name",
+  "products_to_display": "Food products",
+  "booth_size_requested": "Standard Booth 3x3",
+  "electricity_requirement": "220V, 500W",
+  "special_requirement": "None",
+  "exhibition_terms_accepted": true,
+  "exhibition_terms_version": "2026-01"
+}
+```
+
+Response exhibitor tetap memiliki `email` untuk ditampilkan pada detail jika
+diperlukan. Field tersebut bukan isian yang dapat diedit. Jika client lama masih
+mengirim `email`, nilainya diabaikan dan backend memakai email akun. Perubahan
+ini khusus form Exhibitor; email pada user registration tetap wajib diisi.
+
 `GET /events/{event_id}/exhibitors` menampilkan exhibitor yang sudah submitted,
 bukan pilihan package untuk dibeli. Pilihan paket tersedia melalui endpoint
 katalog package.
