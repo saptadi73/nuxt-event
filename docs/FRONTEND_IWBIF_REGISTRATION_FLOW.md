@@ -393,13 +393,25 @@ Contoh payload create/update:
   "brand": "Example Brand",
   "contact_person": "Contact Name",
   "products_to_display": "Food products",
-  "booth_size_requested": "Standard Booth 3x3",
+  "booth_size_requested": "12",
   "electricity_requirement": "220V, 500W",
   "special_requirement": "None",
   "exhibition_terms_accepted": true,
   "exhibition_terms_version": "2026-01"
 }
 ```
+
+Gunakan label **Booth number requested** dengan pilihan string `"1"` sampai
+`"40"`. Nama payload tetap `booth_size_requested`. Contoh daftar pilihan:
+
+```ts
+const boothNumbers = Array.from({ length: 40 }, (_, index) => String(index + 1));
+```
+
+Backend hanya menerima nomor tersebut pada create/update. Data lama masih bisa
+dibaca, tetapi nilai seperti `Premium Booth` harus dikosongkan di dropdown agar
+user memilih nomor sebelum menyimpan ulang. Tidak ada migrasi yang menebak nomor
+dari ukuran booth lama atau reservasi nomor unik antar-exhibitor.
 
 Response exhibitor tetap memiliki `email` untuk ditampilkan pada detail jika
 diperlukan. Field tersebut bukan isian yang dapat diedit. Jika client lama masih
@@ -422,20 +434,34 @@ sama.
    dapat di-checkout sendiri tanpa Main Package. Bila memilih Delegate, tepat
    satu Main Package wajib dipilih; Additional Package hanya dapat dipilih
    bersama Main Package atau sesudah pembayaran Main Package lunas.
-2. Checkout Package Exhibitor (sendiri atau bersama Main Package), lalu buat
+2. Untuk user yang login, periksa
+   `GET /api/v1/store/events/{event_id}/exhibitor-availability/me` sebelum
+   menampilkan aksi pembelian. Bila `is_purchasable=false`, ganti pilihan paket
+   dengan **Complete exhibitor profile** menuju `/register/exhibitor` dan
+   **Continue payment** menuju `/dashboard/payment?order_id=<existing_order_id>`
+   jika order belum `paid`. Untuk order lunas atau tanpa order aktif, tampilkan
+   tautan dashboard. Jangan membuat order baru.
+3. Jika `is_purchasable=true`, checkout Package Exhibitor (sendiri atau bersama Main Package), lalu buat
    draft melalui `POST /api/v1/events/{event_id}/exhibitors`. Tanpa order aktif
    yang memuat Package Exhibitor, backend mengembalikan
    `EXHIBITOR_PACKAGE_REQUIRED`. `participant_id` tetap opsional.
-3. Edit dengan `PUT /api/v1/events/{event_id}/exhibitors/{id}` selama masih
+4. Edit dengan `PUT /api/v1/events/{event_id}/exhibitors/{id}` selama masih
    `draft`.
-4. Upload katalog melalui
+5. Upload katalog melalui
    `POST /api/v1/exhibitors/{id}/product-catalogue` menggunakan field multipart
    `file`.
-5. Upload sukses mengubah status menjadi `submitted`; form kemudian read-only.
+6. Upload sukses mengubah status menjadi `submitted`; form kemudian read-only.
 
 Satu user hanya dapat memiliki satu exhibitor untuk event yang sama. HTTP 409
 `EXHIBITOR_EXISTS` harus diarahkan ke draft/detail yang sudah ada, bukan membuat
 ulang.
+
+Pembelian ulang juga ditolak selama ada order exhibitor berstatus `draft`,
+`pending`, `partially_paid`, atau `paid`, walaupun profil belum dibuat. Registrasi
+yang sudah ada memblokir pembelian terlepas dari statusnya. Backend memeriksa
+ulang pada tambah cart dan checkout, termasuk dari tab lain. Tangani HTTP 409
+`EXHIBITOR_PACKAGE_ALREADY_SELECTED` dengan memuat ulang status dan melanjutkan
+profil/pembayaran lama. Detail response ada di [API Reference](API_REFERENCE.md#8-exhibitor).
 
 ## 7. Penanganan error
 

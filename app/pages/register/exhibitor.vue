@@ -7,6 +7,11 @@
     <div v-if="pending" class="mt-8 h-60 animate-pulse rounded-[2rem] bg-white/5" />
     <div v-else-if="fetchError" class="mt-8 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ fetchError.message }}</div>
 
+    <div v-else-if="alreadyRegistered" class="mt-8 rounded-3xl border border-emerald-300/30 bg-emerald-950/30 p-6 text-emerald-100">
+      <p class="text-base font-semibold">{{ copy.alreadyRegistered }}</p>
+      <NuxtLink to="/dashboard" class="mt-5 inline-flex rounded-full bg-cyan-300 px-6 py-3 text-sm font-semibold text-slate-950">{{ copy.goToDashboard }}</NuxtLink>
+    </div>
+
     <form v-else class="mt-8 space-y-7" novalidate @submit.prevent="submit">
       <fieldset class="card">
         <legend>{{ copy.companyProfile }}</legend>
@@ -18,8 +23,8 @@
           <label class="label">
             <span>{{ copy.boothNumber }} *</span>
             <select v-model="form.booth_size_requested" required class="field">
-              <option disabled value="">{{ boothSizeCopy.placeholder }}</option>
-              <option v-for="size in boothSizes" :key="size" :value="size">{{ size }}</option>
+              <option disabled value="">{{ boothNumberCopy.placeholder }}</option>
+              <option v-for="number in boothNumbers" :key="number" :value="number">{{ number }}</option>
             </select>
           </label>
           <label class="label"><span>{{ copy.electricity }} *</span><input v-model.trim="form.electricity_requirement" required class="field" /></label>
@@ -49,18 +54,19 @@
 <script setup lang="ts">
 import { useEvent } from '~/composables/useEvent';
 import { useExhibitor } from '~/composables/useExhibitor';
+import { useStore } from '~/composables/useStore';
 
 definePageMeta({ middleware: 'auth' });
 const { locale } = useI18n();
 const messages = {
-  en: { eyebrow: 'Exhibitor Registration', title: 'Register as an exhibitor', description: 'Submit your company profile and exhibition interest. Your account must already be created before starting.', companyProfile: 'Company profile', companyName: 'Company name', brand: 'Brand', contactPerson: 'Contact person', products: 'Products to display', boothNumber: 'Booth number requested', electricity: 'Electricity requirement', special: 'Special requirement', agreement: 'Agreement', acceptTerms: 'I accept the exhibitor terms and conditions.', saving: 'Saving…', update: 'Update exhibitor registration', create: 'Create exhibitor registration', noEvent: 'No IWBIF event is currently published.', unavailable: 'IWBIF event is not available right now.', loadError: 'Existing exhibitor profile could not be loaded.', success: 'Exhibitor registration created successfully.', saveError: 'Exhibitor registration could not be saved.' },
-  zh: { eyebrow: '参展商注册', title: '注册成为参展商', description: '请提交您的公司资料和参展意向。开始之前，您必须先创建账户。', companyProfile: '公司资料', companyName: '公司名称', brand: '品牌', contactPerson: '联系人', products: '展示产品', boothNumber: '申请展位编号', electricity: '用电需求', special: '特殊需求', agreement: '协议', acceptTerms: '我接受参展商条款与条件。', saving: '正在保存…', update: '更新参展商注册', create: '提交参展商注册', noEvent: '目前没有已发布的 IWBIF 活动。', unavailable: 'IWBIF 活动目前不可用。', loadError: '无法加载现有参展商资料。', success: '参展商注册已成功提交。', saveError: '无法保存参展商注册。' }
+  en: { eyebrow: 'Exhibitor Registration', title: 'Register as an exhibitor', description: 'Submit your company profile and exhibition interest. Your account must already be created before starting.', companyProfile: 'Company profile', companyName: 'Company name', brand: 'Brand', contactPerson: 'Contact person', products: 'Products to display', boothNumber: 'Booth number requested', electricity: 'Electricity requirement', special: 'Special requirement', agreement: 'Agreement', acceptTerms: 'I accept the exhibitor terms and conditions.', saving: 'Saving…', update: 'Update exhibitor registration', create: 'Create exhibitor registration', noEvent: 'No IWBIF event is currently published.', unavailable: 'IWBIF event is not available right now.', loadError: 'Existing exhibitor profile could not be loaded.', success: 'Exhibitor registration created successfully.', saveError: 'Exhibitor registration could not be saved.', alreadyRegistered: 'This account is already registered as an exhibitor for this event. Only one exhibitor registration is allowed per account.', goToDashboard: 'Go to dashboard' },
+  zh: { eyebrow: '参展商注册', title: '注册成为参展商', description: '请提交您的公司资料和参展意向。开始之前，您必须先创建账户。', companyProfile: '公司资料', companyName: '公司名称', brand: '品牌', contactPerson: '联系人', products: '展示产品', boothNumber: '申请展位编号', electricity: '用电需求', special: '特殊需求', agreement: '协议', acceptTerms: '我接受参展商条款与条件。', saving: '正在保存…', update: '更新参展商注册', create: '提交参展商注册', noEvent: '目前没有已发布的 IWBIF 活动。', unavailable: 'IWBIF 活动目前不可用。', loadError: '无法加载现有参展商资料。', success: '参展商注册已成功提交。', saveError: '无法保存参展商注册。', alreadyRegistered: '该账户已完成本次活动的参展商注册，每个账户仅可注册一次。', goToDashboard: '前往仪表板' }
 } as const;
 const copy = computed(() => locale.value === 'zh-CN' ? messages.zh : messages.en);
-const boothSizes = ['Standard Booth 3x3', 'Premium Booth', 'Custom Booth'];
-const boothSizeCopy = computed(() => locale.value === 'zh-CN'
-  ? { placeholder: '请选择展位规格', invalid: '请选择有效的展位规格。' }
-  : { placeholder: 'Select booth size', invalid: 'Select a valid booth size.' });
+const boothNumbers = Array.from({ length: 40 }, (_, index) => String(index + 1));
+const boothNumberCopy = computed(() => locale.value === 'zh-CN'
+  ? { placeholder: '请选择展位编号（1-40）', invalid: '请选择 1-40 之间的有效展位编号。' }
+  : { placeholder: 'Select booth number (1-40)', invalid: 'Select a valid booth number between 1 and 40.' });
 const validationCopy = computed(() => locale.value === 'zh-CN'
   ? { required: '请填写所有必填字段。', terms: '您必须接受参展商条款与条件。' }
   : { required: 'Complete all required fields.', terms: 'You must accept the exhibitor terms and conditions.' });
@@ -71,6 +77,7 @@ useSeoMeta({
 
 const { getEvents } = useEvent();
 const { createExhibitor, getExhibitor, updateExhibitor } = useExhibitor();
+const store = useStore();
 const registrationFlow = useRegistrationFlow();
 
 const form = reactive({
@@ -88,6 +95,7 @@ const submitting = ref(false);
 const feedback = ref('');
 const success = ref(false);
 const editingExhibitorId = ref('');
+const alreadyRegistered = ref(false);
 
 const { data: eventData, pending, error: fetchError } = await useAsyncData('iwbif-exhibitor-event', async () => {
   const response = await getEvents(1, 1);
@@ -98,22 +106,36 @@ const { data: eventData, pending, error: fetchError } = await useAsyncData('iwbi
 
 if (eventData.value) {
   try {
-    const state = await registrationFlow.loadFlow(true);
-    const registrations = Array.isArray(state?.registrations) ? state.registrations as Array<Record<string, unknown>> : [];
-    const exhibitors = Array.isArray(state?.exhibitors) ? state.exhibitors as Array<Record<string, unknown>> : [];
-    const directExhibitor = state?.exhibitor && typeof state.exhibitor === 'object' ? [state.exhibitor as Record<string, unknown>] : [];
-    const draft = [...exhibitors, ...directExhibitor, ...registrations].find((item) => {
-      const kind = String(item.registration_type || item.type || item.product_type || '').toLowerCase();
-      const detail = item.detail as Record<string, unknown> | undefined;
-      return kind === 'exhibitor' || typeof item.company_name === 'string' || typeof detail?.company_name === 'string';
-    });
-    const draftId = typeof draft?.id === 'string' ? draft.id : typeof draft?.exhibitor_id === 'string' ? draft.exhibitor_id : '';
-    if (draftId && String(draft?.status || 'draft').toLowerCase() === 'draft') {
-      const existing = (await getExhibitor(eventData.value.id, draftId)).data;
-      for (const key of Object.keys(form) as Array<keyof typeof form>) {
-        if (existing[key] !== undefined && existing[key] !== null) (form[key] as unknown) = existing[key];
+    const availability = await store.getExhibitorAvailability(eventData.value.id).then(response => response.data).catch(() => null);
+    let existingId = availability?.exhibitor_id || '';
+    let existingStatus = '';
+
+    if (!existingId) {
+      const state = await registrationFlow.loadFlow(true);
+      const registrations = Array.isArray(state?.registrations) ? state.registrations as Array<Record<string, unknown>> : [];
+      const exhibitors = Array.isArray(state?.exhibitors) ? state.exhibitors as Array<Record<string, unknown>> : [];
+      const directExhibitor = state?.exhibitor && typeof state.exhibitor === 'object' ? [state.exhibitor as Record<string, unknown>] : [];
+      const draft = [...exhibitors, ...directExhibitor, ...registrations].find((item) => {
+        const kind = String(item.registration_type || item.type || item.product_type || '').toLowerCase();
+        const detail = item.detail as Record<string, unknown> | undefined;
+        return kind === 'exhibitor' || typeof item.company_name === 'string' || typeof detail?.company_name === 'string';
+      });
+      existingId = typeof draft?.id === 'string' ? draft.id : typeof draft?.exhibitor_id === 'string' ? draft.exhibitor_id : '';
+      existingStatus = String(draft?.status || 'draft').toLowerCase();
+    }
+
+    if (existingId) {
+      const existing = (await getExhibitor(eventData.value.id, existingId)).data;
+      const status = String(existing.status || existingStatus || 'draft').toLowerCase();
+      if (status === 'draft') {
+        for (const key of Object.keys(form) as Array<keyof typeof form>) {
+          if (existing[key] !== undefined && existing[key] !== null) (form[key] as unknown) = existing[key];
+        }
+        if (!boothNumbers.includes(form.booth_size_requested)) form.booth_size_requested = '';
+        editingExhibitorId.value = existingId;
+      } else {
+        alreadyRegistered.value = true;
       }
-      editingExhibitorId.value = draftId;
     }
   } catch (error) {
     const value = error as { data?: { message?: string } };
@@ -133,8 +155,8 @@ const submit = async () => {
     success.value = false;
     return;
   }
-  if (!boothSizes.includes(form.booth_size_requested)) {
-    feedback.value = boothSizeCopy.value.invalid;
+  if (!boothNumbers.includes(form.booth_size_requested)) {
+    feedback.value = boothNumberCopy.value.invalid;
     success.value = false;
     return;
   }

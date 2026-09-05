@@ -459,7 +459,9 @@ GET /api/v1/events/{event_id}/business-matching-slots
 ```
 
 Jangan hard-code pilihan. `iwbif-options` memuat participation categories,
-looking-for, preferred countries, room preferences, airports, dan booth sizes.
+looking-for, preferred countries, room preferences, airports, dan nomor booth.
+Key `booth_sizes` tetap digunakan untuk kompatibilitas, dengan nilai string
+`"1"` sampai `"40"`.
 
 Endpoint `delegate-packages` mempertahankan response flat untuk kompatibilitas.
 Gunakan `delegate-package-catalog` untuk UI baru; response dikelompokkan menjadi
@@ -793,7 +795,7 @@ Payload create/update — **Auth**:
   "company_name":"Example SME",
   "brand":"Example Brand","contact_person":"Contact Name",
   "products_to_display":"Food products",
-  "booth_size_requested":"Standard Booth 3x3","electricity_requirement":"220V, 500W",
+  "booth_size_requested":"12","electricity_requirement":"220V, 500W",
   "special_requirement":"None","exhibition_terms_accepted":true,
   "exhibition_terms_version":"2026-01"
 }
@@ -807,6 +809,54 @@ PUT    /api/v1/events/{event_id}/exhibitors/{exhibitor_id}
 DELETE /api/v1/events/{event_id}/exhibitors/{exhibitor_id}
 POST   /api/v1/exhibitors/{exhibitor_id}/product-catalogue
 ```
+
+Label frontend adalah **Booth number requested**, dengan dropdown nomor 1–40.
+Nama field API/database tetap `booth_size_requested`; kirim nomor sebagai string.
+Create/update menolak nilai di luar pilihan tersebut, termasuk ukuran booth lama.
+Response tetap dapat membaca data lama agar draft bisa dibuka dan diperbarui.
+Frontend mengosongkan pilihan lama yang tidak valid dan meminta nomor baru.
+Pilihan ini merupakan permintaan nomor booth, bukan jaminan reservasi unik.
+
+### Status pembelian exhibitor — Auth
+
+```http
+GET /api/v1/store/events/{event_id}/exhibitor-availability/me
+Authorization: Bearer <access-token>
+```
+
+Contoh objek `data` pada response untuk pesanan pending sebelum profil dibuat:
+
+```json
+{
+  "is_purchasable": false,
+  "existing_order_id": "11111111-1111-4111-8111-111111111111",
+  "order_status": "pending",
+  "exhibitor_id": null
+}
+```
+
+| Field | Arti |
+|---|---|
+| `is_purchasable` | `true` hanya jika tidak ada registrasi exhibitor maupun order exhibitor aktif untuk user dan event tersebut |
+| `existing_order_id` | UUID order aktif terbaru yang memuat item `product_type=exhibitor`, atau `null` |
+| `order_status` | Status order tersebut, atau `null` |
+| `exhibitor_id` | UUID registrasi exhibitor milik user pada event tersebut, atau `null` |
+
+Order `draft`, `pending`, `partially_paid`, dan `paid` memblokir pembelian ulang,
+termasuk order gabungan Delegate + Exhibitor. Registrasi exhibitor yang sudah
+ada juga memblokir pembelian, terlepas dari status registrasi. Order yang sudah
+dibatalkan tidak memblokir jika tidak ada order aktif lain atau registrasi.
+Payment attempt gagal/kedaluwarsa tidak membebaskan pembelian bila order masih aktif.
+
+Aturan diperiksa kembali pada tambah cart dan checkout. Pelanggaran menghasilkan
+HTTP 409 `EXHIBITOR_PACKAGE_ALREADY_SELECTED`. Frontend harus memuat ulang status
+dan mengarahkan user ke profil/pembayaran yang sudah ada. Jangan membuat order baru.
+Satu cart hanya boleh memuat satu item exhibitor dengan quantity `1`; pemilihan
+exhibitor lain sebelum checkout menggantikan item exhibitor sebelumnya.
+Quantity atau susunan item exhibitor tidak valid ditolak dengan
+`PACKAGE_QUANTITY_INVALID`.
+
+### Prasyarat dan pengelolaan profil
 
 Sebelum create, user wajib memiliki order aktif (`pending`, `partially_paid`,
 atau `paid`) yang memuat product Package Exhibitor. Order tersebut boleh berupa
@@ -837,7 +887,9 @@ Endpoint `GET /api/v1/events/{event_id}/exhibitors` adalah daftar exhibitor yang
 sudah submitted, bukan katalog paket Exhibitor. Ambil Package Exhibitor USD 200
 dari `exhibitor_packages` pada
 `GET /api/v1/events/{event_id}/delegate-package-catalog`, kemudian kirim
-`rates[0].product_id` ke cart dan checkout sebelum membuka form Exhibitor.
+product ID rate aktif ke cart dan checkout sebelum membuka form Exhibitor,
+hanya jika `is_purchasable=true`. Jika `false`, lanjutkan profil dan pembayaran
+yang sudah ada; jangan ulangi pemilihan package.
 
 ## 9. Business Matching profile dan discovery
 

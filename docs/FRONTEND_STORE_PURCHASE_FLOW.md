@@ -68,6 +68,33 @@ Untuk IWBIF Delegate, katalog menyediakan `DELEGATE_A`, `DELEGATE_B`, dan
 user mengisi form registrasi setelah pembelian. Jangan mengubah atau menebak
 nilai metadata tersebut.
 
+### Periksa pembelian exhibitor
+
+Untuk user yang login, gunakan:
+
+```http
+GET /api/v1/store/events/{event_id}/exhibitor-availability/me
+```
+
+Response `data` memuat `is_purchasable`, `existing_order_id`, `order_status`,
+dan `exhibitor_id`. Hanya tampilkan pilihan pembelian jika `is_purchasable=true`.
+Registrasi exhibitor yang sudah ada atau order exhibitor `draft`, `pending`,
+`partially_paid`, atau `paid` memblokir pembelian ulang untuk user/event yang sama.
+Ini berlaku juga untuk order gabungan Delegate + Exhibitor.
+
+Jika tidak bisa membeli, tampilkan **Complete exhibitor profile** menuju
+`/register/exhibitor`. Jika ada order aktif yang belum lunas, tampilkan
+**Continue payment** menuju `/dashboard/payment?order_id=<existing_order_id>`;
+untuk order lunas atau tanpa order aktif, tampilkan tautan dashboard.
+Lanjutkan pembayaran menggunakan order tersebut tanpa checkout cart baru.
+
+Backend memeriksa ulang saat tambah cart maupun checkout dan mengembalikan HTTP
+409 `EXHIBITOR_PACKAGE_ALREADY_SELECTED` jika sudah memiliki order/registrasi.
+Jika menerima konflik ini, muat ulang availability. Payment attempt gagal atau
+kedaluwarsa tidak mengizinkan pembelian ulang selama order masih aktif.
+Order batal hanya mengizinkan pembelian lagi jika tidak ada registrasi atau
+order aktif lain. Lihat [kontrak lengkap](API_REFERENCE.md#8-exhibitor).
+
 ## 2. Kelola cart
 
 ```http
@@ -90,7 +117,11 @@ Hapus item:
 DELETE /api/v1/store/events/{event_id}/cart/items/{product_id}
 ```
 
-Product yang sama menambah quantity, bukan membuat baris duplikat. Backend
+Untuk product biasa, product yang sama menambah quantity, bukan membuat baris
+duplikat. Package exhibitor hanya boleh memiliki quantity `1`; memilih ulang
+atau mengganti exhibitor sebelum checkout menggantikan item exhibitor di cart.
+Checkout juga menolak lebih dari satu item exhibitor atau quantity selain `1`
+dengan `PACKAGE_QUANTITY_INVALID`. Backend
 menolak product tidak aktif, event berbeda, quantity melebihi batas, dan
 campuran currency dalam satu order.
 

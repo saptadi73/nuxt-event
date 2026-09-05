@@ -37,6 +37,14 @@
       </section>
       <div class="sticky bottom-4 mt-8 flex flex-col gap-3 rounded-2xl border border-white/10 bg-slate-950/90 p-4 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:justify-between"><p class="text-sm" :class="paymentConfigurationReady ? 'text-slate-300' : 'text-rose-200'">{{ selectionMessage }}</p><NuxtLink to="/dashboard/cart" class="rounded-full bg-amber-300 px-6 py-3 text-center font-bold text-slate-950" :class="!canReviewCart ? 'pointer-events-none opacity-50' : ''">{{ mutating ? copy.updating : copy.review }}</NuxtLink></div>
     </template>
+    <div v-else-if="exhibitorUnavailable" class="mt-8 rounded-3xl border border-cyan-300/30 bg-cyan-950/30 p-6">
+      <p>{{ exhibitorResumeCopy.message }}</p>
+      <div class="mt-5 flex flex-wrap gap-3">
+        <NuxtLink to="/register/exhibitor" class="rounded-full bg-cyan-300 px-6 py-3 font-bold text-slate-950">{{ exhibitorResumeCopy.profile }}</NuxtLink>
+        <NuxtLink v-if="exhibitorAvailability?.existing_order_id && exhibitorAvailability.order_status !== 'paid'" :to="`/dashboard/payment?order_id=${encodeURIComponent(exhibitorAvailability.existing_order_id)}`" class="rounded-full border border-cyan-300 px-6 py-3 font-bold">{{ exhibitorResumeCopy.payment }}</NuxtLink>
+        <NuxtLink v-else to="/dashboard" class="rounded-full border border-cyan-300 px-6 py-3 font-bold">{{ exhibitorResumeCopy.dashboard }}</NuxtLink>
+      </div>
+    </div>
     <template v-else>
       <section class="mt-9">
         <div><p class="text-xs uppercase tracking-[.28em] text-cyan-200">{{ copy.standalone }}</p><h2 class="mt-2 text-2xl font-black">{{ copy.selectExhibitor }}</h2><p class="mt-2 max-w-2xl text-sm text-slate-400">{{ copy.exhibitorIndependent }}</p></div>
@@ -92,6 +100,11 @@ useSeoMeta({title:()=>`${selectedType.value === 'exhibitor' ? copy.value.exhibit
 const auth = useAuthStore();
 const { getEvents, getDelegatePackageCatalog } = useEvent();
 const store = useStore();
+const exhibitorAvailability = ref<import('~/composables/useStore').ExhibitorAvailability | null>(null);
+const exhibitorUnavailable = computed(() => auth.isAuthenticated && exhibitorAvailability.value?.is_purchasable === false);
+const exhibitorResumeCopy = computed(() => locale.value === 'zh-CN'
+  ? { message: '您已注册或已有参展商订单。请完善资料并完成现有订单的付款。', profile: '完善参展商资料', payment: '继续付款', dashboard: '前往仪表板' }
+  : { message: 'You already have an exhibitor registration or order. Complete your profile and payment using your existing order.', profile: 'Complete exhibitor profile', payment: 'Continue payment', dashboard: 'Go to dashboard' });
 const paymentApi = usePayment();
 const eventId = ref(''), cart = ref<StoreCart | null>(null), mutating = ref(false), notice = ref(''), noticeTone = ref<'success' | 'error'>('success');
 const personalizedAdditional = ref<PersonalizedAdditionalProduct[]>([]);
@@ -103,12 +116,14 @@ const { data, pending, error } = await useAsyncData('delegate-package-selector',
   const event = (await getEvents(1, 1)).data[0];
   if (!event) throw new Error(copy.value.noEvent);
   eventId.value = event.id;
-  const [catalogResponse, productsResponse, additionalResponse] = await Promise.all([
+  const [catalogResponse, productsResponse, additionalResponse, exhibitorResponse] = await Promise.all([
     getDelegatePackageCatalog(event.id),
     store.getProducts(event.id),
-    auth.isAuthenticated ? store.getMyAdditionalProducts(event.id).catch(() => null) : Promise.resolve(null)
+    auth.isAuthenticated ? store.getMyAdditionalProducts(event.id).catch(() => null) : Promise.resolve(null),
+    auth.isAuthenticated ? store.getExhibitorAvailability(event.id) : Promise.resolve(null)
   ]);
   personalizedAdditional.value = additionalResponse?.data || [];
+  exhibitorAvailability.value = exhibitorResponse?.data || null;
   const productsById = new Map(productsResponse.data.map(product => [product.id, product]));
   const packages = [...catalogResponse.data.main_packages, ...catalogResponse.data.additional_packages, ...(catalogResponse.data.exhibitor_packages || [])];
   for (const pkg of packages) {
@@ -184,18 +199,20 @@ const selectionMessage = computed(() => {
 const canReviewCart = computed(() => !mutating.value && paymentConfigurationReady.value && (selectedType.value === 'exhibitor' ? Boolean(selection.exhibitorProductId) : postRegistrationAdditional.value ? Boolean(selection.bandungProductId) : Boolean(selection.mainProductId)));
 const syncFromCart = (value: StoreCart) => { Object.assign(selection, { mainPackageId: null, mainRateId: null, mainProductId: null, bandungSelected: false, bandungRateId: null, bandungProductId: null, exhibitorSelected: false, exhibitorPackageId: null, exhibitorRateId: null, exhibitorProductId: null }); for (const item of value.items || []) { const found = findRateByProduct(item.product_id); if (!found) continue; if (found.pkg.package_type === 'main') Object.assign(selection, { mainPackageId: found.pkg.id, mainRateId: found.rate.id, mainProductId: found.rate.product_id }); else if (found.pkg.package_type === 'exhibitor') Object.assign(selection, { exhibitorSelected: true, exhibitorPackageId: found.pkg.id, exhibitorRateId: found.rate.id, exhibitorProductId: found.rate.product_id }); else Object.assign(selection, { bandungSelected: true, bandungRateId: found.rate.id, bandungProductId: found.rate.product_id }); } };
 const apiError = (error: unknown) => { const value = error as { data?: { message?: string; errors?: Array<{ message?: string }> } }; return value.data?.errors?.[0]?.message || value.data?.message || copy.value.updateError; };
-const addRate = async (rate: DelegatePackageRate) => { if (!auth.isAuthenticated) { await navigateTo('/auth/register'); return false; } if (!eventId.value || mutating.value) return false; mutating.value = true; notice.value = ''; try { cart.value = (await store.addCartItem(eventId.value, rate.product_id, 1)).data; syncFromCart(cart.value); noticeTone.value = 'success'; notice.value = copy.value.saved; return true; } catch (error) { noticeTone.value = 'error'; notice.value = apiError(error); return false; } finally { mutating.value = false; } };
+const apiErrorCode = (error: unknown) => { const value = error as { data?: { code?: string; error_code?: string; errors?: Array<{ code?: string }> } }; return value.data?.code || value.data?.error_code || value.data?.errors?.[0]?.code || ''; };
+const refreshExhibitorAvailability = async () => { if (!auth.isAuthenticated || !eventId.value) return; try { exhibitorAvailability.value = (await store.getExhibitorAvailability(eventId.value)).data; } catch { /* keep the previous availability snapshot */ } };
+const addRate = async (rate: DelegatePackageRate) => { if (!auth.isAuthenticated) { await navigateTo('/auth/register'); return false; } if (!eventId.value || mutating.value) return false; mutating.value = true; notice.value = ''; try { cart.value = (await store.addCartItem(eventId.value, rate.product_id, 1)).data; syncFromCart(cart.value); noticeTone.value = 'success'; notice.value = copy.value.saved; return true; } catch (error) { if (apiErrorCode(error) === 'EXHIBITOR_PACKAGE_ALREADY_SELECTED') await refreshExhibitorAvailability(); noticeTone.value = 'error'; notice.value = apiError(error); return false; } finally { mutating.value = false; } };
 const selectMainPackage = async (pkg: DelegatePackageCatalogItem) => { if (postRegistrationAdditional.value) return; const rate = defaultRate(pkg); if (rate) await addRate(rate); };
 const selectMainRate = async (pkg: DelegatePackageCatalogItem, rate: DelegatePackageRate) => { if (!postRegistrationAdditional.value && selection.mainPackageId === pkg.id) await addRate(rate); };
 const toggleAdditional = async (pkg: DelegatePackageCatalogItem, checked: boolean) => { if (checked) { const rates=activeRates(pkg);const rate=postRegistrationAdditional.value?rates.find(canBuyAdditionalRate):defaultRate(pkg); if (rate) await addRate(rate); return; } if (!selection.bandungProductId || !eventId.value) return; mutating.value = true; try { cart.value = (await store.removeCartItem(eventId.value, selection.bandungProductId)).data; syncFromCart(cart.value); notice.value = copy.value.removed; } catch (error) { noticeTone.value = 'error'; notice.value = apiError(error); } finally { mutating.value = false; } };
-const selectExhibitorPackage = async (pkg: DelegatePackageCatalogItem) => { const rate = defaultRate(pkg); if (rate) await addRate(rate); };
+const selectExhibitorPackage = async (pkg: DelegatePackageCatalogItem) => { if (exhibitorUnavailable.value) return; const rate = defaultRate(pkg); if (rate) await addRate(rate); };
 const selectAdditionalRate = (rate: DelegatePackageRate) => addRate(rate);
 const occupancyLabel = (occupancyType: DelegatePackageRate['occupancy_type']) => occupancyType === 'single' ? copy.value.single : occupancyType === 'standard' ? copy.value.standard : copy.value.sharing;
 const usd = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
 const openSchedule = (key: 'main' | 'additional') => { activeSchedule.value = (locale.value === 'zh-CN' ? delegatePackageSchedulesZh : delegatePackageSchedules)[key]; if (import.meta.client) document.body.style.overflow = 'hidden'; };
 const closeSchedule = () => { activeSchedule.value = null; if (import.meta.client) document.body.style.overflow = ''; };
 const handleEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') closeSchedule(); };
-onMounted(async () => { if (!eventId.value) eventId.value = (await getEvents(1, 1)).data[0]?.id || ''; if (auth.isAuthenticated && eventId.value) { try { const [cartResponse, additionalResponse] = await Promise.all([store.getCart(eventId.value), store.getMyAdditionalProducts(eventId.value)]); cart.value = cartResponse.data; personalizedAdditional.value = additionalResponse.data || []; syncFromCart(cart.value); } catch { /* a new account may not have a cart or eligible registration yet */ } } });
+onMounted(async () => { if (!eventId.value) eventId.value = (await getEvents(1, 1)).data[0]?.id || ''; if (auth.isAuthenticated && eventId.value) { await refreshExhibitorAvailability(); try { const [cartResponse, additionalResponse] = await Promise.all([store.getCart(eventId.value), store.getMyAdditionalProducts(eventId.value)]); cart.value = cartResponse.data; personalizedAdditional.value = additionalResponse.data || []; syncFromCart(cart.value); } catch { /* a new account may not have a cart or eligible registration yet */ } } });
 onMounted(() => window.addEventListener('keydown', handleEscape));
 onBeforeUnmount(() => { window.removeEventListener('keydown', handleEscape); document.body.style.overflow = ''; });
 </script>

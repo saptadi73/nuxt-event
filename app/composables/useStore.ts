@@ -66,13 +66,21 @@ export interface StoreOrder {
   payment_sequence_count?: number;
 }
 
+export interface ExhibitorAvailability {
+  is_purchasable: boolean;
+  existing_order_id: string | null;
+  order_status: string | null;
+  exhibitor_id: string | null;
+}
+
 export function useStore() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
   const getProducts = (eventId: string) => api<ApiResponse<StoreProduct[]>>(`/store/events/${eventId}/products`);
   const getMyAdditionalProducts = (eventId: string) => api<ApiResponse<PersonalizedAdditionalProduct[]>>(`/store/events/${eventId}/additional-products/me`);
+  const getExhibitorAvailability = (eventId: string) => api<ApiResponse<ExhibitorAvailability>>(`/store/events/${eventId}/exhibitor-availability/me`);
   const getCart = (eventId: string) => api<ApiResponse<StoreCart>>(`/store/events/${eventId}/cart`);
   const addCartItem = (eventId: string, productId: string, quantity = 1) => api<ApiResponse<StoreCart>>(`/store/events/${eventId}/cart/items`, { method: 'POST', body: { product_id: productId, quantity } });
   const removeCartItem = (eventId: string, productId: string) => api<ApiResponse<StoreCart>>(`/store/events/${eventId}/cart/items/${encodeURIComponent(productId)}`, { method: 'DELETE' });
   const checkout = (eventId: string) => api<ApiResponse<StoreOrder>>(`/store/events/${eventId}/checkout`, { method: 'POST' });
-  return { getProducts, getMyAdditionalProducts, getCart, addCartItem, removeCartItem, checkout };
+  return { getExhibitorAvailability, getProducts, getMyAdditionalProducts, getCart, addCartItem, removeCartItem, checkout };
 }
