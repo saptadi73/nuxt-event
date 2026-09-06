@@ -791,6 +791,14 @@ file=<PDF/JPG/PNG>
 Jenis: `PASSPORT_COPY`, `COMPANY_PROFILE`, `BUSINESS_CARD`, `COMPANY_LOGO`,
 `PRODUCT_CATALOGUE`. Maksimum 10 MB; MIME PDF/JPEG/PNG.
 
+Paspor merupakan dokumen opsional, bukan syarat submit Delegate. Upload tetap
+tersedia untuk draft; file kosong atau tidak memenuhi format/ukuran ditolak.
+Tidak memilih file berarti melewati upload, bukan mengirim multipart kosong.
+Simpan draft terlebih dahulu untuk memperoleh `registration_id`, unggah bila
+peserta memilih file, lalu panggil endpoint `/submit`. Create/PATCH saja tetap
+menyimpan draft; submit tidak otomatis melunasi order atau menerbitkan tiket.
+
+
 ```http
 GET    /api/v1/registrations/{registration_id}/documents
 GET    /api/v1/registrations/{registration_id}/documents/{document_id}/download

@@ -65,3 +65,17 @@ Alternatively, set the value in `.env` and then run `npm run build` or `npm run 
 4. DOKU renders the returned VA/QRIS or redirects to the card URL. Midtrans redirects to its checkout URL.
 5. Frontend polls `GET /api/v1/payments/{payment_id}` and waits for backend verification.
 6. Final status is authoritative; browser redirect is not proof of payment.
+
+## Delegate registration
+
+The Delegate form saves the registration draft, optionally uploads a passport
+copy, then submits the registration. Passport upload is optional for all
+delegates; supported files are PDF/JPG/PNG up to 10 MB. Submission changes the
+registration status to `submitted`; payment settlement and ticket issuance remain
+separate steps.
+
+Deploy the matching `fastapi-event` optional-passport change before deploying
+this frontend. Existing saved drafts still need submission; this change does not
+update production records automatically. See the
+[registration flow](docs/FRONTEND_IWBIF_REGISTRATION_FLOW.md#optional-passport-and-registration-submission-2026-09-06)
+and [document API](docs/API_REFERENCE.md#7-documents).

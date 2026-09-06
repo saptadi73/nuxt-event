@@ -253,7 +253,7 @@ Field ini dapat mengandung informasi pribadi sensitif sehingga akses backend per
 
 | Type | Required |
 |---|---:|
-| Passport Copy | Yes |
+| Passport Copy | No (optional) |
 | Company Profile | No |
 | Business Card | No |
 | Company Logo | No |
@@ -275,6 +275,13 @@ registration_documents
 Recommended document types:
 
 `PASSPORT_COPY`, `COMPANY_PROFILE`, `BUSINESS_CARD`, `COMPANY_LOGO`, `PRODUCT_CATALOGUE`.
+
+Aturan paspor diperbarui pada 2026-09-06: unggahan tetap tersedia sebagai dokumen
+pendukung opsional. Delegate dapat submit tanpa paspor. Bila diunggah, file harus
+PDF/JPG/PNG, tidak kosong, maksimal 10 MB, dan tetap menggunakan endpoint dokumen
+terautentikasi. Upload dan penghapusan hanya diizinkan saat registrasi draft.
+Perubahan ini tidak menghapus dokumen yang sudah tersimpan.
+
 
 Binary file sebaiknya disimpan di controlled file/object storage, sedangkan PostgreSQL menyimpan metadata dan storage key/path.
 
@@ -592,7 +599,7 @@ GET /api/v1/master/countries
 2. Email menggunakan email validation.
 3. Checkbox menerima multiple values.
 4. Dropdown/multiple choice hanya menerima allowed values.
-5. Passport Copy mandatory untuk international delegate.
+5. Passport Copy opsional untuk semua delegate; tidak boleh menjadi syarat submit registrasi.
 6. Product Catalogue mandatory untuk exhibitor.
 7. Business Matching Profile hanya tersedia bagi confirmed delegates.
 8. Required declarations/consents harus bernilai accepted.
