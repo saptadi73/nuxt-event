@@ -33,6 +33,10 @@
             <span class="payment-choice__tag">{{ copy.gatewayTag }}</span><strong>{{ copy.onlineTitle }}</strong><p>{{ onlineDescription }}</p><button class="payment-choice__action disabled:cursor-not-allowed disabled:opacity-60" :disabled="submitting || paymentDisabled" @click="requestPayment">{{ onlineAction }} <span aria-hidden="true">→</span></button>
           </article>
         </div>
+        <div v-if="!isPaid && order" class="mt-3 text-right">
+          <button type="button" class="px-2 py-1 text-xs text-slate-400 hover:text-slate-200 disabled:opacity-50" :disabled="submitting || unsupportedOrderCurrency" @click="dokuModalOpen = true">doku</button>
+        </div>
+        <DokuPaymentModal v-if="dokuModalOpen" :order-id="orderId" @close="onDokuClosed" @busy="submitting = $event" @created="onDokuCreated" />
         <NuxtLink v-if="hasPendingPayment" :to="paymentStatusTo" class="mt-4 inline-flex w-full justify-center rounded-full border border-amber-300/30 bg-amber-300/10 px-5 py-3 font-semibold text-amber-100 sm:w-auto">{{ copy.checkStatus }}</NuxtLink>
         <NuxtLink to="/dashboard/cart" class="mt-6 inline-flex w-full justify-center rounded-full border border-white/20 px-6 py-3 text-center sm:w-auto">{{ copy.backCart }}</NuxtLink>
       </template>
@@ -59,7 +63,16 @@
 </template>
 <script setup lang="ts">
 import {useEvent} from '~/composables/useEvent';
-import {usePayment,type OrderItem,type PaymentItem,type PendingOrderProductItem} from '~/composables/usePayment';
+import {usePayment,type OrderItem,type PaymentItem,type PendingOrderProductItem,type DokuOrderPayment} from '~/composables/usePayment';
+const dokuModalOpen = ref(false);
+const onDokuClosed = async () => {
+  dokuModalOpen.value = false;
+  await loadUsdOrderContext();
+};
+const onDokuCreated = (payment: DokuOrderPayment) => {
+  paymentId.value = payment.payment_id;
+  activePayment.value = { id: payment.payment_id, order_id: payment.order_id, provider: 'doku', gross_amount: payment.amount, currency: payment.currency, transaction_status: payment.status };
+};
 definePageMeta({middleware:'auth'});
 const {locale}=useI18n();
 const messages={
@@ -84,12 +97,12 @@ const isExhibitorOnlyOrder=computed(()=>orderItems.value.length>0&&orderItems.va
 const offlineRegistrationPath=computed(()=>isExhibitorOnlyOrder.value?'/register/exhibitor':'/register/delegate');
 const displayOrderUsdTotal=computed(()=>orderItems.value.reduce((sum,item)=>sum+(displayUnitPrice(item.product_id)*item.quantity),0));
 const usd=(amount:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(amount||0);
-const loadUsdOrderContext=async()=>{if(!orderId.value)return;try{const detail=(await paymentApi.getOrderDetail(orderId.value)).data;orderItems.value=detail.items||[];let eventId=order.value?.event_id||detail.order.event_id||'';if(!eventId)eventId=(await getEvents(1,1)).data[0]?.id||'';if(!eventId)return;const catalog=(await getDelegatePackageCatalog(eventId)).data;usdPricesByProductId.value=new Map([...catalog.main_packages,...catalog.additional_packages,...(catalog.exhibitor_packages||[])].flatMap(pkg=>pkg.rates).filter(rate=>rate.is_active).map(rate=>[rate.product_id,Number(rate.amount)]));}catch{/* Payment can still continue; the gateway remains authoritative for the final amount. */}};
+const loadUsdOrderContext=async()=>{if(!orderId.value)return;try{const detail=(await paymentApi.getOrderDetail(orderId.value)).data;orderItems.value=detail.items||[];if(detail.latest_payment){activePayment.value=detail.latest_payment;paymentId.value=detail.latest_payment.id;sessionStorage.setItem('iwbif-payment-id',paymentId.value);}let eventId=order.value?.event_id||detail.order.event_id||'';if(!eventId)eventId=(await getEvents(1,1)).data[0]?.id||'';if(!eventId)return;const catalog=(await getDelegatePackageCatalog(eventId)).data;usdPricesByProductId.value=new Map([...catalog.main_packages,...catalog.additional_packages,...(catalog.exhibitor_packages||[])].flatMap(pkg=>pkg.rates).filter(rate=>rate.is_active).map(rate=>[rate.product_id,Number(rate.amount)]));}catch{/* Payment can still continue; the gateway remains authoritative for the final amount. */}};
 const refreshPaidFlow=async()=>{try{await registrationFlow.loadFlow(true);}catch{/* The paid order remains authoritative; app focus will retry the progress refresh. */}};
 const startPayment=async()=>{if(!orderId.value||submitting.value||paymentDisabled.value)return;submitting.value=true;errorMessage.value='';try{const checkout=(await (isPartial.value?paymentApi.continueOrderPayment(orderId.value):paymentApi.createCheckout(orderId.value))).data;paymentId.value=checkout.payment_id||'';sessionStorage.setItem('iwbif-store-order-id',orderId.value);if(paymentId.value)sessionStorage.setItem('iwbif-payment-id',paymentId.value);const complete=checkout.order_status==='paid'||checkout.is_payment_complete===true;if(complete){await refreshPaidFlow();await navigateTo(paidDestination.value);return;}if(checkout.payment_url){window.location.assign(checkout.payment_url);return;}await navigateTo(`/dashboard/payment-status?order_id=${encodeURIComponent(orderId.value)}&payment_id=${encodeURIComponent(paymentId.value)}`);}catch(error){errorMessage.value=apiError(error);}finally{submitting.value=false;}};
 const requestPayment=()=>{if(showSplitNotice.value){splitModalOpen.value=true;return;}void startPayment();};
 const confirmSplitPayment=()=>{splitModalOpen.value=false;void startPayment();};
-onMounted(async()=>{orderId.value=queryValue(route.query.order_id)||sessionStorage.getItem('iwbif-store-order-id')||'';paymentId.value=queryValue(route.query.payment_id)||sessionStorage.getItem('iwbif-payment-id')||sessionStorage.getItem('iwbif-doku-payment-id')||'';if(orderId.value){try{order.value=(await paymentApi.getOrder(orderId.value)).data;await loadUsdOrderContext();if(isPaid.value)await refreshPaidFlow();else if(paymentId.value){const candidate=(await paymentApi.getPayment(paymentId.value)).data;if(candidate.order_id===orderId.value)activePayment.value=candidate;}}catch(error){errorMessage.value=apiError(error);}}loading.value=false;});
+onMounted(async()=>{orderId.value=queryValue(route.query.order_id)||sessionStorage.getItem('iwbif-store-order-id')||'';paymentId.value=queryValue(route.query.payment_id)||sessionStorage.getItem('iwbif-payment-id')||sessionStorage.getItem('iwbif-doku-payment-id')||'';if(orderId.value){try{order.value=(await paymentApi.getOrder(orderId.value)).data;await loadUsdOrderContext();if(isPaid.value)await refreshPaidFlow();else if(paymentId.value){const candidate=(await paymentApi.getPayment(paymentId.value)).data;if(candidate.order_id===orderId.value)activePayment.value=candidate;}}catch(error){errorMessage.value=apiError(error);}}loading.value=false;if(order.value&&!isPaid.value&&queryValue(route.query.doku)==='1')dokuModalOpen.value=true;});
 </script>
 <style scoped>
 .notice { @apply mt-8 rounded-2xl border border-amber-300/20 bg-amber-300/5 p-5 text-amber-100; }

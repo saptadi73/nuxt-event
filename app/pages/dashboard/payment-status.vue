@@ -115,6 +115,10 @@ const apiError = (error: unknown) => {
 };
 const continuePayment = async () => {
   if (!orderId.value || checking.value) return;
+  if (payment.value?.provider?.startsWith('doku')) {
+    await navigateTo(`/dashboard/payment?order_id=${encodeURIComponent(orderId.value)}&doku=1`);
+    return;
+  }
   checking.value = true;
   errorMessage.value = '';
   try {

@@ -20,6 +20,14 @@ export interface DokuCheckoutData {
 export type PaymentCategory = 'virtual_account' | 'qris' | 'e_wallet' | 'direct_debit' | string;
 export interface PaymentMethod { id: string; provider: string; code: string; category: PaymentCategory; display_name: string; logo_url: string | null; sort_order: number; }
 export interface DirectPaymentMethods { virtual_accounts: string[]; qris: boolean; }
+export type DokuOrderMethod = 'virtual_account' | 'qris' | 'credit_card';
+export interface DokuOrderMethods extends DirectPaymentMethods { credit_card: boolean; }
+export interface DokuOrderPayment {
+  order_id: string; order_number: string; payment_id: string; method: DokuOrderMethod;
+  bank_code: string | null; status: string; amount: number; currency: string;
+  expires_at: string | null; payment_sequence: number; payment_sequence_count: number;
+  virtual_account_no: string | null; qr_content: string | null; payment_url: string | null;
+}
 export interface DirectVaData { payment_id: string; order_id: string; order_number: string; status: string; bank_code: string; virtual_account_no: string; amount: number; currency: string; expires_at: string | null; instructions_url: string | null; }
 export interface DirectQrisData { payment_id: string; order_id: string; order_number: string; status: string; qr_content: string; amount: number; currency: string; expires_at: string | null; }
 export interface DirectDebitBindingData { binding_id: string; channel_code: string; status: string; redirect_url: string | null; }
@@ -92,6 +100,11 @@ export function usePayment() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
   const runtimeProvider = getPaymentProviderConfig();
   const getPaymentMethods = () => api<ApiResponse<PaymentMethod[]>>('/payments/methods');
+  const getDokuOrderMethods = () => api<ApiResponse<DokuOrderMethods>>('/payments/doku/order-methods');
+  const getActiveDokuOrderPayment = (orderId: string) => api<ApiResponse<DokuOrderPayment | null>>(`/payments/doku/orders/${encodeURIComponent(orderId)}/active`);
+  const createDokuOrderPayment = (orderId: string, method: DokuOrderMethod, bankCode?: string) => api<ApiResponse<DokuOrderPayment>>(`/payments/doku/orders/${encodeURIComponent(orderId)}/checkout`, {
+    method: 'POST', body: { method, ...(bankCode ? { bank_code: bankCode } : {}) }
+  });
   const getDirectPaymentMethods = () => api<ApiResponse<DirectPaymentMethods>>('/payments/doku/direct/methods');
   const createDirectVa = (registrationId: string, bankCode: string) => api<ApiResponse<DirectVaData>>('/payments/doku/direct/va', { method: 'POST', body: { registration_id: registrationId, bank_code: bankCode } });
   const createDirectQris = (registrationId: string) => api<ApiResponse<DirectQrisData>>('/payments/doku/direct/qris', { method: 'POST', body: { registration_id: registrationId } });
@@ -127,6 +140,9 @@ export function usePayment() {
     isMidtransProvider: runtimeProvider.isMidtrans,
     isDokuProvider: runtimeProvider.isDoku,
     getPaymentMethods,
+    getDokuOrderMethods,
+    getActiveDokuOrderPayment,
+    createDokuOrderPayment,
     getDirectPaymentMethods,
     createDirectVa,
     createDirectQris,
