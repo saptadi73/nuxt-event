@@ -8,53 +8,60 @@
     <div v-if="pending" class="mt-10 h-60 animate-pulse rounded-[2rem] bg-white/5" />
     <div v-else-if="optionsError" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ optionsError.message }}</div>
 
-    <form v-else class="mt-10 space-y-7" novalidate @submit.prevent="submit">
+    <form v-else ref="formElement" class="mt-10 space-y-7" novalidate @submit.prevent="submit">
       <fieldset class="card"><legend>{{ copy.personalSection }}</legend>
         <div class="grid gap-4 md:grid-cols-2">
           <label v-for="field in identityFields" :key="field.key" class="label">
             <span>{{ field.label }}{{ field.required === false ? '' : ' *' }}</span>
-            <select v-if="field.options" v-model="form[field.key]" required class="field">
+            <select v-if="field.options" v-model="form[field.key]" :name="field.key" :aria-invalid="isMissing(field.key)" required class="field">
               <option value="" disabled>{{ copy.select }} {{ field.label }}</option>
               <option v-for="option in field.options" :key="option" :value="option">{{ optionLabel(option) }}</option>
             </select>
-            <input v-else v-model.trim="form[field.key]" :type="field.type || 'text'" :autocomplete="field.autocomplete" :required="field.required !== false" class="field" />
+            <input v-else v-model.trim="form[field.key]" :name="field.key" :aria-invalid="isMissing(field.key)" :type="field.type || 'text'" :autocomplete="field.autocomplete" :required="field.required !== false" class="field" />
           </label>
-          <label class="label"><span>{{ copy.officePhone }}</span><input v-model.trim="form.office_phone" type="tel" class="field" /></label>
-          <label class="label md:col-span-2"><span>{{ copy.companyAddress }} *</span><textarea v-model.trim="form.company_address" required class="field" rows="3" /></label>
+          <label class="label"><span>{{ copy.officePhone }}</span><input v-model.trim="form.office_phone" name="office_phone" :aria-invalid="isMissing('office_phone')" type="tel" class="field" /></label>
+          <label class="label md:col-span-2"><span>{{ copy.companyAddress }} *</span><textarea v-model.trim="form.company_address" name="company_address" :aria-invalid="isMissing('company_address')" required class="field" rows="3" /></label>
         </div>
       </fieldset>
 
       <fieldset class="card"><legend>{{ copy.participationSection }}</legend>
         <span class="label">{{ copy.participationCategories }} *</span>
-        <div class="mt-3 grid gap-3 md:grid-cols-2"><label v-for="option in participationCategoryOptions" :key="option" class="choice flex gap-3"><input v-model="form.participation_categories" type="checkbox" :value="option" class="accent-amber-300" /><span>{{ optionLabel(option) }}</span></label></div>
+        <div class="mt-3 grid gap-3 md:grid-cols-2"><label v-for="option in participationCategoryOptions" :key="option" class="choice flex gap-3"><input v-model="form.participation_categories" name="participation_categories" :aria-invalid="isMissing('participation_categories')" type="checkbox" :value="option" class="accent-amber-300" /><span>{{ optionLabel(option) }}</span></label></div>
         <div class="mt-5 grid gap-4 md:grid-cols-2">
-          <label v-if="form.participation_categories.includes('Speaker')" class="label md:col-span-2"><span>{{ copy.presentationTopic }}</span><textarea v-model.trim="form.presentation_topic" class="field" rows="3" /></label>
-          <label v-if="form.participation_categories.includes('Buyer')" class="label md:col-span-2"><span>{{ copy.productsInterested }}</span><textarea v-model.trim="form.products_interested" class="field" rows="3" /></label>
-          <label v-if="form.participation_categories.includes('Investor')" class="label md:col-span-2"><span>{{ copy.investmentInterest }}</span><textarea v-model.trim="form.investment_interest" class="field" rows="3" /></label>
+          <label v-if="form.participation_categories.includes('Speaker')" class="label md:col-span-2"><span>{{ copy.presentationTopic }}</span><textarea v-model.trim="form.presentation_topic" name="presentation_topic" :aria-invalid="isMissing('presentation_topic')" class="field" rows="3" /></label>
+          <label v-if="form.participation_categories.includes('Buyer')" class="label md:col-span-2"><span>{{ copy.productsInterested }}</span><textarea v-model.trim="form.products_interested" name="products_interested" :aria-invalid="isMissing('products_interested')" class="field" rows="3" /></label>
+          <label v-if="form.participation_categories.includes('Investor')" class="label md:col-span-2"><span>{{ copy.investmentInterest }}</span><textarea v-model.trim="form.investment_interest" name="investment_interest" :aria-invalid="isMissing('investment_interest')" class="field" rows="3" /></label>
         </div>
-        <div class="mt-5 grid gap-3 md:grid-cols-2"><label v-for="item in activities" :key="item.id" class="choice flex gap-3"><input v-model="form.activity_ids" type="checkbox" :value="item.id" class="accent-amber-300" /><span>{{ item.name }}</span></label></div>
+        <p class="label mt-5">{{ validationDetails.activities }} *</p>
+        <p class="mt-2 text-sm text-slate-400">{{ validationDetails.chooseActivity }}</p>
+        <div class="mt-3 grid gap-3 md:grid-cols-2"><label v-for="item in activities" :key="item.id" class="choice flex gap-3"><input v-model="form.activity_ids" name="activity_ids" :aria-invalid="isMissing('activity_ids')" type="checkbox" :value="item.id" class="accent-amber-300" /><span>{{ item.name }}</span></label></div>
         <p v-if="!activities.length" class="mt-3 text-sm text-slate-400">{{ copy.noActivities }}</p>
       </fieldset>
 
       <fieldset class="card"><legend>{{ copy.matchingSection }}</legend>
-        <label class="label"><span>{{ copy.productsServices }} *</span><textarea v-model.trim="form.products_services" required class="field" rows="3" /></label>
+        <label class="label"><span>{{ copy.productsServices }} *</span><textarea v-model.trim="form.products_services" name="products_services" :aria-invalid="isMissing('products_services')" required class="field" rows="3" /></label>
         <span class="label mt-5">{{ copy.lookingFor }} *</span>
-        <div class="mt-3 grid gap-3 md:grid-cols-2"><label v-for="option in lookingForOptions" :key="option" class="choice flex gap-3"><input v-model="form.looking_for" type="checkbox" :value="option" class="accent-amber-300" /><span>{{ optionLabel(option) }}</span></label></div>
+        <div class="mt-3 grid gap-3 md:grid-cols-2"><label v-for="option in lookingForOptions" :key="option" class="choice flex gap-3"><input v-model="form.looking_for" name="looking_for" :aria-invalid="isMissing('looking_for')" type="checkbox" :value="option" class="accent-amber-300" /><span>{{ optionLabel(option) }}</span></label></div>
         <span class="label mt-5">{{ copy.preferredCountries }} *</span>
-        <div class="mt-3 grid gap-3 md:grid-cols-2"><label v-for="option in preferredCountryOptions" :key="option" class="choice flex gap-3"><input v-model="form.preferred_countries" type="checkbox" :value="option" class="accent-amber-300" /><span>{{ optionLabel(option) }}</span></label></div>
-        <label class="label mt-5"><span>{{ copy.businessObjectives }} *</span><textarea v-model.trim="form.business_objectives" required class="field" rows="3" /></label>
+        <div class="mt-3 grid gap-3 md:grid-cols-2"><label v-for="option in preferredCountryOptions" :key="option" class="choice flex gap-3"><input v-model="form.preferred_countries" name="preferred_countries" :aria-invalid="isMissing('preferred_countries')" type="checkbox" :value="option" class="accent-amber-300" /><span>{{ optionLabel(option) }}</span></label></div>
+        <label class="label mt-5"><span>{{ copy.businessObjectives }} *</span><textarea v-model.trim="form.business_objectives" name="business_objectives" :aria-invalid="isMissing('business_objectives')" required class="field" rows="3" /></label>
       </fieldset>
 
       <fieldset class="card"><legend>{{ copy.travelSection }}</legend>
-        <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>{{ copy.roomPreference }} *</span><select v-model="form.room_preference" required class="field"><option value="Twin Sharing">{{ optionLabel('Twin Sharing') }}</option><option value="Single Room (+Supplement)">{{ optionLabel('Single Room (+Supplement)') }}</option></select></label><label class="label"><span>{{ copy.preferredRoommate }}</span><input v-model.trim="form.preferred_roommate" class="field" /></label><label class="label"><span>{{ copy.arrivalDate }} *</span><input v-model="form.arrival_date" type="date" required class="field" /></label><label class="label"><span>{{ copy.departureDate }} *</span><input v-model="form.departure_date" type="date" :min="form.arrival_date" required class="field" /></label><label class="label"><span>{{ copy.airport }} *</span><select v-model="form.airport" required class="field"><option value="" disabled>{{ copy.selectAirport }}</option><option v-for="option in airportOptions" :key="option" :value="option">{{ optionLabel(option) }}</option></select></label><label class="label"><span>{{ copy.flightNumber }}</span><input v-model.trim="form.flight_number" class="field" /></label><div class="label"><span>{{ copy.needPickup }} *</span><div class="flex flex-wrap gap-3 sm:gap-5"><label class="check"><input v-model="form.need_airport_pickup" type="radio" :value="true" /> {{ copy.yes }}</label><label class="check"><input v-model="form.need_airport_pickup" type="radio" :value="false" /> {{ copy.no }}</label></div></div><label class="label"><span>{{ copy.dietary }}</span><input v-model.trim="form.dietary_restrictions" class="field" /></label><label class="label"><span>{{ copy.medical }}</span><input v-model.trim="form.medical_condition" class="field" /></label><label class="label"><span>{{ copy.assistance }}</span><input v-model.trim="form.special_assistance" class="field" /></label></div>
+        <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>{{ copy.roomPreference }} *</span><select v-model="form.room_preference" name="room_preference" :aria-invalid="isMissing('room_preference')" required class="field"><option value="Twin Sharing">{{ optionLabel('Twin Sharing') }}</option><option value="Single Room (+Supplement)">{{ optionLabel('Single Room (+Supplement)') }}</option></select></label><label class="label"><span>{{ copy.preferredRoommate }}</span><input v-model.trim="form.preferred_roommate" name="preferred_roommate" :aria-invalid="isMissing('preferred_roommate')" class="field" /></label><label class="label"><span>{{ copy.arrivalDate }} *</span><input v-model="form.arrival_date" name="arrival_date" :aria-invalid="isMissing('arrival_date')" type="date" required class="field" /></label><label class="label"><span>{{ copy.departureDate }} *</span><input v-model="form.departure_date" name="departure_date" :aria-invalid="isMissing('departure_date')" type="date" :min="form.arrival_date" required class="field" /></label><label class="label"><span>{{ copy.airport }} *</span><select v-model="form.airport" name="airport" :aria-invalid="isMissing('airport')" required class="field"><option value="" disabled>{{ copy.selectAirport }}</option><option v-for="option in airportOptions" :key="option" :value="option">{{ optionLabel(option) }}</option></select></label><label class="label"><span>{{ copy.flightNumber }}</span><input v-model.trim="form.flight_number" name="flight_number" :aria-invalid="isMissing('flight_number')" class="field" /></label><div class="label"><span>{{ copy.needPickup }} *</span><div class="flex flex-wrap gap-3 sm:gap-5"><label class="check"><input v-model="form.need_airport_pickup" name="need_airport_pickup" :aria-invalid="isMissing('need_airport_pickup')" type="radio" :value="true" /> {{ copy.yes }}</label><label class="check"><input v-model="form.need_airport_pickup" name="need_airport_pickup" :aria-invalid="isMissing('need_airport_pickup')" type="radio" :value="false" /> {{ copy.no }}</label></div></div><label class="label"><span>{{ copy.dietary }}</span><input v-model.trim="form.dietary_restrictions" name="dietary_restrictions" :aria-invalid="isMissing('dietary_restrictions')" class="field" /></label><label class="label"><span>{{ copy.medical }}</span><input v-model.trim="form.medical_condition" name="medical_condition" :aria-invalid="isMissing('medical_condition')" class="field" /></label><label class="label"><span>{{ copy.assistance }}</span><input v-model.trim="form.special_assistance" name="special_assistance" :aria-invalid="isMissing('special_assistance')" class="field" /></label></div>
       </fieldset>
 
       <fieldset class="card"><legend>{{ copy.invoiceSection }}</legend>
-        <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>{{ copy.taxId }}</span><input v-model.trim="form.tax_id" class="field" /></label><div class="label"><span>{{ copy.needInvoice }} *</span><div class="flex flex-wrap gap-3 sm:gap-5"><label class="check"><input v-model="form.need_official_invoice" type="radio" :value="true" /> {{ copy.yes }}</label><label class="check"><input v-model="form.need_official_invoice" type="radio" :value="false" /> {{ copy.no }}</label></div></div></div>
-        <div class="mt-5 space-y-3"><label class="check"><input v-model="form.information_accuracy_confirmed" required type="checkbox" /> {{ copy.accuracy }} *</label><label class="check"><input v-model="form.terms_accepted" required type="checkbox" /> {{ copy.acceptTerms }} *</label><label class="check"><input v-model="form.business_matching_data_consent" required type="checkbox" /> {{ copy.dataConsent }} *</label></div>
+        <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>{{ copy.taxId }}</span><input v-model.trim="form.tax_id" name="tax_id" :aria-invalid="isMissing('tax_id')" class="field" /></label><div class="label"><span>{{ copy.needInvoice }} *</span><div class="flex flex-wrap gap-3 sm:gap-5"><label class="check"><input v-model="form.need_official_invoice" name="need_official_invoice" :aria-invalid="isMissing('need_official_invoice')" type="radio" :value="true" /> {{ copy.yes }}</label><label class="check"><input v-model="form.need_official_invoice" name="need_official_invoice" :aria-invalid="isMissing('need_official_invoice')" type="radio" :value="false" /> {{ copy.no }}</label></div></div></div>
+        <div class="mt-5 space-y-3"><label class="check"><input v-model="form.information_accuracy_confirmed" name="information_accuracy_confirmed" :aria-invalid="isMissing('information_accuracy_confirmed')" required type="checkbox" /> {{ copy.accuracy }} *</label><label class="check"><input v-model="form.terms_accepted" name="terms_accepted" :aria-invalid="isMissing('terms_accepted')" required type="checkbox" /> {{ copy.acceptTerms }} *</label><label class="check"><input v-model="form.business_matching_data_consent" name="business_matching_data_consent" :aria-invalid="isMissing('business_matching_data_consent')" required type="checkbox" /> {{ copy.dataConsent }} *</label></div>
       </fieldset>
 
-      <div v-if="feedback" class="rounded-2xl border p-5" :class="success?'border-emerald-300/30 bg-emerald-950/30':'border-red-300/30 bg-red-950/30'">{{ feedback }}</div>
+      <div v-if="feedback" ref="feedbackElement" tabindex="-1" role="alert" class="rounded-2xl border p-5" :class="success?'border-emerald-300/30 bg-emerald-950/30':'border-red-300/30 bg-red-950/30'">
+        <p>{{ feedback }}</p>
+        <ul v-if="showRequiredErrors && missingFields.length" class="mt-3 list-disc space-y-2 pl-5">
+          <li v-for="field in missingFields" :key="field.key"><button type="button" class="text-left underline underline-offset-4" @click="focusField(field.key)">{{ field.label }}</button></li>
+        </ul>
+      </div>
 
       <div class="submit-row">
         <button class="rounded-full bg-amber-300 px-7 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="submitting">{{ submitting ? copy.saving : editingRegistrationId ? copy.update : copy.create }}</button>
@@ -225,6 +232,49 @@ if (options.value?.event.id) {
   }
 }
 
+const formElement = ref<HTMLFormElement | null>(null);
+const feedbackElement = ref<HTMLElement | null>(null);
+const showRequiredErrors = ref(false);
+const validationDetails = computed(() => locale.value === 'zh-CN' ? {
+  activities: '参加的活动', chooseActivity: '请至少选择一项活动。',
+  unavailable: '目前没有可选活动。请联系主办方开放活动后完成注册。'
+} : {
+  activities: 'Event activities', chooseActivity: 'Select at least one activity.',
+  unavailable: 'No activities are available to select. Please contact the organizer to enable activities before completing registration.'
+});
+const consentFields = new Set(['information_accuracy_confirmed', 'terms_accepted', 'business_matching_data_consent']);
+const missingFields = computed(() => {
+  const required = [
+    ...identityFields.value.filter(field => field.required !== false),
+    { key: 'company_address', label: copy.value.companyAddress },
+    { key: 'products_services', label: copy.value.productsServices },
+    { key: 'business_objectives', label: copy.value.businessObjectives },
+    { key: 'room_preference', label: copy.value.roomPreference },
+    { key: 'arrival_date', label: copy.value.arrivalDate },
+    { key: 'departure_date', label: copy.value.departureDate },
+    { key: 'airport', label: copy.value.airport },
+    { key: 'participation_categories', label: copy.value.participationCategories },
+    { key: 'looking_for', label: copy.value.lookingFor },
+    { key: 'preferred_countries', label: copy.value.preferredCountries },
+    { key: 'activity_ids', label: validationDetails.value.activities },
+    { key: 'need_airport_pickup', label: copy.value.needPickup },
+    { key: 'need_official_invoice', label: copy.value.needInvoice },
+    { key: 'information_accuracy_confirmed', label: copy.value.accuracy },
+    { key: 'terms_accepted', label: copy.value.acceptTerms },
+    { key: 'business_matching_data_consent', label: copy.value.dataConsent }
+  ];
+  return required.filter(field => {
+    const value = form[field.key as keyof typeof form];
+    return (consentFields.has(field.key) && value !== true) || value === null || (typeof value === 'string' && !value.trim()) || (Array.isArray(value) && !value.length);
+  });
+});
+const isMissing = (key: string) => showRequiredErrors.value && missingFields.value.some(field => field.key === key);
+const focusField = (key: string) => {
+  const field = formElement.value?.querySelector<HTMLElement>(`[name="${key}"]`);
+  field?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  field?.focus({ preventScroll: true });
+};
+
 const nullable = (value: string) => value || null;
 const isValidEmail = (value: string) => { const parts = value.split('@'); return parts.length === 2 && Boolean(parts[0]) && Boolean(parts[1]?.includes('.')) && !value.includes(' '); };
 const isValidOptionalUrl = (value: string) => { if (!value) return true; try { const parsed = new URL(value); return parsed.protocol === 'http:' || parsed.protocol === 'https:'; } catch { return false; } };
@@ -232,10 +282,13 @@ const isValidOptionalUrl = (value: string) => { if (!value) return true; try { c
 const submit = async () => {
   feedback.value = '';
   success.value = false;
-  const requiredText = [form.full_name, form.title, form.job_title, form.company_organization, form.nationality, form.business_sector, form.email, form.company_address, form.products_services, form.business_objectives, form.room_preference, form.arrival_date, form.departure_date, form.airport];
-  const requiredSelections = [form.participation_categories, form.looking_for, form.preferred_countries, form.activity_ids];
-  if (requiredText.some(value => !value.trim()) || requiredSelections.some(values => !values.length) || form.need_airport_pickup === null || form.need_official_invoice === null) {
-    feedback.value = validationCopy.value.required;
+  showRequiredErrors.value = false;
+  if (missingFields.value.length) {
+    showRequiredErrors.value = true;
+    feedback.value = activities.value.length ? validationCopy.value.required : validationDetails.value.unavailable;
+    await nextTick();
+    const firstMissing = missingFields.value[0];
+    if (firstMissing) focusField(firstMissing.key);
     return;
   }
   if (!isValidEmail(form.email)) {
@@ -311,6 +364,26 @@ const submit = async () => {
 .card legend { @apply px-2 text-lg font-bold sm:text-xl; }
 .label { @apply grid gap-2 text-sm text-slate-300; }
 .field { @apply rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:border-amber-300; }
+.field[aria-invalid="true"],
+.choice:has(input[aria-invalid="true"]),
+.check:has(input[aria-invalid="true"]) {
+  border-color: #fb7185;
+  outline: 2px solid #fb7185;
+  outline-offset: 2px;
+  background-color: rgba(159, 18, 57, 0.18);
+  box-shadow: 0 0 0 5px rgba(251, 113, 133, 0.12);
+}
+.check:has(input[aria-invalid="true"]) {
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+.label:has(> .field[aria-invalid="true"]) > span {
+  color: #fda4af;
+}
+.field[aria-invalid="true"]:focus {
+  outline-width: 3px;
+  border-color: #fda4af;
+}
 .field option {
   background-color: #0b2447;
   color: #f8fafc;

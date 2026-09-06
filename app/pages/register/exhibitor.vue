@@ -22,35 +22,40 @@
       <NuxtLink to="/dashboard" class="mt-5 inline-flex rounded-full bg-cyan-300 px-6 py-3 text-sm font-semibold text-slate-950">{{ copy.goToDashboard }}</NuxtLink>
     </div>
 
-    <form v-else class="mt-8 space-y-7" novalidate @submit.prevent="submit">
+    <form v-else ref="formElement" class="mt-8 space-y-7" novalidate @submit.prevent="submit">
       <fieldset class="card">
         <legend>{{ copy.companyProfile }}</legend>
         <div class="grid gap-4 md:grid-cols-2">
-          <label class="label"><span>{{ copy.companyName }} *</span><input v-model.trim="form.company_name" required class="field" /></label>
-          <label class="label"><span>{{ copy.brand }} *</span><input v-model.trim="form.brand" required class="field" /></label>
-          <label class="label"><span>{{ copy.contactPerson }} *</span><input v-model.trim="form.contact_person" required class="field" /></label>
-          <label class="label md:col-span-2"><span>{{ copy.products }} *</span><textarea v-model.trim="form.products_to_display" required class="field" rows="3" /></label>
+          <label class="label"><span>{{ copy.companyName }} *</span><input v-model.trim="form.company_name" name="company_name" :aria-invalid="isInvalid('company_name')" required class="field" /></label>
+          <label class="label"><span>{{ copy.brand }} *</span><input v-model.trim="form.brand" name="brand" :aria-invalid="isInvalid('brand')" required class="field" /></label>
+          <label class="label"><span>{{ copy.contactPerson }} *</span><input v-model.trim="form.contact_person" name="contact_person" :aria-invalid="isInvalid('contact_person')" required class="field" /></label>
+          <label class="label md:col-span-2"><span>{{ copy.products }} *</span><textarea v-model.trim="form.products_to_display" name="products_to_display" :aria-invalid="isInvalid('products_to_display')" required class="field" rows="3" /></label>
           <label class="label">
             <span>{{ copy.boothNumber }} *</span>
-            <select v-model="form.booth_size_requested" required class="field">
+            <select v-model="form.booth_size_requested" name="booth_size_requested" :aria-invalid="isInvalid('booth_size_requested')" required class="field">
               <option disabled value="">{{ boothNumberCopy.placeholder }}</option>
               <option v-for="number in boothNumbers" :key="number" :value="number">{{ number }}</option>
             </select>
           </label>
-          <label class="label"><span>{{ copy.electricity }} *</span><input v-model.trim="form.electricity_requirement" required class="field" /></label>
-          <label class="label md:col-span-2"><span>{{ copy.special }} *</span><textarea v-model.trim="form.special_requirement" required class="field" rows="3" /></label>
+          <label class="label"><span>{{ copy.electricity }} *</span><input v-model.trim="form.electricity_requirement" name="electricity_requirement" :aria-invalid="isInvalid('electricity_requirement')" required class="field" /></label>
+          <label class="label md:col-span-2"><span>{{ copy.special }} *</span><textarea v-model.trim="form.special_requirement" name="special_requirement" :aria-invalid="isInvalid('special_requirement')" required class="field" rows="3" /></label>
         </div>
       </fieldset>
 
       <fieldset class="card">
         <legend>{{ copy.agreement }}</legend>
         <label class="check mt-2">
-          <input v-model="form.exhibition_terms_accepted" type="checkbox" required />
-          <span>{{ copy.acceptTerms }}</span>
+          <input v-model="form.exhibition_terms_accepted" name="exhibition_terms_accepted" :aria-invalid="isInvalid('exhibition_terms_accepted')" type="checkbox" required />
+          <span>{{ copy.acceptTerms }} *</span>
         </label>
       </fieldset>
 
-      <div v-if="feedback" class="rounded-2xl border p-5" :class="success ? 'border-emerald-300/30 bg-emerald-950/30' : 'border-red-300/30 bg-red-950/30'">{{ feedback }}</div>
+      <div v-if="feedback" role="alert" class="rounded-2xl border p-5" :class="success ? 'border-emerald-300/30 bg-emerald-950/30' : 'border-red-300/30 bg-red-950/30'">
+        <p>{{ feedback }}</p>
+        <ul v-if="showValidation && invalidFields.length" class="mt-3 list-disc space-y-2 pl-5">
+          <li v-for="field in invalidFields" :key="field.key"><button type="button" class="text-left underline underline-offset-4" @click="focusField(field.key)">{{ field.label }}: {{ field.message }}</button></li>
+        </ul>
+      </div>
 
       <div class="submit-row">
         <button type="submit" class="rounded-full bg-cyan-300 px-7 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="submitting">
@@ -162,26 +167,52 @@ if (eventData.value) {
   }
 }
 
+const formElement = ref<HTMLFormElement | null>(null);
+const showValidation = ref(false);
+const invalidFields = computed(() => {
+  const fields = [
+    { key: 'company_name', label: copy.value.companyName },
+    { key: 'brand', label: copy.value.brand },
+    { key: 'contact_person', label: copy.value.contactPerson },
+    { key: 'products_to_display', label: copy.value.products },
+    { key: 'booth_size_requested', label: copy.value.boothNumber },
+    { key: 'electricity_requirement', label: copy.value.electricity },
+    { key: 'special_requirement', label: copy.value.special },
+    { key: 'exhibition_terms_accepted', label: copy.value.agreement }
+  ] as const;
+  return fields.flatMap<{ key: keyof typeof form; label: string; message: string }>(field => {
+    if (field.key === 'exhibition_terms_accepted') {
+      return form.exhibition_terms_accepted ? [] : [{ ...field, message: validationCopy.value.terms }];
+    }
+    if (!form[field.key].trim()) return [{ ...field, message: validationCopy.value.required }];
+    if (field.key === 'booth_size_requested' && !boothNumbers.includes(form.booth_size_requested)) {
+      return [{ ...field, message: boothNumberCopy.value.invalid }];
+    }
+    return [];
+  });
+});
+const isInvalid = (key: string) => showValidation.value && invalidFields.value.some(field => field.key === key);
+const focusField = (key: string) => {
+  const field = formElement.value?.querySelector<HTMLElement>(`[name="${key}"]`);
+  field?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  field?.focus({ preventScroll: true });
+};
+
 const submit = async () => {
+  if (submitting.value) return;
   if (!eventData.value) {
     feedback.value = copy.value.unavailable;
     success.value = false;
     return;
   }
 
-  if ([form.company_name, form.brand, form.contact_person, form.products_to_display, form.booth_size_requested, form.electricity_requirement, form.special_requirement].some(value => !value.trim())) {
+  showValidation.value = true;
+  if (invalidFields.value.length) {
     feedback.value = validationCopy.value.required;
     success.value = false;
-    return;
-  }
-  if (!boothNumbers.includes(form.booth_size_requested)) {
-    feedback.value = boothNumberCopy.value.invalid;
-    success.value = false;
-    return;
-  }
-  if (!form.exhibition_terms_accepted) {
-    feedback.value = validationCopy.value.terms;
-    success.value = false;
+    await nextTick();
+    const firstInvalid = invalidFields.value[0];
+    if (firstInvalid) focusField(firstInvalid.key);
     return;
   }
 
@@ -233,6 +264,25 @@ const submit = async () => {
 .card legend { @apply px-2 text-lg font-bold sm:text-xl; }
 .label { @apply grid gap-2 text-sm text-slate-300; }
 .field { @apply rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none focus:border-cyan-300; }
+.field[aria-invalid="true"],
+.check:has(input[aria-invalid="true"]) {
+  border-color: #fb7185;
+  outline: 2px solid #fb7185;
+  outline-offset: 2px;
+  background-color: rgba(159, 18, 57, 0.18);
+  box-shadow: 0 0 0 5px rgba(251, 113, 133, 0.12);
+}
+.check:has(input[aria-invalid="true"]) {
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+.label:has(> .field[aria-invalid="true"]) > span {
+  color: #fda4af;
+}
+.field[aria-invalid="true"]:focus {
+  outline-width: 3px;
+  border-color: #fda4af;
+}
 .field option { @apply bg-slate-950 text-white; }
 .check { @apply flex items-center gap-3 text-sm text-slate-300; }
 .check input { @apply accent-cyan-300; }
