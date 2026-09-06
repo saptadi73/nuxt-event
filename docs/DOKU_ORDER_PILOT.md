@@ -1,14 +1,15 @@
 # DOKU order payment pilot
 
-The payment page has a small `doku` text button below the existing choices.
-It opens a native modal with QRIS, Virtual Account, and credit card choices.
+The small `doku` test button below the payment choices has been removed after
+testing. DOKU is intended to become the active channel when its credit card and
+QRIS channels are ready. The integration retains the native method modal.
 Virtual Account opens a second bank selection step (BCA, BNI, MANDIRI, BSI,
 BRI). All logos come from `app/assets/images/payment`.
 
 The global payment provider setting and the normal checkout endpoint are
 unchanged. With DOKU configured, Online Payment and resume actions open the
-method modal instead of the legacy hosted checkout. The small button remains
-available to signed-in customers independently of the default provider.
+method modal instead of the legacy hosted checkout. Removing the test button
+does not change the configured provider or existing DOKU payment resume paths.
 
 ## Backend contract
 

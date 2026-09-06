@@ -197,7 +197,8 @@ gagal, ambil ulang cart dan jangan mengasumsikan order telah dibuat.
 ### Pilihan metode pembayaran di frontend
 
 Halaman pembayaran menawarkan Manual Bank Transfer, Offline Payment, dan
-Online Payment. Tombol kecil DOKU juga membuka modal metode secara langsung.
+Online Payment. Tombol kecil uji DOKU sudah dihapus setelah pengujian selesai.
+Aktivasi DOKU sebagai provider direncanakan setelah channel kartu kredit dan QRIS siap.
 
 - **Midtrans**: Online Payment membuat hosted checkout; nominal di atas
   Rp9.000.000 di-split sebelum metode dipilih di Midtrans.

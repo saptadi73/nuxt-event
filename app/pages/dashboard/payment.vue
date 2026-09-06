@@ -33,9 +33,6 @@
             <span class="payment-choice__tag">{{ copy.gatewayTag }}</span><strong>{{ copy.onlineTitle }}</strong><p>{{ onlineDescription }}</p><button class="payment-choice__action disabled:cursor-not-allowed disabled:opacity-60" :disabled="submitting || paymentDisabled" @click="requestPayment">{{ onlineAction }} <span aria-hidden="true">→</span></button>
           </article>
         </div>
-        <div v-if="!isPaid && order" class="mt-3 text-right">
-          <button type="button" class="px-2 py-1 text-xs text-slate-400 hover:text-slate-200 disabled:opacity-50" :disabled="submitting || unsupportedOrderCurrency" @click="dokuModalOpen = true">doku</button>
-        </div>
         <DokuPaymentModal v-if="dokuModalOpen" :order-id="orderId" @close="onDokuClosed" @busy="submitting = $event" @created="onDokuCreated" />
         <NuxtLink v-if="hasPendingPayment" :to="paymentStatusTo" class="mt-4 inline-flex w-full justify-center rounded-full border border-amber-300/30 bg-amber-300/10 px-5 py-3 font-semibold text-amber-100 sm:w-auto">{{ copy.checkStatus }}</NuxtLink>
         <NuxtLink to="/dashboard/cart" class="mt-6 inline-flex w-full justify-center rounded-full border border-white/20 px-6 py-3 text-center sm:w-auto">{{ copy.backCart }}</NuxtLink>

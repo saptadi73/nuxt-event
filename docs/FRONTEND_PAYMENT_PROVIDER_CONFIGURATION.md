@@ -30,7 +30,7 @@ The provider is resolved centrally in [app/config/payment.ts](../app/config/paym
 - `doku` => open `DokuPaymentModal`, then call `POST /api/v1/payments/doku/orders/{order_id}/checkout` with `method` and, for VA, `bank_code`
 - `midtrans` => call backend `POST /api/v1/payments/midtrans/checkout`
 
-The payment composable retains `createCheckout(orderId)` for hosted checkout compatibility. The current DOKU UI uses `createDokuOrderPayment` after method selection instead. Midtrans splits above IDR 9,000,000 before hosted method selection; DOKU splits only QRIS and charges the full remaining balance for VA/cards. The small DOKU pilot button remains available independently of the configured default. See [DOKU order payment](DOKU_ORDER_PILOT.md).
+The payment composable retains `createCheckout(orderId)` for hosted checkout compatibility. The current DOKU UI uses `createDokuOrderPayment` after method selection instead. Midtrans splits above IDR 9,000,000 before hosted method selection; DOKU splits only QRIS and charges the full remaining balance for VA/cards. The small DOKU test button has been removed after testing. Activate DOKU as the configured provider when its credit card and QRIS channels are ready. See [DOKU order payment](DOKU_ORDER_PILOT.md).
 
 ## Build / generate flow
 
