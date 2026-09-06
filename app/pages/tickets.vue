@@ -173,6 +173,10 @@ const continueAdditionalPayment = async (pkg: DelegatePackageCatalogItem) => {
   notice.value = '';
   try {
     sessionStorage.setItem('iwbif-store-order-id', orderId);
+    if (paymentApi.isDokuProvider) {
+      await navigateTo(`/dashboard/payment?order_id=${encodeURIComponent(orderId)}&doku=1`);
+      return;
+    }
     const checkout = (await paymentApi.continueOrderPayment(orderId)).data;
     if (checkout.payment_id) sessionStorage.setItem('iwbif-payment-id', checkout.payment_id);
     if (checkout.payment_url) window.location.assign(checkout.payment_url);

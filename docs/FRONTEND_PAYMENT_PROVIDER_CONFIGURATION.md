@@ -27,10 +27,10 @@ The setting is read from:
 
 The provider is resolved centrally in [app/config/payment.ts](../app/config/payment.ts):
 
-- `doku` => call backend `POST /api/v1/payments/doku/checkout`
+- `doku` => open `DokuPaymentModal`, then call `POST /api/v1/payments/doku/orders/{order_id}/checkout` with `method` and, for VA, `bank_code`
 - `midtrans` => call backend `POST /api/v1/payments/midtrans/checkout`
 
-The payment composable in [app/composables/usePayment.ts](../app/composables/usePayment.ts) exposes a single `createCheckout(orderId)` helper that follows the configured provider automatically. The UI does not require user selection.
+The payment composable retains `createCheckout(orderId)` for hosted checkout compatibility. The current DOKU UI uses `createDokuOrderPayment` after method selection instead. Midtrans splits above IDR 9,000,000 before hosted method selection; DOKU splits only QRIS and charges the full remaining balance for VA/cards. The small DOKU pilot button remains available independently of the configured default. See [DOKU order payment](DOKU_ORDER_PILOT.md).
 
 ## Build / generate flow
 
@@ -75,9 +75,9 @@ The resulting frontend will compile with the selected provider and all payment a
 
 1. Frontend loads configuration from env runtime.
 2. Payment page resolves provider via `getPaymentProviderConfig()`.
-3. Payment page calls `createCheckout(orderId)`.
-4. The helper routes to either DOKU or MIDTRANS checkout endpoint on backend.
-5. Browser redirects to the returned `payment_url` or continues with Snap flow.
+3. For DOKU, open the method modal and resume an active attempt or select a method.
+4. For Midtrans, call `createCheckout(orderId)` or `continueOrderPayment(orderId)`.
+5. Render DOKU VA/QRIS details or redirect to the returned hosted card/Midtrans URL.
 6. Frontend polls `GET /api/v1/payments/{payment_id}` until backend confirms final status.
 7. Final status is authoritative; browser flow is not sole proof of payment.
 

@@ -18,7 +18,9 @@ Registration REG-001
 
 The registration remains one. A later add-on creates a new `Order` with
 `order_kind=additional` and the existing `registration_id`. It uses the same
-Midtrans/DOKU split-payment and resume flow as any other order.
+provider-specific flow as any other order: Midtrans splits above IDR 9,000,000;
+DOKU splits only QRIS after method selection. DOKU VA/cards collect the full
+remaining balance.
 
 ## Eligibility and duplicate detection
 
@@ -50,8 +52,9 @@ enforces one selection per `(registration_id, delegate_package_id)`.
 4. For `owned`, render Already Purchased and disable selection.
 5. Add available products through the existing cart endpoint.
 6. Checkout through `POST /api/v1/store/events/{event_id}/checkout`.
-7. Persist the add-on `order_id`, then use normal Midtrans/DOKU checkout and
-   `continue-payment` APIs.
+7. Persist the add-on `order_id`. Midtrans uses checkout/`continue-payment`.
+   With DOKU configured, resume opens `/dashboard/payment?order_id=...&doku=1`
+   for method selection; see [DOKU order payment](DOKU_ORDER_PILOT.md).
 8. Refresh personalized availability after full payment.
 
 Initial purchase remains compatible: before a registration exists, a cart may

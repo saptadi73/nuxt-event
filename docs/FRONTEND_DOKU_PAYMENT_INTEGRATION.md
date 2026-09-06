@@ -1,29 +1,34 @@
 # Frontend Integration — DOKU Checkout
 
-> Alur store-first menggunakan **DOKU Checkout** dengan `order_id`. DOKU Direct
-> API SNAP Virtual Account digunakan oleh alur registration-first yang sudah
-> memiliki `registration_id`.
+> Alur store-first aktif memilih QRIS/VA/kartu kredit di modal platform, lalu
+> memanggil `/payments/doku/orders/{order_id}/checkout`. Lihat
+> [kontrak DOKU order payment](DOKU_ORDER_PILOT.md). Endpoint hosted checkout
+> dan Direct API registration-first di bawah tetap didokumentasikan untuk kompatibilitas.
 
 ## Pembayaran tersegmentasi
 
-Satu order platform dapat memiliki beberapa invoice DOKU. Dengan kurs tetap
-**USD 1 = IDR 18.000**, tagihan di atas USD 500 dibagi menjadi payment maksimal
-IDR 9.000.000. Setiap `invoice_number` DOKU berbeda, tetapi seluruhnya tetap
-merujuk ke `order_id` platform yang sama.
+Split DOKU hanya berlaku setelah peserta memilih **QRIS**: maksimal
+IDR 9.000.000 per pembayaran. Tepat IDR 9.000.000 tetap satu pembayaran.
+**Virtual Account dan kartu kredit** menagih seluruh sisa tagihan, termasuk
+sisa setelah pembayaran parsial, tanpa batas split QRIS. Setiap attempt
+memiliki reference unik dan tetap merujuk ke satu `order_id` platform.
 
 Gunakan `payment_sequence`, `payment_sequence_count`, `payment_amount`,
 `paid_amount`, dan `remaining_amount` dari API. Status `partially_paid` berarti
-peserta harus menjalankan `continue-payment`; ticket dan proses lanjutan belum
+peserta harus kembali ke modal metode DOKU untuk melanjutkan; ticket dan proses lanjutan belum
 eligible. Hanya status parent order `paid` yang menyatakan pelunasan.
 
 ### Resume dan source of truth
 
 Frontend wajib menyimpan `order_id` platform. Jika checkout DOKU ditutup atau
-koneksi putus, ambil `GET /api/v1/orders/{order_id}/detail`, lalu panggil
-`POST /api/v1/orders/{order_id}/continue-payment` dengan `{"provider":"doku"}`
-untuk parent `pending` atau `partially_paid`. Backend menggunakan kembali URL
-aktif atau membuat attempt baru untuk sequence belum lunas, tanpa meminta peserta
-memilih paket ulang.
+koneksi putus, ambil `GET /api/v1/orders/{order_id}/detail`, lalu buka
+`/dashboard/payment?order_id=...&doku=1` untuk order `pending`/`partially_paid`.
+Modal memanggil `GET /payments/doku/orders/{order_id}/active` untuk menggunakan
+attempt aktif. Jika tidak ada, muat `/payments/doku/order-methods` dan kirim
+metode pilihan ke endpoint order checkout. Attempt aktif tidak boleh diganti
+metode; attempt yang kedaluwarsa tetapi masih aktif harus direkonsiliasi.
+Endpoint `/orders/{order_id}/continue-payment` dengan provider DOKU adalah
+alur hosted lama, bukan jalur modal metode saat ini.
 
 Browser return bukan konfirmasi settlement. UI harus menunggu hasil parent order
 yang diperbarui webhook dan hanya membuka ticket/tahap registrasi ketika `paid`.
@@ -79,7 +84,7 @@ Payment Notification URL: https://api-event.gagakrimang.web.id/api/v1/webhooks/d
 
 ## QRIS melalui DOKU Checkout (tidak ditampilkan sementara)
 
-Endpoint QRIS berikut tetap didokumentasikan untuk kompatibilitas backend, tetapi frontend saat ini tidak menampilkan **Direct QR Code Pay**. Halaman pembayaran hanya menawarkan **Manual Bank Transfer** dan **Online Payment**.
+Endpoint QRIS berikut tetap didokumentasikan untuk kompatibilitas backend, tetapi frontend saat ini tidak menampilkan **Direct QR Code Pay**. Halaman pembayaran menawarkan **Manual Bank Transfer**, **Offline Payment**, dan **Online Payment**. QRIS tersedia di modal DOKU melalui endpoint order-method, terpisah dari endpoint Direct QR lama ini.
 
 Jika `GET /api/v1/payments/doku/direct/methods` mengembalikan `"qris": true`,
 frontend dapat membuat QR dinamis melalui:
@@ -222,7 +227,10 @@ USD, sehingga nominal charge IDR tetap untuk Package A/B/C harus disepakati dan
 disimpan oleh backend sebelum pengujian sandbox. Frontend tidak boleh menghitung
 kurs atau mengirim nominal pembayaran.
 
-## 2. Membuat Checkout dari order cart
+## 2. Hosted checkout lama dari order cart
+
+Endpoint berikut tetap tersedia untuk kompatibilitas. Alur UI DOKU saat ini
+menggunakan endpoint order-method di atas agar hanya QRIS yang di-split.
 
 ```http
 POST /api/v1/payments/doku/checkout

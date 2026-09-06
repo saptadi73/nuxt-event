@@ -13,23 +13,30 @@ This hash is the audit and comparison point. Existing work was not overwritten.
 
 - Fixed organizer conversion: **USD 1 = IDR 18,000**.
 - Organizer split point: **USD 500 = IDR 9,000,000**.
-- A gateway payment is therefore limited to IDR 9,000,000, conservatively below
-  Bank Indonesia's IDR 10,000,000 maximum per QRIS transaction.
+- Midtrans splits above IDR 9,000,000 before method selection on its hosted page.
+- DOKU selects the method in the platform first. Only QRIS uses the
+  IDR 9,000,000 segment limit; VA/cards collect the full remaining balance.
+- Exactly IDR 9,000,000 requires one payment. The limit is an organizer setting.
 - One platform `Order` owns multiple gateway `Payment` attempts.
-- The number of logical payments is `ceil(order.total_amount / 9,000,000)`.
-- Every Midtrans `order_id` and DOKU `invoice_number` is unique per attempt.
-- Retries retain the same logical `payment_sequence`; only one successful attempt
-  per sequence contributes to the paid aggregate.
-- A payment notification is validated against `payment.gross_amount`, not the
-  parent order total.
+- For new Midtrans/DOKU QRIS orders, the logical count is
+  `ceil(order.total_amount / 9,000,000)`; new DOKU VA/card orders use one payment.
+- After partial settlement, VA/cards use the next sequence and collect the
+  entire remaining balance. Use API sequence metadata rather than recalculating it.
+- Each gateway attempt has a unique provider reference. Retries retain the same
+  logical sequence; only one success per sequence contributes to settlement.
+- Notifications validate against `payment.gross_amount`, not the parent total.
 
-Examples:
+Examples for new orders:
 
-| Order total | Logical payments |
-|---:|---|
-| IDR 9,000,000 | IDR 9,000,000 |
-| IDR 9,900,000 | IDR 9,000,000 + IDR 900,000 |
-| IDR 27,000,000 | 3 × IDR 9,000,000 |
+| Order total | Midtrans / DOKU QRIS | DOKU VA / card |
+|---:|---|---|
+| IDR 9,000,000 | IDR 9,000,000 | IDR 9,000,000 |
+| IDR 9,900,000 | IDR 9,000,000 + IDR 900,000 | IDR 9,900,000 |
+| IDR 27,000,000 | 3 payments of IDR 9,000,000 | IDR 27,000,000 |
+
+These DOKU rules apply to the order-method endpoint. The legacy hosted
+checkout still uses segmentation without platform method selection.
+See [DOKU order payment](DOKU_ORDER_PILOT.md).
 
 ## Identity mapping and audit trail
 
@@ -87,10 +94,12 @@ Midtrans/DOKU, loses connectivity, or returns without completing payment:
 1. Load `GET /api/v1/orders/{order_id}/detail`.
 2. For `pending` or `partially_paid`, show the saved package/items,
    `paid_amount`, `remaining_amount`, and the next payment action.
-3. Call `POST /api/v1/orders/{order_id}/continue-payment` with provider
-   `midtrans` or `doku`.
-4. The backend reuses a valid checkout URL/token. If expired, it retains the old
-   attempt and creates a new attempt for the same unpaid sequence.
+3. For Midtrans, call `POST /api/v1/orders/{order_id}/continue-payment` with
+   provider `midtrans`; reuse a valid URL/token or create the next eligible attempt.
+4. For DOKU, open `/dashboard/payment?order_id=...&doku=1`. The modal resumes
+   `/payments/doku/orders/{order_id}/active` or selects a method and posts to
+   `/payments/doku/orders/{order_id}/checkout`. Active attempts block method
+   switching; expired active attempts require reconciliation first.
 5. Never return the participant to package selection unless they explicitly
    cancel an order with no successful payment.
 
@@ -128,22 +137,23 @@ over bulk confirmation for financial reconciliation.
 - Treat only parent `order.status === "paid"` or
   `is_payment_complete === true` as complete.
 - A successful child payment does not mean the order is complete.
-- On `partially_paid`, show the outstanding amount and `continue-payment`; hide
+- On `partially_paid`, show the outstanding amount and the provider-specific resume action; hide
   ticket and subsequent registration actions.
 - Refresh order detail after returning from a gateway and poll briefly while the
   webhook is pending. Never call webhook endpoints from the browser.
 - Persist `order_id`, not a gateway token, as the durable resume key.
-- Display the Bank Indonesia QRIS explanation before initiating the first part.
+- The Midtrans UI shows a split notice before checkout. DOKU displays the
+  returned amount and sequence; a QRIS notice before creation is not implemented.
 
 ## Participant disclosure
 
-Use this message before the first gateway payment:
+Suggested disclosure for Midtrans split checkout or DOKU QRIS only:
 
-> Sesuai ketentuan Bank Indonesia, nominal transaksi QRIS dibatasi maksimal
-> Rp10.000.000 per transaksi. Dengan kurs tetap penyelenggara 1 USD = Rp18.000,
-> tagihan di atas USD 500 dibagi menjadi beberapa pembayaran dengan nilai maksimal
-> Rp9.000.000 per pembayaran. Pesanan tetap tercatat sebagai satu pesanan. Ticket
-> dan proses berikutnya tersedia setelah seluruh pembayaran lunas.
+> Untuk alur pembayaran ini, penyelenggara membagi tagihan di atas
+> Rp9.000.000 menjadi beberapa pembayaran dengan nilai maksimal Rp9.000.000
+> per pembayaran. Pesanan tetap satu; ticket tersedia setelah seluruh tagihan lunas.
+
+Do not apply this disclosure to DOKU VA/cards.
 
 For a partial settlement:
 

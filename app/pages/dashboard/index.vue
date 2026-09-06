@@ -13,11 +13,11 @@
     </div>
 
     <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <article v-for="status in statuses" :key="status.label" class="glass-card rounded-3xl p-5">
+      <NuxtLink v-for="status in statuses" :key="status.label" :to="status.to" class="glass-card rounded-3xl p-5 transition hover:-translate-y-1 hover:border-cyan-300/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300">
         <p class="text-xs uppercase tracking-[.2em] text-slate-400">{{ status.label }}</p>
         <p class="mt-3 text-xl font-bold">{{ status.value }}</p>
         <p class="mt-2 text-sm text-slate-400">{{ status.note }}</p>
-      </article>
+      </NuxtLink>
     </div>
 
     <div v-if="canViewSalesReport" class="mt-8 rounded-3xl border border-amber-300/30 bg-amber-300/10 p-5 sm:p-6">
@@ -121,7 +121,8 @@ const eventDate=new Date('2026-10-14T09:00:00+07:00');
 const days=Math.max(0,Math.ceil((eventDate.getTime()-Date.now())/86400000));
 const countdown=computed(()=>days>0?copy.value.days.replace('{count}',String(days)):copy.value.eventDay);
 
-const statuses=computed(()=>copy.value.statuses.map(([label,value,note])=>({label,value,note})));
+const statusRoutes=['/register','/dashboard/payment','/dashboard/ticket','/dashboard/profile'] as const;
+const statuses=computed(()=>copy.value.statuses.map(([label,value,note],index)=>({to:statusRoutes[index]!,label,value,note})));
 
 const menuRoutes=['/dashboard/cart','/dashboard/ticket','/dashboard/profile','/dashboard/directory','/dashboard/schedule','/dashboard/payment','/dashboard/invoice','/dashboard/certificate','/dashboard/announcements','/directory-consent','/dashboard/security'] as const;
 const menu=computed(()=>copy.value.menu.map(([label,title,text],index)=>({to:menuRoutes[index]!,label,title,text})));

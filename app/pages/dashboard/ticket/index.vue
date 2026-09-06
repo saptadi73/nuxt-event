@@ -8,7 +8,15 @@
       <div v-for="item in 4" :key="item" class="h-40 animate-pulse rounded-[1.75rem] bg-white/5"></div>
     </div>
 
-    <div v-else-if="error" class="mt-8 rounded-3xl border border-red-400/40 bg-red-950/40 p-5 text-red-100">
+    <div v-else-if="paymentRequired || (!error && !tickets.length)" class="mt-8 rounded-3xl border border-amber-300/30 bg-amber-300/5 p-6" role="status">
+      <h2 class="text-xl font-bold text-white">{{ emptyCopy.title }}</h2>
+      <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-300">{{ emptyDescription }}</p>
+      <NuxtLink :to="emptyActionTo" class="mt-5 inline-flex rounded-full bg-amber-300 px-5 py-3 text-sm font-bold text-slate-950 transition hover:bg-amber-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-amber-300">
+        {{ emptyActionLabel }}
+      </NuxtLink>
+    </div>
+
+    <div v-else-if="error" class="mt-8 rounded-3xl border border-red-400/40 bg-red-950/40 p-5 text-red-100" role="alert">
       {{ copy.loadError }}: {{ error.message }}
     </div>
 
@@ -46,8 +54,10 @@
       </article>
     </div>
 
+    <p v-if="qr.imageError && !qr.imageUrl && !paymentRequired" class="mt-6 rounded-2xl border border-red-400/40 bg-red-950/40 p-5 text-red-100" role="alert">{{ qr.imageError }}</p>
+
     <div
-      v-if="qr.ticket_id"
+      v-if="qr.ticket_id && qr.imageUrl && !paymentRequired"
       ref="ticketCardRef"
       class="print-ticket relative mt-10 overflow-hidden rounded-[2rem] border border-cyan-300/30 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.18),_transparent_30%),linear-gradient(135deg,rgba(8,47,73,0.96),rgba(15,23,42,0.98))] p-5 shadow-[0_24px_80px_rgba(6,182,212,0.18)] sm:p-6"
     >
@@ -158,6 +168,36 @@ useSeoMeta({ title: () => `${copy.value.seo} | IWBIF 2026` });
 
 const authStore = useAuthStore();
 const { getMyTickets, getQrByTicket, reissueTicket } = useTicket();
+const registrationFlow = useRegistrationFlow();
+const paymentRequired = ref(false);
+const isPaymentRequired = (cause: unknown) => {
+  const data = (cause as { data?: { errors?: Array<{ code?: string }> } })?.data;
+  return data?.errors?.some(item => item.code === 'REGISTRATION_PAYMENT_REQUIRED') === true;
+};
+const emptyCopy = computed(() => locale.value === 'zh-CN' ? {
+  title: '门票二维码暂不可用',
+  unpaid: '付款尚未完成。请先付清订单，包括所有分笔付款。付款确认并完成注册后，您才能获取门票二维码。',
+  pending: '门票尚未签发。门票需要在付款全额确认并完成注册后才能获取。如果您已付款，请查看付款状态。',
+  profile: '付款已收到。请完成注册资料，以便获取门票。',
+  paid: '注册已完成，但门票尚未显示。请查看付款确认状态，如需帮助请联系主办方。',
+  pay: '前往付款', review: '查看付款状态', complete: '完善注册资料'
+} : {
+  title: 'Your ticket QR code is not available yet',
+  unpaid: 'Your payment is not complete. Please pay the full order balance, including all payment parts. Your ticket QR code requires confirmed payment and completed registration.',
+  pending: 'No ticket has been issued yet. Your ticket requires full payment confirmation and completed registration. If you have already paid, review your payment status.',
+  profile: 'Your payment has been received. Complete your registration details to proceed with your ticket.',
+  paid: 'Your registration is complete, but your ticket is not showing yet. Review your payment confirmation or contact the organizer for help.',
+  pay: 'Go to payment', review: 'Review payment status', complete: 'Complete registration'
+});
+const unpaid = computed(() => paymentRequired.value || ['selected', 'payment_pending'].includes(registrationFlow.primaryStatus.value));
+const emptyDescription = computed(() => unpaid.value ? emptyCopy.value.unpaid : registrationFlow.profilePendingType.value ? emptyCopy.value.profile : registrationFlow.primaryStatus.value === 'completed' ? emptyCopy.value.paid : emptyCopy.value.pending);
+const emptyActionLabel = computed(() => !unpaid.value && registrationFlow.profilePendingType.value ? emptyCopy.value.complete : registrationFlow.isPaid.value && !unpaid.value ? emptyCopy.value.review : emptyCopy.value.pay);
+const emptyActionTo = computed(() => {
+  if (!unpaid.value && registrationFlow.profilePendingType.value) return `/register/${registrationFlow.profilePendingType.value}`;
+  const orderId = registrationFlow.activeOrderId.value;
+  if (!orderId) return registrationFlow.isPaid.value && !unpaid.value ? '/dashboard/invoice' : '/dashboard/cart';
+  return `/dashboard/${registrationFlow.isPaid.value && !unpaid.value ? 'payment-status' : 'payment'}?order_id=${encodeURIComponent(orderId)}`;
+});
 
 const loading = ref(true);
 const reissuing = ref('');
@@ -172,8 +212,12 @@ try {
   const response = await getMyTickets();
   tickets.value = response.data ?? [];
 } catch (e) {
+  paymentRequired.value = isPaymentRequired(e);
   error.value = e as Error;
 } finally {
+  if (!tickets.value.length) {
+    try { await registrationFlow.loadFlow(); } catch { /* Keep the neutral empty state when progress is unavailable. */ }
+  }
   loading.value = false;
 }
 
@@ -197,6 +241,7 @@ const loadQr = async (ticketId: string) => {
       imageError: ''
     };
   } catch (error) {
+    paymentRequired.value = isPaymentRequired(error);
     qr.value = {
       ticket_id: ticketId,
       ticket_number: copy.value.failedQr,

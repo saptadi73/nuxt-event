@@ -155,17 +155,20 @@ Setiap item memuat snapshot package dalam `items`, `latest_payment`, seluruh
 `payment_attempts`, dan `order.allowed_actions`. Render tombol hanya dari
 `allowed_actions`:
 
-- `continue_payment`: tampilkan pilihan provider lalu lanjutkan order lama;
+- `continue_payment`: lanjutkan order lama sesuai provider yang dikonfigurasi;
 - `cancel`: tampilkan aksi hapus/batalkan pending order;
 - array kosong: tidak ada aksi yang boleh dilakukan.
 
-Lanjutkan pembayaran tanpa memilih package ulang:
+Untuk Midtrans, lanjutkan pembayaran tanpa memilih package ulang. Endpoint
+berikut juga mendukung hosted DOKU lama; UI DOKU saat ini membuka modal
+`/dashboard/payment?order_id=...&doku=1`, lalu memakai endpoint order-method.
+Lihat [DOKU order payment](DOKU_ORDER_PILOT.md).
 
 ```http
 POST /api/v1/orders/{order_id}/continue-payment
 Content-Type: application/json
 
-{"provider":"doku"}
+{"provider":"midtrans"}
 ```
 
 Provider yang didukung adalah `doku` dan `midtrans`. Payment attempt
@@ -193,31 +196,35 @@ gagal, ambil ulang cart dan jangan mengasumsikan order telah dibuat.
 
 ### Pilihan metode pembayaran di frontend
 
-Sementara halaman pembayaran hanya menampilkan dua pilihan:
+Halaman pembayaran menawarkan Manual Bank Transfer, Offline Payment, dan
+Online Payment. Tombol kecil DOKU juga membuka modal metode secara langsung.
 
-- **Manual Bank Transfer**: peserta melihat instruksi transfer; admin/organizer memverifikasi mutasi dan mengonfirmasi dengan `manual_transfer`.
-- **Online Payment**: frontend membuat checkout gateway dari order melalui endpoint di bawah ini.
+- **Midtrans**: Online Payment membuat hosted checkout; nominal di atas
+  Rp9.000.000 di-split sebelum metode dipilih di Midtrans.
+- **DOKU**: Online Payment membuka modal QRIS, VA (pilih bank), atau kartu kredit.
+  Hanya QRIS memakai split maksimal Rp9.000.000. VA/kartu kredit menagih seluruh
+  sisa tagihan. Tepat Rp9.000.000 tetap satu pembayaran.
 
-**Direct QR Code Pay tidak ditampilkan dan tidak boleh dipilih frontend.** URL lama `/dashboard/payment-qr` harus kembali ke halaman pilihan pembayaran.
+Modal memuat `GET /payments/doku/orders/{order_id}/active` untuk resume, atau
+`GET /payments/doku/order-methods` jika tidak ada attempt aktif. Setelah memilih:
 
 ```http
-POST /api/v1/payments/doku/checkout
+POST /api/v1/payments/doku/orders/{order_id}/checkout
 Content-Type: application/json
 
-{
-  "order_id": "order-uuid"
-}
+{"method":"qris"}
 ```
 
-Backend memverifikasi ownership, status order, total database, dan membuat
-`line_items` DOKU dari `order_items`.
+Untuk VA gunakan `{"method":"virtual_account","bank_code":"BCA"}`; untuk kartu
+kredit gunakan `{"method":"credit_card"}`. Jangan kirim nominal atau data kartu.
+Backend menentukan amount dan sequence. Frontend menampilkan VA/QRIS yang
+dikembalikan backend atau membuka URL kartu DOKU. Detail kontrak dan batasan resume ada di
+[DOKU order payment](DOKU_ORDER_PILOT.md).
 
-```ts
-window.location.assign(data.payment_url);
-```
-
-Jika `requires_payment` bernilai `false`, order sudah dibayar dan frontend tidak
-boleh membuat checkout kedua.
+Endpoint `/payments/doku/checkout` masih tersedia untuk hosted checkout lama,
+tetapi bukan jalur Online Payment DOKU saat ini. Halaman `/dashboard/payment-qr`
+lama berbeda dari QRIS di modal DOKU. Hanya parent order `paid` atau
+`is_payment_complete` yang menyatakan lunas.
 
 ## 4a. Lanjutkan profil Delegate setelah pembayaran
 

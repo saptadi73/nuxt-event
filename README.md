@@ -22,7 +22,7 @@ NUXT_PUBLIC_PAYMENT_PROVIDER=doku
 # NUXT_PUBLIC_PAYMENT_PROVIDER=midtrans
 ```
 
-`doku` will call the backend DOKU checkout endpoint; `midtrans` will call the backend Midtrans checkout endpoint. The user is not asked to choose a provider in the browser.
+`doku` opens the platform method modal (QRIS, Virtual Account, credit card), then calls `POST /payments/doku/orders/{order_id}/checkout` with the selected method. `midtrans` calls the Midtrans checkout endpoint before method selection on Midtrans. Midtrans payments above IDR 9,000,000 are split; DOKU splits only QRIS. DOKU VA and cards charge the full remaining balance. See [DOKU order payment](docs/DOKU_ORDER_PILOT.md).
 
 4. For local development:
 
@@ -61,7 +61,7 @@ Alternatively, set the value in `.env` and then run `npm run build` or `npm run 
 
 1. Frontend reads the provider from environment/runtime config.
 2. Payment page resolves the provider through `getPaymentProviderConfig()`.
-3. The checkout call routes to either DOKU or MIDTRANS through the same helper.
-4. Browser redirects to the provider payment URL or uses Snap flow if applicable.
+3. DOKU opens method selection in the platform; Midtrans creates hosted checkout.
+4. DOKU renders the returned VA/QRIS or redirects to the card URL. Midtrans redirects to its checkout URL.
 5. Frontend polls `GET /api/v1/payments/{payment_id}` and waits for backend verification.
 6. Final status is authoritative; browser redirect is not proof of payment.
