@@ -8,6 +8,11 @@
     <div v-if="pending" class="mt-10 h-60 animate-pulse rounded-[2rem] bg-white/5" />
     <div v-else-if="optionsError" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ optionsError.message }}</div>
 
+    <div v-else-if="registrationSubmitted" class="mt-8 rounded-3xl border border-emerald-300/30 bg-emerald-950/30 p-6" role="status">
+      <p>{{ passportCopy.submitted }}</p>
+      <NuxtLink to="/dashboard/ticket" class="mt-5 inline-flex rounded-full bg-amber-300 px-5 py-3 font-bold text-slate-950">{{ passportCopy.viewTicket }}</NuxtLink>
+    </div>
+
     <form v-else ref="formElement" class="mt-10 space-y-7" novalidate @submit.prevent="submit">
       <fieldset class="card"><legend>{{ copy.personalSection }}</legend>
         <div class="grid gap-4 md:grid-cols-2">
@@ -54,6 +59,19 @@
       <fieldset class="card"><legend>{{ copy.invoiceSection }}</legend>
         <div class="grid gap-4 md:grid-cols-2"><label class="label"><span>{{ copy.taxId }}</span><input v-model.trim="form.tax_id" name="tax_id" :aria-invalid="isMissing('tax_id')" class="field" /></label><div class="label"><span>{{ copy.needInvoice }} *</span><div class="flex flex-wrap gap-3 sm:gap-5"><label class="check"><input v-model="form.need_official_invoice" name="need_official_invoice" :aria-invalid="isMissing('need_official_invoice')" type="radio" :value="true" /> {{ copy.yes }}</label><label class="check"><input v-model="form.need_official_invoice" name="need_official_invoice" :aria-invalid="isMissing('need_official_invoice')" type="radio" :value="false" /> {{ copy.no }}</label></div></div></div>
         <div class="mt-5 space-y-3"><label class="check"><input v-model="form.information_accuracy_confirmed" name="information_accuracy_confirmed" :aria-invalid="isMissing('information_accuracy_confirmed')" required type="checkbox" /> {{ copy.accuracy }} *</label><label class="check"><input v-model="form.terms_accepted" name="terms_accepted" :aria-invalid="isMissing('terms_accepted')" required type="checkbox" /> {{ copy.acceptTerms }} *</label><label class="check"><input v-model="form.business_matching_data_consent" name="business_matching_data_consent" :aria-invalid="isMissing('business_matching_data_consent')" required type="checkbox" /> {{ copy.dataConsent }} *</label></div>
+      </fieldset>
+
+      <fieldset class="card">
+        <legend>{{ passportCopy.title }}</legend>
+        <p class="text-sm leading-7 text-slate-300">{{ passportCopy.help }}</p>
+        <label class="label mt-4">
+          <span>{{ passportCopy.choose }}</span>
+          <input ref="passportInput" type="file" accept="application/pdf,image/jpeg,image/png" :disabled="submitting" :aria-invalid="Boolean(passportError)" aria-describedby="passport-help" class="field" @change="selectPassport" />
+        </label>
+        <p id="passport-help" class="mt-2 text-sm text-slate-400">{{ passportCopy.formats }}</p>
+        <p v-if="passportError" class="mt-3 text-sm text-red-200" role="alert">{{ passportError }}</p>
+        <button v-if="passportFile || passportError" type="button" class="mt-3 text-sm text-cyan-200 underline" :disabled="submitting" @click="clearPassport">{{ passportCopy.clear }}</button>
+        <ul v-if="passportDocuments.length" class="mt-3 space-y-2 text-sm text-emerald-200"><li v-for="document in passportDocuments" :key="document.id">{{ passportCopy.uploaded }}: {{ document.filename }}</li></ul>
       </fieldset>
 
       <div v-if="feedback" ref="feedbackElement" tabindex="-1" role="alert" class="rounded-2xl border p-5" :class="success?'border-emerald-300/30 bg-emerald-950/30':'border-red-300/30 bg-red-950/30'">
@@ -105,7 +123,8 @@ useSeoMeta({ title: () => `${copy.value.eyebrow} | IWBIF 2026`, description: () 
 
 const { getEvents, getEventActivities } = useEvent();
 const { upsertMyProfile } = useParticipant();
-const { createRegistration, getMyRegistrations, getRegistration, updateRegistration } = useRegistration();
+const { createRegistration, getMyRegistrations, getRegistration, updateRegistration, submitRegistration, uploadPassport, getRegistrationDocuments } = useRegistration();
+const registrationFlow = useRegistrationFlow();
 
 type TextKey = 'full_name' | 'job_title' | 'company_organization' | 'nationality' | 'title' | 'business_sector' | 'email' | 'company_website' | 'linkedin';
 type IdentityField = { key: TextKey; label: string; type?: string; autocomplete?: string; options?: readonly string[]; required?: boolean };
@@ -212,19 +231,46 @@ const submitting = ref(false);
 const feedback = ref('');
 const success = ref(false);
 const editingRegistrationId = ref('');
+const registrationSubmitted = ref(false);
+const passportFile = ref<File | null>(null);
+const passportInput = ref<HTMLInputElement | null>(null);
+const passportError = ref('');
+const passportDocuments = ref<Array<{ id: string; filename: string }>>([]);
+const passportCopy = computed(() => locale.value === 'zh-CN' ? {
+  title: '6. 护照复印件（选填）', help: '您可以上传护照复印件作为补充资料。不上传也可以提交注册。',
+  choose: '选择文件', formats: 'PDF / JPG / PNG，最大 10 MB。', invalid: '请选择非空且不超过 10 MB 的 PDF、JPG 或 PNG 文件。',
+  clear: '取消选择，跳过上传', uploaded: '已上传', submitted: '注册已提交。门票状态可在“我的门票”中查看。', viewTicket: '查看我的门票'
+} : {
+  title: '6. Passport copy (optional)', help: 'You may upload a passport copy as a supporting document. You can submit your registration without it.',
+  choose: 'Choose a file', formats: 'PDF, JPG or PNG. Maximum 10 MB.', invalid: 'Choose a non-empty PDF, JPG or PNG file up to 10 MB.',
+  clear: 'Clear selection and skip upload', uploaded: 'Uploaded', submitted: 'Your registration has been submitted. Check My Ticket for ticket availability.', viewTicket: 'View My Ticket'
+});
+const clearPassport = () => {
+  passportFile.value = null;
+  passportError.value = '';
+  if (passportInput.value) passportInput.value.value = '';
+};
+const selectPassport = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0] || null;
+  passportFile.value = file;
+  passportError.value = file && (!['application/pdf', 'image/jpeg', 'image/png'].includes(file.type) || !file.size || file.size > 10 * 1024 * 1024) ? passportCopy.value.invalid : '';
+};
+
 
 if (options.value?.event.id) {
   try {
     const registrations = (await getMyRegistrations(options.value.event.id)).data || [];
     const draft = registrations.find(item => item.status === 'draft');
+    registrationSubmitted.value = !draft && registrations.some(item => !['canceled', 'cancelled', 'expired', 'refunded'].includes(item.status));
     if (draft) {
-      const registration = (await getRegistration(draft.id)).data;
+      const registration = (await getRegistration(draft.id, options.value.event.id)).data;
       const detail = registration.detail || (registration as unknown as Record<string, unknown>);
       for (const key of Object.keys(form) as Array<keyof typeof form>) {
         if (key === 'event_id' || detail[key] === undefined || detail[key] === null) continue;
         (form[key] as unknown) = detail[key];
       }
       editingRegistrationId.value = draft.id;
+      passportDocuments.value = (await getRegistrationDocuments(draft.id)).data.filter(document => document.document_type === 'PASSPORT_COPY');
     }
   } catch (error) {
     const value = error as { data?: { message?: string } };
@@ -280,6 +326,8 @@ const isValidEmail = (value: string) => { const parts = value.split('@'); return
 const isValidOptionalUrl = (value: string) => { if (!value) return true; try { const parsed = new URL(value); return parsed.protocol === 'http:' || parsed.protocol === 'https:'; } catch { return false; } };
 
 const submit = async () => {
+  if (submitting.value || registrationSubmitted.value) return;
+  if (passportError.value) { passportInput.value?.focus(); return; }
   feedback.value = '';
   success.value = false;
   showRequiredErrors.value = false;
@@ -337,9 +385,18 @@ const submit = async () => {
     const result = editingRegistrationId.value
       ? await updateRegistration(form.event_id, editingRegistrationId.value, payload as RegistrationPayload)
       : await createRegistration(payload as RegistrationPayload);
+    editingRegistrationId.value = result.data.id;
+    if (passportFile.value) {
+      const uploaded = (await uploadPassport(result.data.id, passportFile.value)).data;
+      passportDocuments.value.push(uploaded);
+      clearPassport();
+    }
+    await submitRegistration(form.event_id, result.data.id);
+    registrationSubmitted.value = true;
+    try { await registrationFlow.loadFlow(true); } catch { /* Registration submission already succeeded. */ }
     success.value = true;
     feedback.value = copy.value.saved.replace('{number}', result.data.registration_number);
-    await navigateTo(offlinePayment.value ? '/dashboard/payment-status' : '/dashboard');
+    await navigateTo(offlinePayment.value ? '/dashboard/payment-status' : '/dashboard/ticket');
   } catch (error) {
     const value = error as { data?: { message?: string; errors?: Array<{ message: string }> } };
     feedback.value = value.data?.errors?.[0]?.message || value.data?.message || (error instanceof Error ? error.message : copy.value.saveError);

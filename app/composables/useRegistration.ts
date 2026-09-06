@@ -64,8 +64,10 @@ export function useRegistration() {
       body: Object.fromEntries(Object.entries(payload).filter(([key]) => key !== 'event_id'))
     });
 
-  const getRegistration = (registrationId: string) =>
-    api<ApiResponse<RegistrationItem>>(`/registrations/${registrationId}`);
+  const getRegistration = (registrationId: string, eventId?: string) =>
+    api<ApiResponse<RegistrationItem>>(eventId
+      ? `/events/${encodeURIComponent(eventId)}/registrations/${encodeURIComponent(registrationId)}`
+      : `/registrations/${encodeURIComponent(registrationId)}`);
 
   const getMyRegistrations = (eventId?: string) =>
     api<ApiResponse<RegistrationItem[]>>('/registrations/me', {
@@ -78,10 +80,26 @@ export function useRegistration() {
       body: Object.fromEntries(Object.entries(payload).filter(([key]) => key !== 'event_id'))
     });
 
+  const submitRegistration = (eventId: string, registrationId: string) =>
+    api<ApiResponse<{ id: string; status: string }>>(`/events/${encodeURIComponent(eventId)}/registrations/${encodeURIComponent(registrationId)}/submit`, { method: 'POST' });
+
+  const uploadPassport = (registrationId: string, file: File) => {
+    const body = new FormData();
+    body.append('document_type', 'PASSPORT_COPY');
+    body.append('file', file);
+    return api<ApiResponse<{ id: string; filename: string }>>(`/registrations/${encodeURIComponent(registrationId)}/documents`, { method: 'POST', body });
+  };
+
+  const getRegistrationDocuments = (registrationId: string) =>
+    api<ApiResponse<Array<{ id: string; document_type: string; filename: string }>>>(`/registrations/${encodeURIComponent(registrationId)}/documents`);
+
   return {
     createRegistration,
     getRegistration,
     getMyRegistrations,
-    updateRegistration
+    updateRegistration,
+    submitRegistration,
+    uploadPassport,
+    getRegistrationDocuments
   };
 }

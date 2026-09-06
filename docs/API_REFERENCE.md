@@ -606,7 +606,7 @@ draft → submitted → under_verification → verified/payment_pending
 ```
 
 - Hanya `draft` yang dapat diedit atau disubmit.
-- `PASSPORT_COPY` wajib sebelum submit.
+- `PASSPORT_COPY` opsional; submit tetap diperbolehkan tanpa unggahan paspor.
 - Satu participant hanya boleh punya satu registrasi aktif per event.
 - Business Matching IWBIF baru tersedia setelah `confirmed`.
 
@@ -2621,7 +2621,7 @@ Alur store-first utama:
 
 ```text
 register/login → auth/me → event/store → cart → checkout → pilih DOKU/Midtrans
-→ payment success → registration draft → upload passport → submit
+→ payment success → registration draft → optional passport upload → submit
 → organizer verification/confirmation → ticket → matching profile
 ```
 
@@ -2629,7 +2629,7 @@ Alur registration-first kompatibilitas:
 
 ```text
 register/login → auth/me → participants/me → event/master → registration draft
-→ upload passport → submit → organizer verification → DOKU VA + polling
+→ optional passport upload → submit → organizer verification → DOKU VA + polling
 → confirmed/ticket → matching profile → discovery → messaging → meeting
 ```
 

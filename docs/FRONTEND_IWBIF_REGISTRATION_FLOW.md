@@ -305,9 +305,10 @@ dan kelayakan checkout harus selalu mengikuti response backend.
 2. Simpan `registration.id` dari response sebagai ID proses, bukan sebagai
    identitas user.
 3. Edit draft dengan `PATCH /api/v1/events/{event_id}/registrations/{id}`.
-4. Upload passport menggunakan multipart ke
+4. Opsional: upload salinan paspor menggunakan multipart ke
    `POST /api/v1/registrations/{id}/documents` dengan
-   `document_type=PASSPORT_COPY`.
+   `document_type=PASSPORT_COPY`. PDF/JPG/PNG, maksimal 10 MB.
+   Tanpa dokumen ini, registrasi tetap dapat di-submit.
 5. Submit melalui
    `POST /api/v1/events/{event_id}/registrations/{id}/submit`.
 6. Setelah submit, jadikan form read-only dan tampilkan status dari response/API.
@@ -476,3 +477,23 @@ Frontend harus memakai `code` dan `message` dari error envelope backend serta
 tidak menyimpulkan status bisnis hanya dari keberhasilan navigasi browser.
 Untuk dashboard organizer, `409 REGISTRATION_PAYMENT_REQUIRED` berarti
 registration belum boleh dikonfirmasi karena order tertaut belum paid.
+
+## Optional passport and registration submission (2026-09-06)
+
+- Passport upload remains available on the Delegate form but is not required.
+  Backend `IwbifService.submit` no longer checks for a `PASSPORT_COPY` document.
+- Saving the form creates/updates a draft, uploads a selected optional file, then
+  calls the registration submit endpoint. Successful submission refreshes the
+  registration-flow state. Existing submitted registrations are shown read-only.
+- The saved registration ID is retained before upload/submit. If either fails,
+  retry uses the same draft. A failed upload can be retried or skipped by clearing
+  the selection. Existing passport filenames are shown when reopening a draft.
+- Delegate details must be read via `/events/{event_id}/registrations/{id}`;
+  the generic `/registrations/{id}` response does not contain Delegate fields.
+- Submission changes the registration to `submitted`; it does not mark an order
+  paid or automatically issue a ticket. Existing payment and ticket gates remain.
+- Validation: 14 backend tests passed (registration flow and segmented payments),
+  including submission without a passport, rejection of a non-draft/wrong-event
+  request, and the unpaid-order gate. Frontend lint and Vue compilation passed.
+- Deploy the backend before the frontend. No production account records were
+  changed; existing drafts must still be submitted through the completed flow.
