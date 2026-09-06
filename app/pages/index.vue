@@ -33,7 +33,7 @@
       </nav>
     </section>
 
-    <section class="home-section mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+    <section class="home-section mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <div class="grid gap-px overflow-hidden rounded-[2rem] border border-white/10 bg-white/10 sm:grid-cols-3">
         <article v-for="(stat, index) in featuredStats" :key="stat.label" class="featured-stat-card p-6 sm:p-7">
           <strong class="text-3xl text-[#d8ac59] sm:text-4xl">{{ displayedStats[index] }}{{ stat.suffix }}</strong>
@@ -42,7 +42,7 @@
       </div>
     </section>
 
-    <section class="home-section mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-16">
+    <section class="home-section mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:grid-cols-2 lg:px-8">
       <div class="glass-card rounded-[2rem] border border-white/10 bg-slate-950/35 p-8">
         <p class="text-xs uppercase tracking-[.35em] text-[#d8ac59]">{{ t('home.internationalPresence') }}</p>
         <h2 class="premium-title mt-3">{{ t('home.ecosystemTitle') }}</h2>
@@ -53,7 +53,7 @@
       </div>
     </section>
 
-    <section class="home-section why-indonesia-section mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-20">
+    <section class="home-section why-indonesia-section mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <div class="why-heading">
         <div>
           <p class="text-xs font-bold uppercase tracking-[.35em] text-[#d8ac59]">{{ t('home.whyIndonesia') }}</p>
@@ -83,7 +83,7 @@
       </figure>
     </section>
 
-    <section class="home-section mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <section class="home-section mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <div class="grid gap-6 lg:grid-cols-2">
         <article class="glass-card rounded-[2rem] p-8">
           <p class="text-xs uppercase tracking-[.35em] text-[#d8ac59]">{{ t('home.eventExperience') }}</p>
@@ -105,7 +105,7 @@
       </div>
     </section>
 
-    <section class="home-section mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+    <section class="home-section mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <div class="rounded-[2.5rem] border border-[#d8ac59]/20 bg-[#d8ac59]/10 p-8 text-center sm:p-12">
         <p class="text-sm uppercase tracking-[.35em] text-[#f8f6f1]">IWBIF 2026</p>
         <h2 class="mt-4 text-4xl font-black">{{ t('home.connect') }}</h2>
@@ -428,25 +428,6 @@ onMounted(() => {
 .why-proof-grid strong { display:block; color:#e6c477; font-family:'Playfair Display',serif; font-size:1.25rem; }
 .why-link { display:inline-flex; align-items:center; gap:.6rem; margin-top:1.5rem; color:#e6c477; font-size:.82rem; font-weight:700; }
 .why-link:hover { gap:.85rem; color:#f8f6f1; }
-
-.home-section {
-  opacity: 0;
-  transform: translateY(14px);
-  animation: section-reveal 560ms ease both;
-  animation-timeline: scroll();
-  animation-range: entry 20% cover 35%;
-}
-
-@keyframes section-reveal {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 @media (max-width: 767px) {
   .hero-stage { padding: 1rem; }

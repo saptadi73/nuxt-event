@@ -4,6 +4,16 @@
     <h1 class="mt-4 text-3xl font-black sm:text-5xl">{{ copy.title }}</h1>
     <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">{{ copy.description }}</p>
 
+    <div class="mt-8 grid gap-5 md:grid-cols-2">
+      <figure v-for="reference in exhibitionReferences" :key="reference.src" class="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+        <figcaption class="px-4 py-3 text-base font-semibold text-white">{{ reference.title }}</figcaption>
+        <a :href="reference.src" target="_blank" rel="noopener noreferrer" class="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300" :aria-label="`${reference.title} — ${exhibitionImageCopy.open}`">
+          <img :src="reference.src" :alt="reference.alt" :width="reference.width" :height="reference.height" class="aspect-[4/3] w-full bg-white object-contain" decoding="async" />
+          <span class="block px-4 py-3 text-sm text-cyan-200">{{ exhibitionImageCopy.open }}</span>
+        </a>
+      </figure>
+    </div>
+
     <div v-if="pending" class="mt-8 h-60 animate-pulse rounded-[2rem] bg-white/5" />
     <div v-else-if="fetchError" class="mt-8 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ fetchError.message }}</div>
 
@@ -52,12 +62,21 @@
 </template>
 
 <script setup lang="ts">
+import boothSpaceImage from '~/assets/images/exhibition/booth space.jpeg';
+import tableExhibitionImage from '~/assets/images/exhibition/table exibition.jpeg';
 import { useEvent } from '~/composables/useEvent';
 import { useExhibitor } from '~/composables/useExhibitor';
 import { useStore } from '~/composables/useStore';
 
 definePageMeta({ middleware: 'auth' });
 const { locale } = useI18n();
+const exhibitionImageCopy = computed(() => locale.value === 'zh-CN'
+  ? { booth: '展位布局', table: '展览桌', boothAlt: '展厅布局及展位编号', tableAlt: '展览桌正面、侧面及透视图，尺寸为 180 × 45 × 75 厘米', open: '查看完整图片（在新标签页中打开）' }
+  : { booth: 'Booth space layout', table: 'Table exhibition', boothAlt: 'Exhibition floor plan with numbered booth spaces', tableAlt: 'Exhibition table front, side and perspective views with dimensions of 180 × 45 × 75 cm', open: 'View full image (opens in a new tab)' });
+const exhibitionReferences = computed(() => [
+  { src: boothSpaceImage, title: exhibitionImageCopy.value.booth, alt: exhibitionImageCopy.value.boothAlt, width: 11703, height: 8347 },
+  { src: tableExhibitionImage, title: exhibitionImageCopy.value.table, alt: exhibitionImageCopy.value.tableAlt, width: 1536, height: 1024 }
+]);
 const messages = {
   en: { eyebrow: 'Exhibitor Registration', title: 'Register as an exhibitor', description: 'Submit your company profile and exhibition interest. Your account must already be created before starting.', companyProfile: 'Company profile', companyName: 'Company name', brand: 'Brand', contactPerson: 'Contact person', products: 'Products to display', boothNumber: 'Booth number requested', electricity: 'Electricity requirement', special: 'Special requirement', agreement: 'Agreement', acceptTerms: 'I accept the exhibitor terms and conditions.', saving: 'Saving…', update: 'Update exhibitor registration', create: 'Create exhibitor registration', noEvent: 'No IWBIF event is currently published.', unavailable: 'IWBIF event is not available right now.', loadError: 'Existing exhibitor profile could not be loaded.', success: 'Exhibitor registration created successfully.', saveError: 'Exhibitor registration could not be saved.', alreadyRegistered: 'This account is already registered as an exhibitor for this event. Only one exhibitor registration is allowed per account.', goToDashboard: 'Go to dashboard' },
   zh: { eyebrow: '参展商注册', title: '注册成为参展商', description: '请提交您的公司资料和参展意向。开始之前，您必须先创建账户。', companyProfile: '公司资料', companyName: '公司名称', brand: '品牌', contactPerson: '联系人', products: '展示产品', boothNumber: '申请展位编号', electricity: '用电需求', special: '特殊需求', agreement: '协议', acceptTerms: '我接受参展商条款与条件。', saving: '正在保存…', update: '更新参展商注册', create: '提交参展商注册', noEvent: '目前没有已发布的 IWBIF 活动。', unavailable: 'IWBIF 活动目前不可用。', loadError: '无法加载现有参展商资料。', success: '参展商注册已成功提交。', saveError: '无法保存参展商注册。', alreadyRegistered: '该账户已完成本次活动的参展商注册，每个账户仅可注册一次。', goToDashboard: '前往仪表板' }
