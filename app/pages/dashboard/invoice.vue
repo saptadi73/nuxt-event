@@ -22,16 +22,19 @@
         <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">{{ copy.delegatePackage }}</dt><dd class="mt-2 text-lg font-semibold">{{ invoice.registration.delegate_package_name || invoice.registration.ticket_type_name || '-' }}</dd></div>
         <div><dt class="text-xs uppercase tracking-[.2em] text-slate-500">{{ copy.paymentStatus }}</dt><dd class="mt-2 text-lg font-semibold text-emerald-300">{{ copy.paid }}</dd><p class="text-sm text-slate-400">{{ formatDate(invoice.payment.paid_at) }}</p></div>
       </dl>
-      <ul v-if="orderItems.length" class="mt-7 space-y-2 border-t border-white/10 pt-6"><li v-for="item in orderItems" :key="item.id" class="flex justify-between gap-3 text-sm"><span class="min-w-0 break-words text-slate-300">{{ item.product_name }} × {{ item.quantity }}</span><strong class="shrink-0 text-white">{{ usd(displayUnitPrice(item.product_id) * item.quantity) }}</strong></li></ul>
-      <div class="mt-7 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-6"><span class="text-slate-400">{{ copy.packageTotal }}</span><strong class="break-words text-2xl text-cyan-200">{{ displayInvoiceUsdTotal > 0 ? usd(displayInvoiceUsdTotal) : copy.paymentAmountGateway }}</strong></div>
+      <ul v-if="orderItems.length" class="mt-7 space-y-2 border-t border-white/10 pt-6"><li v-for="item in orderItems" :key="item.id" class="flex justify-between gap-3 text-sm"><span class="min-w-0 break-words text-slate-300">{{ item.product_name }} × {{ item.quantity }}</span><strong class="shrink-0 text-white">{{ money(item.line_total, item.currency) }}</strong></li></ul>
+      <div class="mt-7 space-y-4 border-t border-white/10 pt-6">
+        <div class="flex flex-wrap items-center justify-between gap-2"><span class="text-slate-400">{{ amountCopy.orderTotal }}</span><strong class="text-white">{{ money(invoiceOrder?.total_amount, invoiceOrder?.currency) }}</strong></div>
+        <div class="flex flex-wrap items-center justify-between gap-2"><span class="text-slate-300">{{ amountCopy.totalPaid }}</span><strong class="break-words text-2xl text-cyan-200">{{ money(totalPaid, invoiceOrder?.currency) }}</strong></div>
+        <div v-if="Number(invoiceOrder?.remaining_amount) > 0" class="flex flex-wrap items-center justify-between gap-2"><span class="text-slate-400">{{ amountCopy.remaining }}</span><strong class="text-white">{{ money(invoiceOrder?.remaining_amount, invoiceOrder?.currency) }}</strong></div>
+      </div>
       <button class="mt-7 w-full rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 print:hidden sm:w-auto" :disabled="downloading" @click="downloadInvoice">{{ downloading ? copy.preparingPdf : copy.downloadPdf }}</button>
     </article>
   </section>
 </template>
 
 <script setup lang="ts">
-import { useEvent } from '~/composables/useEvent';
-import { normalizeInvoices, usePayment, type Invoice, type PendingOrderProductItem } from '~/composables/usePayment';
+import { normalizeInvoices, usePayment, type Invoice, type PendingOrderProductItem, type OrderItem } from '~/composables/usePayment';
 import { useRegistration } from '~/composables/useRegistration';
 import { useTicket } from '~/composables/useTicket';
 
@@ -46,14 +49,13 @@ useSeoMeta({ title: () => `${copy.value.seo} | IWBIF 2026` });
 
 const paymentApi = usePayment();
 const { getMyInvoices, getInvoiceByRegistration } = paymentApi;
-const { getEvents, getDelegatePackageCatalog } = useEvent();
 const registrationFlow = useRegistrationFlow();
 const { getRegistration } = useRegistration();
 const { getMyTickets } = useTicket();
 const route = useRoute();
 const invoice = ref<Invoice | null>(null);
 const orderItems = ref<PendingOrderProductItem[]>([]);
-const usdPricesByProductId = ref(new Map<string, number>());
+const orderDetail = ref<OrderItem | null>(null);
 const invoiceElement = ref<HTMLElement | null>(null);
 const currentInvoice = useState<Invoice | null>('current-invoice', () => null);
 const pending = ref(true);
@@ -126,21 +128,33 @@ const persistCurrentInvoice = (value: Invoice | null) => {
   sessionStorage.setItem(CURRENT_INVOICE_KEY, JSON.stringify(value));
 };
 
-const displayUnitPrice = (productId: string) => usdPricesByProductId.value.get(productId) || 0;
-const displayInvoiceUsdTotal = computed(() => orderItems.value.reduce((sum, item) => sum + (displayUnitPrice(item.product_id) * item.quantity), 0));
-const usd = (amount: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount || 0);
-const loadUsdInvoiceContext = async () => {
+const amountCopy = computed(() => locale.value === 'zh-CN' ? {
+  orderTotal: '订单总额', totalPaid: '已付总额', remaining: '剩余应付金额', unavailable: '金额暂不可用'
+} : {
+  orderTotal: 'Order total', totalPaid: 'Total paid', remaining: 'Remaining balance', unavailable: 'Amount unavailable'
+});
+const invoiceOrder = computed(() => orderDetail.value || invoice.value?.order);
+const totalPaid = computed(() => {
+  const order = invoiceOrder.value;
+  if (!order) return null;
+  // Use the backend aggregate, not the latest child payment of a split order.
+  if (order.paid_amount != null) return order.paid_amount;
+  if (order.status?.toLowerCase() === 'paid' || order.is_payment_complete === true) return order.total_amount;
+  return null;
+});
+const money = (amount: number | null | undefined, currency?: string) => {
+  if (amount == null || !Number.isFinite(Number(amount)) || !currency) return amountCopy.value.unavailable;
+  return new Intl.NumberFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'id-ID', { style: 'currency', currency }).format(Number(amount));
+};
+const loadInvoiceContext = async () => {
   if (!invoice.value?.order?.id) return;
   try {
     const detail = (await paymentApi.getOrderDetail(invoice.value.order.id)).data;
+    if (detail.order.id !== invoice.value.order.id) return;
     orderItems.value = detail.items || [];
-    let eventId = invoice.value.order.event_id || detail.order.event_id || '';
-    if (!eventId) eventId = (await getEvents(1, 1)).data[0]?.id || '';
-    if (!eventId) return;
-    const catalog = (await getDelegatePackageCatalog(eventId)).data;
-    usdPricesByProductId.value = new Map([...catalog.main_packages, ...catalog.additional_packages].flatMap(pkg => pkg.rates).filter(rate => rate.is_active).map(rate => [rate.product_id, Number(rate.amount)]));
+    orderDetail.value = { ...invoice.value.order, ...detail.order };
   } catch {
-    // The invoice can still render without package detail; no backend payment amount is shown.
+    // The invoice's saved order totals remain available if item lookup fails.
   }
 };
 
@@ -244,7 +258,7 @@ onMounted(async () => {
     if (invoice.value) {
       persistCurrentInvoice(invoice.value);
       if (invoice.value.registration?.id) rememberRegistration(invoice.value.registration.id);
-      await loadUsdInvoiceContext();
+      await loadInvoiceContext();
     }
   } catch {
     if (!invoice.value) {

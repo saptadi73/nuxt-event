@@ -377,3 +377,20 @@ untuk troubleshooting. Jangan menampilkan raw response atau secret DOKU.
 10. Secret DOKU tidak masuk bundle frontend.
 11. Delegate yang sudah paid diarahkan ke form profil dengan
     `delegate_package_id` dari metadata product yang dibeli.
+
+## Invoice amounts (2026-09-06)
+
+The invoice shows persisted order-item `line_total` values in each item's
+currency, the order's `total_amount`, and **Total paid** from `order.paid_amount`.
+It no longer looks up current USD catalog rates; removed/inactive packages must
+not cause historical invoices to display `$0` or a gateway placeholder.
+
+Order detail enriches the invoice when available. If `paid_amount` is absent,
+the frontend uses `total_amount` only for an order marked `paid` or
+`is_payment_complete`. Otherwise it displays an unavailable amount, not a guessed
+payment total. Do not use the most recent payment's `gross_amount` as the total
+for split payments. A positive `remaining_amount` is displayed separately.
+
+Labels support English and Chinese. The PDF print view uses the same rendered
+invoice amounts. Verification covered paid IDR 18,000, full/partial split-payment
+aggregates, missing amounts, and Vue compilation/lint. Deployment remains pending.
