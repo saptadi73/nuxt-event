@@ -22,7 +22,7 @@ NUXT_PUBLIC_PAYMENT_PROVIDER=doku
 # NUXT_PUBLIC_PAYMENT_PROVIDER=midtrans
 ```
 
-`doku` opens the platform method modal (QRIS, Virtual Account, credit card), then calls `POST /payments/doku/orders/{order_id}/checkout` with the selected method. `midtrans` calls the Midtrans checkout endpoint before method selection on Midtrans. Midtrans payments above IDR 9,000,000 are split; DOKU splits only QRIS. DOKU VA and cards charge the full remaining balance. See [DOKU order payment](docs/DOKU_ORDER_PILOT.md).
+`doku` calls `POST /payments/doku/checkout` and redirects to DOKU Checkout, where the participant chooses the payment method. DOKU and Midtrans orders above IDR 9,000,000 are split by the backend into payments of at most IDR 9,000,000, for every method. See [DOKU Checkout](docs/DOKU_CHECKOUT.md).
 
 4. For local development:
 

@@ -3,7 +3,7 @@
     <p class="text-sm uppercase tracking-[.35em] text-amber-200">{{ copy.eyebrow }}</p>
     <h1 class="mt-4 text-4xl font-black sm:text-5xl">{{ copy.title }}</h1>
     <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">{{ copy.description }}</p>
-    <div v-if="offlinePayment" class="mt-6 rounded-2xl border border-emerald-300/25 bg-emerald-300/10 p-4 text-sm leading-7 text-emerald-100"><strong>Offline payment selected.</strong> Complete and submit this registration. After the organizer receives your cash, transfer, EDC, or other approved offline payment, an admin will create the payment using your registration ID and issue the ticket only after full settlement.</div>
+    <div v-if="offlinePayment" class="mt-6 rounded-2xl border border-emerald-300/25 bg-emerald-300/10 p-4 text-sm leading-7 text-emerald-100"><strong>{{ copy.offlineTitle }}</strong> {{ copy.offlineDescription }}</div>
 
     <div v-if="pending" class="mt-10 h-60 animate-pulse rounded-[2rem] bg-white/5" />
     <div v-else-if="optionsError" class="mt-10 rounded-3xl border border-red-400/30 bg-red-950/30 p-6 text-red-100">{{ optionsError.message }}</div>
@@ -104,7 +104,7 @@ const messages = {
     select: 'Select', officePhone: 'Office phone', companyAddress: 'Company address', participationCategories: 'Participation categories', presentationTopic: 'Presentation topic', productsInterested: 'Products interested', investmentInterest: 'Investment interest', noActivities: 'No active activities are currently published.',
     productsServices: 'Products / services', lookingFor: 'Looking for', preferredCountries: 'Preferred countries', businessObjectives: 'Business objectives', roomPreference: 'Room preference', preferredRoommate: 'Preferred roommate', arrivalDate: 'Arrival date', departureDate: 'Departure date', airport: 'Airport', selectAirport: 'Select airport', flightNumber: 'Flight number', needPickup: 'Need airport pickup?', dietary: 'Dietary restrictions', medical: 'Medical condition', assistance: 'Special assistance',
     taxId: 'Tax ID', needInvoice: 'Need official invoice?', yes: 'Yes', no: 'No', accuracy: 'I confirm that the information is accurate', acceptTerms: 'I accept the Terms and Conditions', dataConsent: 'I consent to business matching data processing', saving: 'Saving…', update: 'Update Registration', create: 'Create Registration',
-    fields: ['Full name', 'Title', 'Job title', 'Company / organization', 'Nationality', 'Business sector', 'Email', 'Company website', 'LinkedIn'], noEvent: 'No IWBIF event is currently published.', loadError: 'Existing delegate profile could not be loaded.', saveError: 'Registration could not be saved.', saved: 'Registration {number} saved successfully.'
+    fields: ['Full name', 'Title', 'Job title', 'Company / organization', 'Nationality', 'Business sector', 'Email', 'Company website', 'LinkedIn'], noEvent: 'No IWBIF event is currently published.', loadError: 'Existing delegate profile could not be loaded.', saveError: 'Registration could not be saved.', saved: 'Registration {number} saved successfully.', offlineTitle: 'Offline payment selected.', offlineDescription: 'Complete and submit this registration. After the organizer receives your cash, transfer, EDC, or other approved offline payment, an admin will create the payment using your registration ID and issue the ticket only after full settlement.'
   },
   zh: {
     eyebrow: '代表注册', title: '注册参加 IWBIF 2026', description: '请在套餐付款确认后填写所有必填信息。系统会自动将已付款的代表订单关联到您的注册资料。',
@@ -112,7 +112,7 @@ const messages = {
     select: '请选择', officePhone: '办公电话', companyAddress: '公司地址', participationCategories: '参与类别', presentationTopic: '演讲主题', productsInterested: '感兴趣的产品', investmentInterest: '投资意向', noActivities: '目前尚未发布任何有效活动。',
     productsServices: '产品／服务', lookingFor: '希望寻找', preferredCountries: '意向国家', businessObjectives: '商务目标', roomPreference: '房型偏好', preferredRoommate: '首选室友', arrivalDate: '抵达日期', departureDate: '离开日期', airport: '机场', selectAirport: '请选择机场', flightNumber: '航班号', needPickup: '是否需要机场接送？', dietary: '饮食限制', medical: '健康状况', assistance: '特殊协助需求',
     taxId: '税务识别号', needInvoice: '是否需要正式发票？', yes: '是', no: '否', accuracy: '我确认所填写的信息准确无误', acceptTerms: '我接受条款与条件', dataConsent: '我同意处理用于商务配对的数据', saving: '正在保存…', update: '更新注册资料', create: '提交注册',
-    fields: ['姓名', '称谓', '职位', '公司／机构', '国籍', '行业领域', '电子邮箱', '公司网站', 'LinkedIn'], noEvent: '目前没有已发布的 IWBIF 活动。', loadError: '无法加载现有代表资料。', saveError: '无法保存注册资料。', saved: '注册资料 {number} 已成功保存。'
+    fields: ['姓名', '称谓', '职位', '公司／机构', '国籍', '行业领域', '电子邮箱', '公司网站', 'LinkedIn'], noEvent: '目前没有已发布的 IWBIF 活动。', loadError: '无法加载现有代表资料。', saveError: '无法保存注册资料。', saved: '注册资料 {number} 已成功保存。', offlineTitle: '已选择线下付款。', offlineDescription: '请完成并提交此注册资料。主办方收到现金、转账、刷卡或其他获批准的线下付款后，管理员将使用您的注册信息创建付款记录；只有在款项全部结清后才会签发票券。'
   }
 } as const;
 const copy = computed(() => locale.value === 'zh-CN' ? messages.zh : messages.en);

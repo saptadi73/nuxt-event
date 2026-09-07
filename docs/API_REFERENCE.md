@@ -698,19 +698,14 @@ status order. Backend menyimpan snapshot product pada `order_items`. Gunakan
 order tersebut untuk payment. Frontend dapat memilih gateway tanpa membuat
 ulang order:
 
-Alur UI DOKU saat ini memakai pemilihan metode di platform:
+Alur UI DOKU memakai DOKU Checkout. Pemilihan QRIS, VA, kartu, atau metode
+lain berlangsung di halaman DOKU. Backend membagi semua tagihan di atas
+Rp9.000.000 menjadi pembayaran maksimal Rp9.000.000 sebelum pemilihan metode.
+Nominal dihitung backend; frontend hanya mengirim `order_id`.
+Lihat [DOKU Checkout](DOKU_CHECKOUT.md). Endpoint order-method/direct sebelumnya
+merupakan alur legacy dan tidak dipanggil untuk checkout baru dari UI.
 
-- `GET /api/v1/payments/doku/order-methods`: kapabilitas QRIS, VA, kartu kredit.
-- `GET /api/v1/payments/doku/orders/{order_id}/active`: resume attempt aktif.
-- `POST /api/v1/payments/doku/orders/{order_id}/checkout`: body `method`
-  (`qris`, `virtual_account`, `credit_card`), ditambah `bank_code` hanya untuk VA.
-  Nominal/data kartu tidak diterima dari frontend.
-
-Hanya DOKU QRIS memakai split maksimal Rp9.000.000 per pembayaran. VA/kartu
-kredit menagih seluruh sisa tagihan. Midtrans tetap split di atas Rp9.000.000.
-Lihat [kontrak dan respons DOKU order payment](DOKU_ORDER_PILOT.md).
-
-Endpoint hosted berikut tetap tersedia untuk kompatibilitas:
+Endpoint hosted yang digunakan:
 
 ```http
 POST /api/v1/payments/doku/checkout

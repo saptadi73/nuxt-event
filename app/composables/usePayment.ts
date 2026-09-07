@@ -60,6 +60,7 @@ export interface PendingOrderRecord {
 export interface PaymentItem {
   id: string; order_id: string; provider: string;
   provider_transaction_id?: string | null; provider_order_id?: string | null;
+  checkout_url?: string | null; expired_at?: string | null;
   payment_type?: string | null; gross_amount: number; currency: string;
   transaction_status: 'created' | 'pending' | 'success' | 'failed' | 'expired' | string;
   fraud_status?: string | null; paid_at?: string | null;

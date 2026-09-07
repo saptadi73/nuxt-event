@@ -18,9 +18,9 @@ Registration REG-001
 
 The registration remains one. A later add-on creates a new `Order` with
 `order_kind=additional` and the existing `registration_id`. It uses the same
-provider-specific flow as any other order: Midtrans splits above IDR 9,000,000;
-DOKU splits only QRIS after method selection. DOKU VA/cards collect the full
-remaining balance.
+hosted checkout flow as any other order: DOKU and Midtrans split above
+IDR 9,000,000 before selecting a method on the provider page. Each payment
+is at most IDR 9,000,000.
 
 ## Eligibility and duplicate detection
 

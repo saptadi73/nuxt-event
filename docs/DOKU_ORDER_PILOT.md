@@ -1,3 +1,6 @@
+> Historical direct-method integration. Since 2026-09-07, new UI payments use
+> [DOKU Checkout](DOKU_CHECKOUT.md), with all methods split above IDR 9,000,000.
+
 # DOKU order payment pilot
 
 The small `doku` test button below the payment choices has been removed after
