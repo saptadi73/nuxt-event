@@ -14,11 +14,12 @@
         <div v-if="displayOrderUsdTotal > 0" class="mt-4 border-t border-white/10 pt-4 text-sm"><span class="text-slate-400">{{ copy.packageTotal }}</span><strong class="block text-xl text-amber-200">{{ usd(displayOrderUsdTotal) }}</strong></div>
         <p v-if="polling" class="mt-3 text-sm text-amber-200">{{ copy.checkingConfirmation.replace('{provider}', paymentProviderLabel) }}</p>
       </div>
+      <OrderPaymentProgress v-if="order" :order="order" :attempts="paymentAttempts" />
       <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <NuxtLink v-if="status === 'success'" :to="invoiceTo" class="rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950">{{ copy.viewInvoice }}</NuxtLink>
-        <button v-else-if="status === 'partially_paid'" class="rounded-full bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="checking" @click="continuePayment">Continue remaining payment</button>
+        <NuxtLink v-if="status === 'success'" :to="registrationFlow.profilePendingType.value ? `/register/${registrationFlow.profilePendingType.value}` : invoiceTo" class="rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950">{{ registrationFlow.profilePendingType.value ? (locale === 'zh-CN' ? '完善注册资料' : 'Complete registration details') : copy.viewInvoice }}</NuxtLink>
+        <button v-else-if="order && !isOrderFullyPaid(order) && (order.allowed_actions?.includes('continue_payment') || ['pending', 'partially_paid', 'draft'].includes(order.status))" class="rounded-full bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="checking" @click="continuePayment">{{ locale === 'zh-CN' ? '继续付款' : 'Continue payment' }}</button>
         <NuxtLink v-else-if="terminal" :to="`/dashboard/payment?order_id=${encodeURIComponent(orderId)}`" class="rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950">{{ copy.tryAgain }}</NuxtLink>
-        <button v-else class="rounded-full border border-white/20 px-5 py-3" :disabled="checking" @click="checkStatus">{{ checking ? copy.checking : copy.checkAgain }}</button>
+        <button v-if="status !== 'success'" class="rounded-full border border-white/20 px-5 py-3" :disabled="checking" @click="checkStatus">{{ checking ? copy.checking : copy.checkAgain }}</button>
         <NuxtLink to="/dashboard" class="rounded-full border border-white/20 px-5 py-3">{{ copy.dashboard }}</NuxtLink>
       </div>
       <div v-if="errorMessage" class="mt-5 rounded-2xl border border-red-400/30 bg-red-950/30 p-4 text-red-100">
@@ -30,6 +31,7 @@
 </template>
 
 <script setup lang="ts">
+import { isOrderFullyPaid } from '~/utils/orderPaymentProgress';
 import { useEvent } from '~/composables/useEvent';
 import { usePayment, type OrderItem, type PaymentItem, type PendingOrderProductItem } from '~/composables/usePayment';
 
@@ -56,6 +58,7 @@ const orderId = ref('');
 const payment = ref<PaymentItem | null>(null);
 const order = ref<OrderItem | null>(null);
 const orderItems = ref<PendingOrderProductItem[]>([]);
+const paymentAttempts = ref<PaymentItem[]>([]);
 const usdPricesByProductId = ref(new Map<string, number>());
 const status = ref('pending');
 const polling = ref(false);
@@ -115,26 +118,10 @@ const apiError = (error: unknown) => {
 };
 const continuePayment = async () => {
   if (!orderId.value || checking.value) return;
-  if (paymentApi.isDokuProvider || payment.value?.provider?.startsWith('doku')) {
-    await navigateTo(`/dashboard/payment?order_id=${encodeURIComponent(orderId.value)}&doku=1`);
-    return;
-  }
-  checking.value = true;
-  errorMessage.value = '';
-  try {
-    const checkout = (await paymentApi.continueOrderPayment(orderId.value)).data;
-    paymentId.value = checkout.payment_id || '';
-    if (paymentId.value) sessionStorage.setItem(STORAGE_PAYMENT, paymentId.value);
-    if (checkout.payment_url) window.location.assign(checkout.payment_url);
-    else await checkStatus();
-  } catch (error) {
-    errorMessage.value = apiError(error);
-  } finally {
-    checking.value = false;
-  }
+  await navigateTo(`/dashboard/payment?order_id=${encodeURIComponent(orderId.value)}`);
 };
 const handleSuccess = async () => {
-  if (successHandled.value) return;
+  if (successHandled.value || !isOrderFullyPaid(order.value)) return;
   successHandled.value = true;
   stop();
   try {
@@ -144,7 +131,7 @@ const handleSuccess = async () => {
   }
   sessionStorage.removeItem(STORAGE_PAYMENT);
   sessionStorage.removeItem(LEGACY_STORAGE_PAYMENT);
-  if (registrationFlow.profilePendingType.value) {
+  if (registrationFlow.primaryStatus.value === 'paid_profile_incomplete' && registrationFlow.profilePendingType.value) {
     await navigateTo(`/register/${registrationFlow.profilePendingType.value}`);
   }
 };
@@ -158,24 +145,24 @@ const checkStatus = async () => {
       payment.value = response.data;
       orderId.value = response.data.order_id;
       sessionStorage.setItem(STORAGE_ORDER, response.data.order_id);
-      status.value = response.data.transaction_status.toLowerCase();
+      status.value = response.data.transaction_status.toLowerCase() === 'success' ? 'pending' : response.data.transaction_status.toLowerCase();
     } else if (registrationId.value) {
       const response = await paymentApi.getInvoiceByRegistration(registrationId.value);
       payment.value = response.data.payment;
       orderId.value ||= response.data.order.id;
-      status.value = response.data.payment.transaction_status.toLowerCase();
+      status.value = 'pending';
     } else if (orderId.value) {
-      const response = await paymentApi.getOrder(orderId.value);
-      status.value = response.data.status.toLowerCase() === 'paid' ? 'success' : response.data.status.toLowerCase();
+      status.value = 'pending';
     } else {
       throw new Error(copy.value.missingReference);
     }
     if (orderId.value) {
-      const orderResponse = await paymentApi.getOrder(orderId.value);
-      order.value = orderResponse.data;
-      await loadUsdOrderContext();
-      const orderStatus = orderResponse.data.status.toLowerCase();
-      status.value = orderResponse.data.is_payment_complete === true || orderStatus === 'paid' ? 'success' : orderStatus;
+      const detail = (await paymentApi.getOrderDetail(orderId.value)).data;
+      order.value = detail.order;
+      paymentAttempts.value = detail.payment_attempts || [];
+      if (detail.latest_payment) payment.value = detail.latest_payment;
+      const orderStatus = detail.order.status.toLowerCase();
+      status.value = isOrderFullyPaid(detail.order) ? 'success' : orderStatus;
     }
     if (status.value === 'success') await handleSuccess();
     else if (terminal.value) stop();
@@ -187,16 +174,14 @@ const checkStatus = async () => {
 };
 
 onMounted(async () => {
-  paymentId.value = queryValue(route.query.payment_id)
-    || sessionStorage.getItem(STORAGE_PAYMENT)
-    || sessionStorage.getItem(LEGACY_STORAGE_PAYMENT)
-    || '';
-  registrationId.value = queryValue(route.query.registration_id) || sessionStorage.getItem(STORAGE_REGISTRATION) || '';
-  // Midtrans appends its provider order_id to the finish URL. Prefer the
-  // application's internal order UUID saved before redirecting to Midtrans.
-  orderId.value = sessionStorage.getItem(STORAGE_ORDER) || queryValue(route.query.order_id) || '';
+  const queryOrder = queryValue(route.query.order_id);
+  const internalOrder = /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(queryOrder) ? queryOrder : '';
+  orderId.value = internalOrder || sessionStorage.getItem(STORAGE_ORDER) || '';
+  paymentId.value = queryValue(route.query.payment_id) || (!internalOrder ? sessionStorage.getItem(STORAGE_PAYMENT) || sessionStorage.getItem(LEGACY_STORAGE_PAYMENT) : '') || '';
+  registrationId.value = queryValue(route.query.registration_id) || (!orderId.value && !paymentId.value ? sessionStorage.getItem(STORAGE_REGISTRATION) : '') || '';
   await checkStatus();
-  if (status.value === 'created' || status.value === 'pending') {
+  await loadUsdOrderContext();
+  if (['created', 'pending', 'payment_pending', 'partially_paid'].includes(status.value)) {
     polling.value = true;
     timer = setInterval(async () => {
       attempts++;

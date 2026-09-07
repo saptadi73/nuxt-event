@@ -92,7 +92,7 @@ import {useEvent} from '~/composables/useEvent';
 import {useParticipant} from '~/composables/useParticipant';
 import {useRegistration,type RegistrationPayload} from '~/composables/useRegistration';
 
-definePageMeta({ middleware: 'auth' });
+definePageMeta({ middleware: ['auth', 'registration-payment'] });
 const { locale } = useI18n();
 const route = useRoute();
 const offlinePayment = computed(() => route.query.payment === 'offline');

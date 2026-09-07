@@ -5,6 +5,7 @@ import { runInNewContext } from 'node:vm';
 import { ref, computed } from 'vue';
 import ts from 'typescript';
 import { validateDokuCheckoutUrl } from '../app/utils/dokuCheckout.ts';
+import { isOrderFullyPaid } from '../app/utils/orderPaymentProgress.ts';
 
 test('accepts production and sandbox DOKU HTTPS checkout links', () => {
   for (const url of ['https://checkout.doku.com/payment/token', 'https://sandbox.doku.com/checkout/token']) {
@@ -19,7 +20,7 @@ function paymentPage(total, { partial = false, pending = null, locale = 'en' } =
   const calls = [], redirects = [];
   const checkout = { data: { payment_id: 'part-1', order_status: 'pending', payment_url: 'https://checkout.doku.com/payment/part-1' } };
   const api = {
-    isDokuProvider: true, paymentProviderLabel: 'DOKU',
+    isDokuProvider: true, paymentProvider: 'doku', paymentProviderLabel: 'DOKU',
     async createCheckout(id) { calls.push(['create', id]); return checkout; },
     async continueOrderPayment(id) { calls.push(['continue', id]); return checkout; },
   };
@@ -31,7 +32,7 @@ function paymentPage(total, { partial = false, pending = null, locale = 'en' } =
     useEvent: () => ({}), useRegistrationFlow: () => ({ profilePendingType: ref(null) }),
     onMounted() {}, sessionStorage: { setItem() {} },
     window: { location: { assign(url) { redirects.push(url); } } },
-    navigateTo() {}, validateDokuCheckoutUrl,
+    navigateTo() {}, validateDokuCheckoutUrl, isOrderFullyPaid,
   });
   page.orderId.value = 'order-1';
   page.order.value = { id: 'order-1', currency: 'IDR', total_amount: total, status: partial ? 'partially_paid' : 'pending' };
@@ -44,7 +45,7 @@ test('exactly IDR 9m starts hosted DOKU checkout without splitting', async () =>
   page.requestPayment();
   await new Promise(setImmediate);
   assert.equal(page.splitModalOpen.value, false);
-  assert.deepEqual(calls, [['create', 'order-1']]);
+  assert.deepEqual(calls, [['continue', 'order-1']]);
   assert.equal(redirects.length, 1);
 });
 
@@ -57,7 +58,7 @@ test('above IDR 9m shows the correct split count before hosted checkout', async 
     assert.equal(calls.length, 0);
     page.confirmSplitPayment();
     await new Promise(setImmediate);
-    assert.deepEqual(calls, [['create', 'order-1']]);
+    assert.deepEqual(calls, [['continue', 'order-1']]);
   }
 });
 

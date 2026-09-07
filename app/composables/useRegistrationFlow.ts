@@ -1,4 +1,5 @@
 import type { useApi, ApiResponse } from '~/composables/useApi';
+import { isOrderFullyPaid } from '~/utils/orderPaymentProgress';
 
 export type PurchaseType = 'delegate' | 'exhibitor';
 export type PurchaseStatus = 'not_selected' | 'selected' | 'payment_pending' | 'paid_profile_incomplete' | 'completed';
@@ -13,6 +14,9 @@ interface PurchaseOrder extends Record<string, unknown> {
   id?: string;
   order_id?: string;
   status?: string;
+  remaining_amount?: number;
+  is_payment_complete?: boolean;
+  allowed_actions?: string[];
   product_type?: string;
   items?: Array<Record<string, unknown>>;
   payment?: Record<string, unknown> | null;
@@ -40,8 +44,11 @@ const normalizeStatus = (item?: PurchaseTrackingItem): PurchaseStatus => {
   return 'not_selected';
 };
 
+const flowRequests = new WeakMap<object, Promise<RegistrationFlowState | null>>();
+
 export function useRegistrationFlow() {
-  const api = useNuxtApp().$api as ReturnType<typeof useApi>;
+  const nuxtApp = useNuxtApp();
+  const api = nuxtApp.$api as ReturnType<typeof useApi>;
   const { locale } = useI18n();
   const authStore = useAuthStore();
   const state = useState<RegistrationFlowState | null>('registration-flow-state', () => null);
@@ -60,7 +67,14 @@ export function useRegistrationFlow() {
     }
   };
 
-  const statusFor = (type: PurchaseType): PurchaseStatus => normalizeStatus(state.value?.purchase_tracking?.[type]);
+  const statusFor = (type: PurchaseType): PurchaseStatus => {
+    const orders = (state.value?.orders || []).filter(order => orderMatchesType(order, type));
+    if (orders.some(order => !isOrderFullyPaid(order) && (['pending', 'partially_paid', 'draft'].includes(order.status || '') || order.allowed_actions?.includes('continue_payment')))) return 'payment_pending';
+    const tracked = normalizeStatus(state.value?.purchase_tracking?.[type]);
+    // A submitted profile or a successful payment part is not full settlement.
+    if (orders.length && !orders.some(isOrderFullyPaid) && ['completed', 'paid_profile_incomplete'].includes(tracked)) return 'payment_pending';
+    return tracked;
+  };
   const delegateStatus = computed(() => statusFor('delegate'));
   const exhibitorStatus = computed(() => statusFor('exhibitor'));
   const selectedTypes = computed<PurchaseType[]>(() => {
@@ -70,7 +84,7 @@ export function useRegistrationFlow() {
   });
 
   const primaryType = computed<PurchaseType | null>(() => {
-    const priorities: PurchaseStatus[] = ['paid_profile_incomplete', 'payment_pending', 'selected', 'not_selected', 'completed'];
+    const priorities: PurchaseStatus[] = ['payment_pending', 'selected', 'paid_profile_incomplete', 'not_selected', 'completed'];
     for (const status of priorities) {
       const type = selectedTypes.value.find(candidate => statusFor(candidate) === status);
       if (type) return type;
@@ -80,9 +94,9 @@ export function useRegistrationFlow() {
 
   const primaryStatus = computed<PurchaseStatus>(() => {
     if (!selectedTypes.value.length) return 'not_selected';
-    if (selectedTypes.value.some(type => statusFor(type) === 'paid_profile_incomplete')) return 'paid_profile_incomplete';
     if (selectedTypes.value.some(type => statusFor(type) === 'payment_pending')) return 'payment_pending';
     if (selectedTypes.value.some(type => statusFor(type) === 'selected')) return 'selected';
+    if (selectedTypes.value.some(type => statusFor(type) === 'paid_profile_incomplete')) return 'paid_profile_incomplete';
     if (selectedTypes.value.every(type => statusFor(type) === 'completed')) return 'completed';
 
     const fallbackType = primaryType.value ?? selectedTypes.value[0];
@@ -98,7 +112,7 @@ export function useRegistrationFlow() {
     if (order.product_type === type) return true;
     const items = Array.isArray(order.items) ? order.items : [];
     if (!items.length) return true;
-    return items.some(item => item.product_type === type || (item.product as Record<string, unknown> | undefined)?.product_type === type);
+    return items.some(item => item.type === type || item.product_type === type || (item.product as Record<string, unknown> | undefined)?.product_type === type);
   };
 
   const activeOrder = computed(() => {
@@ -138,8 +152,6 @@ export function useRegistrationFlow() {
     if (primaryStatus.value === 'paid_profile_incomplete') return `/register/${profilePendingType.value || 'delegate'}`;
     if (primaryStatus.value === 'completed') return '/dashboard';
     const orderQuery = activeOrderId.value ? `order_id=${encodeURIComponent(activeOrderId.value)}` : '';
-    const paymentQuery = activePaymentId.value ? `payment_id=${encodeURIComponent(activePaymentId.value)}` : '';
-    if (activePaymentId.value) return `/dashboard/payment-status?${[orderQuery, paymentQuery].filter(Boolean).join('&')}`;
     return activeOrderId.value ? `/dashboard/payment?${orderQuery}` : '/dashboard/cart';
   });
 
@@ -150,34 +162,43 @@ export function useRegistrationFlow() {
       return null;
     }
     if (loaded.value && !force) return state.value;
-    if (loading.value) return state.value;
+    const pending = flowRequests.get(nuxtApp);
+    if (pending) return pending;
     loading.value = true;
     error.value = '';
-    try {
-      const me = await api<ApiResponse<Record<string, unknown>>>('/auth/me');
-      const meData = me.data as Record<string, unknown>;
-      const user = (meData.user || meData) as Record<string, unknown>;
-      authStore.setUser(user as Parameters<typeof authStore.setUser>[0]);
-      authStore.hydrateUserFromToken();
-      const userId = typeof user.id === 'string' ? user.id : '';
-      if (!userId) throw new Error(locale.value === 'zh-CN' ? '后端未返回用户 ID。' : 'User ID was not returned by the backend.');
-      const detail = await api<ApiResponse<RegistrationFlowState>>(`/auth/users/${encodeURIComponent(userId)}`);
-      state.value = detail.data;
-      const detailUser = detail.data.user;
-      if (detailUser && typeof detailUser === 'object') {
-        authStore.setUser(detailUser as Parameters<typeof authStore.setUser>[0]);
+    const request = (async () => {
+      try {
+        const me = await api<ApiResponse<Record<string, unknown>>>('/auth/me');
+        const meData = me.data as Record<string, unknown>;
+        const user = (meData.user || meData) as Record<string, unknown>;
+        authStore.setUser(user as Parameters<typeof authStore.setUser>[0]);
         authStore.hydrateUserFromToken();
+        const userId = typeof user.id === 'string' ? user.id : '';
+        if (!userId) throw new Error(locale.value === 'zh-CN' ? '后端未返回用户 ID。' : 'User ID was not returned by the backend.');
+        const detail = await api<ApiResponse<RegistrationFlowState>>(`/auth/users/${encodeURIComponent(userId)}`);
+        state.value = detail.data;
+        const detailUser = detail.data.user;
+        if (detailUser && typeof detailUser === 'object') {
+          authStore.setUser(detailUser as Parameters<typeof authStore.setUser>[0]);
+          authStore.hydrateUserFromToken();
+        }
+        loaded.value = true;
+        return state.value;
+      } catch (cause) {
+        const value = cause as { data?: { message?: string } };
+        error.value = value.data?.message || (cause instanceof Error
+          ? cause.message
+          : locale.value === 'zh-CN' ? '无法加载注册进度。' : 'Registration progress could not be loaded.');
+        throw cause;
+      } finally {
+        loading.value = false;
       }
-      loaded.value = true;
-      return state.value;
-    } catch (cause) {
-      const value = cause as { data?: { message?: string } };
-      error.value = value.data?.message || (cause instanceof Error
-        ? cause.message
-        : locale.value === 'zh-CN' ? '无法加载注册进度。' : 'Registration progress could not be loaded.');
-      throw cause;
+    })();
+    flowRequests.set(nuxtApp, request);
+    try {
+      return await request;
     } finally {
-      loading.value = false;
+      flowRequests.delete(nuxtApp);
     }
   };
 

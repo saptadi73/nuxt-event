@@ -1,5 +1,6 @@
 import type { useApi, ApiResponse } from '~/composables/useApi';
 import { getPaymentProviderConfig, normalizePaymentProvider } from '../config/payment';
+import { normalizeOrderDetail } from '../utils/orderPaymentProgress';
 
 export interface DokuCheckoutData {
   payment_url: string;
@@ -55,6 +56,9 @@ export interface PendingOrderRecord {
   items: PendingOrderProductItem[];
   latest_payment?: PaymentItem | null;
   payment_attempts?: PaymentItem[];
+  paid_amount?: number;
+  remaining_amount?: number;
+  is_payment_complete?: boolean;
 }
 
 export interface PaymentItem {
@@ -119,8 +123,24 @@ export function usePayment() {
     return createDokuCheckout(orderId);
   };
   const getOrder = (orderId: string) => api<ApiResponse<OrderItem>>(`/orders/${orderId}`);
-  const getPendingOrders = (eventId?: string, page = 1, size = 20, status = 'pending') => api<ApiResponse<PendingOrderRecord[]>>('/orders', { query: { status, ...(eventId ? { event_id: eventId } : {}), page, size } });
-  const getOrderDetail = (orderId: string) => api<ApiResponse<PendingOrderRecord>>(`/orders/${encodeURIComponent(orderId)}/detail`);
+  const getPendingOrders = async (eventId?: string, page = 1, size = 20, status = '') => {
+    const response = await api<ApiResponse<PendingOrderRecord[]>>('/orders', { query: { ...(status ? { status } : {}), ...(eventId ? { event_id: eventId } : {}), page, size } });
+    return { ...response, data: response.data.map(normalizeOrderDetail) };
+  };
+  const getOrderDetail = async (orderId: string) => {
+    const response = await api<ApiResponse<PendingOrderRecord>>(`/orders/${encodeURIComponent(orderId)}/detail`);
+    return { ...response, data: normalizeOrderDetail(response.data) };
+  };
+  const getOutstandingOrders = async () => {
+    const records: PendingOrderRecord[] = [];
+    for (let page = 1; ; page++) {
+      const response = await getPendingOrders(undefined, page, 100);
+      records.push(...response.data.filter(entry => entry.order.allowed_actions?.includes('continue_payment')
+        || ['pending', 'partially_paid', 'draft'].includes(entry.order.status)));
+      if (response.data.length < 100 || (response.meta?.total != null && page * 100 >= response.meta.total)) break;
+    }
+    return records;
+  };
   const continueOrderPayment = (orderId: string, provider = runtimeProvider.provider) => api<ApiResponse<DokuCheckoutData>>(`/orders/${encodeURIComponent(orderId)}/continue-payment`, { method: 'POST', body: { provider } });
   const cancelPendingOrder = (orderId: string, reason?: string) => api<ApiResponse<Record<string, unknown>>>(`/orders/${encodeURIComponent(orderId)}`, { method: 'DELETE', body: reason ? { reason } : undefined });
   const getPayment = (paymentId: string) => api<ApiResponse<PaymentItem>>(`/payments/${paymentId}`);
@@ -156,6 +176,7 @@ export function usePayment() {
     getOrder,
     getPendingOrders,
     getOrderDetail,
+    getOutstandingOrders,
     continueOrderPayment,
     cancelPendingOrder,
     getPayment,

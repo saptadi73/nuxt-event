@@ -20,6 +20,8 @@
       </NuxtLink>
     </div>
 
+    <OutstandingPayments v-if="!canViewSalesReport" />
+
     <div v-if="canViewSalesReport" class="mt-8 rounded-3xl border border-amber-300/30 bg-amber-300/10 p-5 sm:p-6">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -121,8 +123,22 @@ const eventDate=new Date('2026-10-14T09:00:00+07:00');
 const days=Math.max(0,Math.ceil((eventDate.getTime()-Date.now())/86400000));
 const countdown=computed(()=>days>0?copy.value.days.replace('{count}',String(days)):copy.value.eventDay);
 
-const statusRoutes=['/register','/dashboard/payment','/dashboard/ticket','/dashboard/profile'] as const;
-const statuses=computed(()=>copy.value.statuses.map(([label,value,note],index)=>({to:statusRoutes[index]!,label,value,note})));
+const statusRoutes=['/dashboard/registration-status','/dashboard/payment','/dashboard/ticket','/dashboard/profile'] as const;
+const registrationFlow = useRegistrationFlow();
+const registrationSummary = computed(() => {
+  const zh = locale.value === 'zh-CN';
+  if (registrationFlow.error.value) return zh ? '状态暂不可用' : 'Status unavailable';
+  if (!registrationFlow.loaded.value || registrationFlow.loading.value) return zh ? '正在查询状态…' : 'Checking status…';
+  const labels = zh
+    ? { not_selected: '尚未注册', selected: '等待结账', payment_pending: '尚未付清', paid_profile_incomplete: '已付款，请完善资料', completed: '注册已完成' }
+    : { not_selected: 'Not registered', selected: 'Checkout pending', payment_pending: 'Payment outstanding', paid_profile_incomplete: 'Paid — complete your details', completed: 'Registration complete' };
+  return labels[registrationFlow.primaryStatus.value];
+});
+const statuses=computed(()=>copy.value.statuses.map(([label,value,note],index)=>({to:statusRoutes[index]!,label,value:index===0&&!canViewSalesReport.value?registrationSummary.value:value,note})));
+onMounted(async () => {
+  if (canViewSalesReport.value) return;
+  try { await registrationFlow.loadFlow(true); } catch { /* The card shows the shared error state. */ }
+});
 
 const menuRoutes=['/dashboard/cart','/dashboard/ticket','/dashboard/profile','/dashboard/directory','/dashboard/schedule','/dashboard/payment','/dashboard/invoice','/dashboard/certificate','/dashboard/announcements','/directory-consent','/dashboard/security'] as const;
 const menu=computed(()=>copy.value.menu.map(([label,title,text],index)=>({to:menuRoutes[index]!,label,title,text})));

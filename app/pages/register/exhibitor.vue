@@ -73,7 +73,7 @@ import { useEvent } from '~/composables/useEvent';
 import { useExhibitor } from '~/composables/useExhibitor';
 import { useStore } from '~/composables/useStore';
 
-definePageMeta({ middleware: 'auth' });
+definePageMeta({ middleware: ['auth', 'registration-payment'] });
 const { locale } = useI18n();
 const exhibitionImageCopy = computed(() => locale.value === 'zh-CN'
   ? { booth: '展位布局', table: '展览桌', boothAlt: '展厅布局及展位编号', tableAlt: '展览桌正面、侧面及透视图，尺寸为 180 × 45 × 75 厘米', open: '查看完整图片（在新标签页中打开）' }
