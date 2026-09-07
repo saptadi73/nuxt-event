@@ -1754,6 +1754,16 @@ transaction tidak ditampilkan kecuali `include_deleted=true`. Pagination berada
 pada `meta`; `data.transactions` hanya berisi slice sesuai `limit` dan `offset`,
 sedangkan agregasi pada `data.summary` dihitung dari seluruh hasil filter.
 
+Identitas pada setiap item `data.transactions` menggunakan `customer_name`,
+`customer_email`, dan `registration_number` (nullable), bukan `participant_name`.
+Nama diambil dari detail delegate, lalu profil peserta registrasi, akun peserta,
+dan akun pemilik order jika sumber sebelumnya kosong. Email menggunakan detail
+delegate, akun peserta registrasi, lalu akun pemilik order. Dengan demikian,
+order store-first tetap memiliki identitas akun sebelum registrasi ditautkan.
+Jika seluruh sumber tidak tersedia, nilai tetap `null`; frontend menampilkan
+informasi belum tersedia dan tidak menggantinya dengan UUID. `payment_id` dan
+`order_id` tetap disimpan untuk operasi internal, tanpa ditampilkan di tabel.
+
 Contoh response `GET /api/v1/admin/transactions?limit=20&offset=0`:
 
 ```json
@@ -1779,6 +1789,9 @@ Contoh response `GET /api/v1/admin/transactions?limit=20&offset=0`:
       "payment_id": "75c9e112-2974-49e2-bd6c-65c23e343d28",
       "order_id": "ad3df206-c6cc-4053-b80a-edb59b9f4647",
       "order_number": "ORD-2026-0001",
+      "customer_name": "Example Participant",
+      "customer_email": "participant@example.com",
+      "registration_number": "REG-2026-0001",
       "provider": "midtrans",
       "transaction_status": "success",
       "order_status": "paid",

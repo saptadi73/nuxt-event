@@ -23,8 +23,11 @@ export interface PaymentReportTransaction {
   order_id?: string;
   order_number?: string;
   order_status?: string;
+  registration_id?: string | null;
+  registration_number?: string | null;
+  customer_name?: string | null;
   participant_name?: string;
-  customer_email?: string;
+  customer_email?: string | null;
   package_name?: string;
   channel_code?: string;
   provider?: string;

@@ -40,12 +40,19 @@
       <div v-else-if="!transactions.length" class="py-16 text-center text-slate-400">No transactions match these filters.</div>
       <div v-else class="mt-5 overflow-x-auto data-table-shell">
         <table class="w-full min-w-[1100px] text-left text-sm">
-          <thead><tr><th class="w-10"><input :checked="allVisibleSelected" type="checkbox" class="accent-amber-300" aria-label="Select all visible transactions" @change="toggleAll"></th><th>Order</th><th>Provider / reference</th><th>Status</th><th>Amount</th><th>Paid / expiry</th><th class="text-right">Actions</th></tr></thead>
+          <thead><tr><th class="w-10"><input :checked="allVisibleSelected" type="checkbox" class="accent-amber-300" aria-label="Select all visible transactions" @change="toggleAll"></th><th>Order</th><th>Registration user</th><th>Provider / reference</th><th>Status</th><th>Amount</th><th>Paid / expiry</th><th class="text-right">Actions</th></tr></thead>
           <tbody>
             <tr v-for="item in transactions" :key="paymentId(item)" :class="item.deleted_at ? 'opacity-55' : ''">
-              <td><input :checked="selectedIds.includes(paymentId(item))" :disabled="!item.allowed_actions?.length" type="checkbox" class="accent-amber-300" :aria-label="`Select ${item.order_number || paymentId(item)}`" @change="toggleOne(paymentId(item))"></td>
-              <td data-label="Order"><strong class="block text-white">{{ item.order_number || item.order_id || '—' }}</strong><small class="mt-1 block text-slate-500">{{ paymentId(item) }}</small></td>
-              <td data-label="Provider"><strong>{{ item.provider || item.channel_code || '—' }}</strong><small class="mt-1 block max-w-72 break-all text-slate-500">{{ item.provider_transaction_id || item.provider_order_id || 'No provider reference' }}</small></td>
+              <td><input :checked="selectedIds.includes(paymentId(item))" :disabled="!item.allowed_actions?.length" type="checkbox" class="accent-amber-300" :aria-label="`Select ${item.order_number || item.customer_name || item.participant_name || item.customer_email || 'transaction'}`" @change="toggleOne(paymentId(item))"></td>
+              <td data-label="Order"><strong class="block text-white">{{ item.order_number || 'Order number unavailable' }}</strong></td>
+              <td data-label="Registration user">
+                <div class="min-w-0 max-w-64 break-words">
+                  <strong class="block text-white">{{ item.customer_name?.trim() || item.participant_name?.trim() || item.customer_email?.trim() || 'User information unavailable' }}</strong>
+                  <small v-if="item.customer_email && (item.customer_name?.trim() || item.participant_name?.trim())" class="mt-1 block text-slate-300">{{ item.customer_email }}</small>
+                  <small class="mt-1 block text-slate-400">{{ item.registration_number || (item.registration_id ? 'Registration number unavailable' : 'Registration not linked') }}</small>
+                </div>
+              </td>
+              <td data-label="Provider"><div><strong>{{ item.provider || item.channel_code || '—' }}</strong><small v-if="providerReference(item)" class="mt-1 block max-w-72 break-all text-slate-400">{{ providerReference(item) }}</small></div></td>
               <td data-label="Status"><span class="status-pill" :class="statusClass(item.transaction_status || item.status)">{{ item.transaction_status || item.status || 'unknown' }}</span><small v-if="item.deleted_at" class="mt-2 block text-red-200">Deleted</small></td>
               <td data-label="Amount" class="font-semibold text-white">{{ money(item.gross_amount, item.currency) }}</td>
               <td data-label="Time"><span>{{ formatDate(item.paid_at) }}</span><small v-if="item.expires_at" class="mt-1 block text-slate-500">Expires: {{ formatDate(item.expires_at) }}</small></td>
@@ -88,6 +95,8 @@ const selectedIds = ref<string[]>([]);
 const dialog = reactive<{ open: boolean; action: TransactionAction; ids: string[]; notes: string; paid_at: string; step: 1 | 2; finalAcknowledged: boolean }>({ open: false, action: 'success', ids: [], notes: '', paid_at: '', step: 1, finalAcknowledged: false });
 const transactions = computed(() => report.value.transactions || []);
 const paymentId = (item: PaymentReportTransaction): string => item.payment_id || item.id || '';
+const providerReference = (item: PaymentReportTransaction) => [item.provider_order_id, item.provider_transaction_id]
+  .find(value => value?.trim() && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.trim()));
 const allVisibleSelectableIds = computed(() => transactions.value.filter(item => item.allowed_actions?.length).map(paymentId));
 const allVisibleSelected = computed(() => allVisibleSelectableIds.value.length > 0 && allVisibleSelectableIds.value.every(id => selectedIds.value.includes(id)));
 const pageStart = computed(() => meta.total ? offset.value + 1 : 0);
@@ -127,6 +136,14 @@ await loadTransactions();
 .field input:focus,.field select:focus,.field textarea:focus { border-color: rgba(252,211,77,.55); }
 button:disabled { cursor: not-allowed; opacity: .4; }
 
+.backdrop { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 1rem; background: rgba(2,6,23,.8); backdrop-filter: blur(12px); }
+.modal { width: min(100%, 44rem); overflow: hidden; border: 1px solid rgba(255,255,255,.13); border-radius: 2rem; background: linear-gradient(145deg,#071a36,#020d20); color: white; box-shadow: 0 35px 100px rgba(0,0,0,.55); }
+.modal header,.modal footer { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.75rem; border-bottom: 1px solid rgba(255,255,255,.1); }
+.modal h2 { margin-top: .5rem; font-size: 1.5rem; font-weight: 900; }
+.modal header button { font-size: 1.75rem; line-height: 1; color: #cbd5e1; }
+.modal main { display: grid; gap: 1rem; padding: 1.5rem 1.75rem; max-height: 70vh; overflow-y: auto; }
+.modal footer { justify-content: flex-end; gap: .75rem; border-top: 1px solid rgba(255,255,255,.1); border-bottom: 0; }
+
 @media (max-width: 767px) {
   .data-table-shell { overflow: visible; }
   .data-table-shell table,
@@ -141,12 +158,12 @@ button:disabled { cursor: not-allowed; opacity: .4; }
   .data-table-shell td { display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem; padding: .4rem 0; }
   .data-table-shell td:first-child { display: none; }
   .data-table-shell td::before { flex: 0 0 34%; color: #94a3b8; font-size: .65rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-  .data-table-shell td:nth-child(2)::before { content: 'Order'; }
-  .data-table-shell td:nth-child(3)::before { content: 'Provider'; }
-  .data-table-shell td:nth-child(4)::before { content: 'Status'; }
-  .data-table-shell td:nth-child(5)::before { content: 'Amount'; }
-  .data-table-shell td:nth-child(6)::before { content: 'Time'; }
-  .data-table-shell td:nth-child(7)::before { content: 'Actions'; }
+  .data-table-shell td[data-label]::before { content: attr(data-label); }
   .data-table-shell .cell-actions > div { justify-content: flex-end; }
+
+  .modal { width: min(100%, 32rem); }
+  .modal main, .modal header, .modal footer { padding-inline: 1rem; }
+  .modal footer { flex-direction: column; }
+  .modal footer button { width: 100%; }
 }
 </style>

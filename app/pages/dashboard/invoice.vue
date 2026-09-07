@@ -13,7 +13,10 @@
     </div>
     <article v-else id="invoice" ref="invoiceElement" class="glass-card mt-8 rounded-[2rem] p-5 sm:p-7">
       <div class="flex flex-wrap justify-between gap-5 border-b border-white/10 pb-6">
-        <div class="min-w-0"><p class="break-words text-sm text-slate-400">{{ invoice.registration.event_name }}</p><p class="mt-1 break-words font-semibold">{{ copy.invoice }} {{ invoice.order.order_number }}</p></div>
+        <div class="flex min-w-0 items-center gap-4">
+          <img src="/logo_iwbif2.png" alt="IWBIF" class="h-16 w-16 shrink-0 object-contain" data-invoice-logo>
+          <div class="min-w-0"><p class="break-words text-sm text-slate-400">{{ invoice.registration.event_name }}</p><p class="mt-1 break-words font-semibold">{{ copy.invoice }} {{ invoice.order.order_number }}</p></div>
+        </div>
         <span class="h-fit rounded-full bg-emerald-300/10 px-4 py-2 text-xs font-semibold uppercase tracking-[.2em] text-emerald-200">{{ copy.paid }}</span>
       </div>
       <dl class="mt-6 grid gap-5 sm:grid-cols-2">
@@ -29,6 +32,7 @@
         <div v-if="Number(invoiceOrder?.remaining_amount) > 0" class="flex flex-wrap items-center justify-between gap-2"><span class="text-slate-400">{{ amountCopy.remaining }}</span><strong class="text-white">{{ money(invoiceOrder?.remaining_amount, invoiceOrder?.currency) }}</strong></div>
       </div>
       <button class="mt-7 w-full rounded-full bg-cyan-400 px-5 py-3 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 print:hidden sm:w-auto" :disabled="downloading" @click="downloadInvoice">{{ downloading ? copy.preparingPdf : copy.downloadPdf }}</button>
+      <p v-if="exportError" role="alert" class="mt-3 text-sm text-red-300" data-pdf-exclude>{{ exportError }}</p>
     </article>
   </section>
 </template>
@@ -41,8 +45,8 @@ import { useTicket } from '~/composables/useTicket';
 definePageMeta({ middleware: 'auth' });
 const { locale } = useI18n();
 const messages = {
-  en: { eyebrow: 'Payment and Invoice', title: 'Registration invoice', loading: 'Loading invoice…', noInvoice: 'No invoice is available yet.', invoice: 'Invoice', paid: 'Paid', registrationNumber: 'Registration number', participant: 'Participant', delegatePackage: 'Delegate package', paymentStatus: 'Payment status', packageTotal: 'Package total', paymentAmountGateway: 'Shown by payment gateway', preparingPdf: 'Preparing PDF…', downloadPdf: 'Download invoice PDF', finishProfile: 'Your payment is complete. Finish your profile so the backend can link this order to your registration and generate the invoice.', awaitingInvoice: 'Your invoice will appear after your payment and registration have been confirmed.', mismatchProfile: 'No invoice was found for this payment context yet. Please complete your profile if it is still pending.', mismatch: 'No invoice was found for this specific payment context yet.', completeExhibitor: 'Complete Exhibitor Profile', completeDelegate: 'Complete Delegate Profile', checkStatus: 'Check payment status', goPayment: 'Go to payment', unavailable: 'Your invoice is not available yet. Please contact the event organizer if your payment has already been confirmed.', printError: 'Unable to open print window.', exportError: 'The PDF export could not be prepared. Please try again.', invoiceSuffix: 'Invoice', seo: 'Invoice' },
-  zh: { eyebrow: '付款与发票', title: '注册发票', loading: '正在加载发票…', noInvoice: '目前尚无可用发票。', invoice: '发票', paid: '已付款', registrationNumber: '注册编号', participant: '参与者', delegatePackage: '代表套餐', paymentStatus: '付款状态', packageTotal: '套餐总额', paymentAmountGateway: '由支付网关显示', preparingPdf: '正在准备 PDF…', downloadPdf: '下载发票 PDF', finishProfile: '您的付款已完成。请完善个人资料，以便后端将此订单关联到您的注册并生成发票。', awaitingInvoice: '付款和注册确认后，您的发票将显示在此处。', mismatchProfile: '尚未找到与此次付款对应的发票。如果资料仍未完成，请先完善资料。', mismatch: '尚未找到与此次付款信息对应的发票。', completeExhibitor: '完善参展商资料', completeDelegate: '完善代表资料', checkStatus: '查看付款状态', goPayment: '前往付款', unavailable: '您的发票目前尚不可用。如果付款已确认，请联系活动主办方。', printError: '无法打开打印窗口。', exportError: '无法准备 PDF 导出，请重试。', invoiceSuffix: '发票', seo: '发票' }
+  en: { eyebrow: 'Payment and Invoice', title: 'Registration invoice', loading: 'Loading invoice…', noInvoice: 'No invoice is available yet.', invoice: 'Invoice', paid: 'Paid', registrationNumber: 'Registration number', participant: 'Participant', delegatePackage: 'Delegate package', paymentStatus: 'Payment status', packageTotal: 'Package total', paymentAmountGateway: 'Shown by payment gateway', preparingPdf: 'Preparing PDF…', downloadPdf: 'Download invoice PDF', finishProfile: 'Your payment is complete. Finish your profile so the backend can link this order to your registration and generate the invoice.', awaitingInvoice: 'Your invoice will appear after your payment and registration have been confirmed.', mismatchProfile: 'No invoice was found for this payment context yet. Please complete your profile if it is still pending.', mismatch: 'No invoice was found for this specific payment context yet.', completeExhibitor: 'Complete Exhibitor Profile', completeDelegate: 'Complete Delegate Profile', checkStatus: 'Check payment status', goPayment: 'Go to payment', unavailable: 'Your invoice is not available yet. Please contact the event organizer if your payment has already been confirmed.', exportError: 'The PDF export could not be prepared. Please try again.', invoiceSuffix: 'Invoice', seo: 'Invoice' },
+  zh: { eyebrow: '付款与发票', title: '注册发票', loading: '正在加载发票…', noInvoice: '目前尚无可用发票。', invoice: '发票', paid: '已付款', registrationNumber: '注册编号', participant: '参与者', delegatePackage: '代表套餐', paymentStatus: '付款状态', packageTotal: '套餐总额', paymentAmountGateway: '由支付网关显示', preparingPdf: '正在准备 PDF…', downloadPdf: '下载发票 PDF', finishProfile: '您的付款已完成。请完善个人资料，以便后端将此订单关联到您的注册并生成发票。', awaitingInvoice: '付款和注册确认后，您的发票将显示在此处。', mismatchProfile: '尚未找到与此次付款对应的发票。如果资料仍未完成，请先完善资料。', mismatch: '尚未找到与此次付款信息对应的发票。', completeExhibitor: '完善参展商资料', completeDelegate: '完善代表资料', checkStatus: '查看付款状态', goPayment: '前往付款', unavailable: '您的发票目前尚不可用。如果付款已确认，请联系活动主办方。', exportError: '无法准备 PDF 导出，请重试。', invoiceSuffix: '发票', seo: '发票' }
 } as const;
 const copy = computed(() => locale.value === 'zh-CN' ? messages.zh : messages.en);
 useSeoMeta({ title: () => `${copy.value.seo} | IWBIF 2026` });
@@ -60,6 +64,7 @@ const invoiceElement = ref<HTMLElement | null>(null);
 const currentInvoice = useState<Invoice | null>('current-invoice', () => null);
 const pending = ref(true);
 const downloading = ref(false);
+const exportError = ref('');
 const errorMessage = ref('');
 const pendingProfileType = computed(() => registrationFlow.profilePendingType.value);
 const emptyInvoiceMessage = computed(() => pendingProfileType.value
@@ -275,116 +280,17 @@ onMounted(async () => {
 const formatDate = (value?: string | null) => value ? new Intl.DateTimeFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'id-ID', { dateStyle: 'long', timeStyle: 'short' }).format(new Date(value)) : '-';
 
 const downloadInvoice = async () => {
-  if (!invoiceElement.value || !invoice.value) return;
+  if (downloading.value || !invoiceElement.value || !invoice.value) return;
 
   downloading.value = true;
+  exportError.value = '';
 
   try {
-    const printWindow = window.open('', '_blank', 'width=960,height=1200');
-    if (!printWindow) throw new Error(copy.value.printError);
-
-    const invoiceMarkup = invoiceElement.value.outerHTML;
-    const closingScriptTag = '</scr' + 'ipt>';
-    const invoiceTitle = `${invoice.value.registration.registration_number || invoice.value.order.order_number} ${copy.value.invoiceSuffix}`;
-
-    printWindow.document.write(`
-      <!doctype html>
-      <html lang="${locale.value === 'zh-CN' ? 'zh-CN' : 'en'}">
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>${invoiceTitle}</title>
-          <style>
-            :root {
-              color-scheme: light;
-            }
-            * {
-              box-sizing: border-box;
-            }
-            body {
-              margin: 0;
-              padding: 32px;
-              background: #eef4fb;
-              color: #08111f;
-              font-family: Arial, Helvetica, sans-serif;
-            }
-            .glass-card {
-              max-width: 840px;
-              margin: 0 auto;
-              border: 1px solid #d7e2f0;
-              border-radius: 28px;
-              padding: 32px;
-              background: #ffffff;
-              box-shadow: 0 18px 48px rgba(8, 17, 31, 0.08);
-            }
-            .text-slate-400,
-            .text-slate-500 {
-              color: #5b6b80 !important;
-            }
-            .text-cyan-200,
-            .text-cyan-200\\/70,
-            .text-emerald-200,
-            .text-emerald-300 {
-              color: #0f766e !important;
-            }
-            .text-2xl,
-            .text-lg,
-            .font-semibold,
-            .font-black {
-              color: #08111f;
-            }
-            .bg-emerald-300\\/10 {
-              background: #e6fffa !important;
-            }
-            .border-white\\/10 {
-              border-color: #d7e2f0 !important;
-            }
-            .print\\:hidden,
-            button,
-            a {
-              display: none !important;
-            }
-            dl {
-              display: grid;
-              grid-template-columns: repeat(2, minmax(0, 1fr));
-              gap: 20px;
-            }
-            dt {
-              font-size: 12px;
-              letter-spacing: 0.18em;
-              text-transform: uppercase;
-            }
-            dd {
-              margin: 8px 0 0;
-            }
-            @media print {
-              body {
-                padding: 0;
-                background: #ffffff;
-              }
-              .glass-card {
-                max-width: none;
-                border: none;
-                border-radius: 0;
-                box-shadow: none;
-                padding: 0;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          ${invoiceMarkup}
-          <script>
-            window.onload = () => {
-              window.print();
-            };
-          ${closingScriptTag}
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+    const { downloadInvoicePdf } = await import('~/utils/invoicePdf');
+    const identifier = invoice.value.registration.registration_number || invoice.value.order.order_number;
+    await downloadInvoicePdf(invoiceElement.value, `${identifier}-${copy.value.invoiceSuffix}`);
   } catch {
-    errorMessage.value = copy.value.exportError;
+    exportError.value = copy.value.exportError;
   } finally {
     downloading.value = false;
   }

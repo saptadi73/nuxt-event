@@ -229,7 +229,7 @@
             </thead>
             <tbody>
             <tr v-for="item in paginatedTransactions" :key="item.payment_id || item.id" class="border-b border-white/5 last:border-0">
-                <td class="py-3 pr-4 text-white" data-label="Order">{{ item.order_number || item.id }}</td>
+                <td class="py-3 pr-4 text-white" data-label="Order">{{ item.order_number || 'Order number unavailable' }}</td>
                 <td v-if="isMidtransReport" class="cell-references py-3 pr-4" data-label="Midtrans references">
                   <div class="grid min-w-0 gap-2 text-xs sm:min-w-56">
                     <button v-if="item.provider_order_id" type="button" class="reference-button" title="Salin Midtrans order ID" @click="copyReference(item.provider_order_id)">
@@ -241,7 +241,7 @@
                     <span v-if="!item.provider_order_id && !item.provider_transaction_id" class="text-slate-500">N/A</span>
                   </div>
                 </td>
-                <td class="py-3 pr-4" data-label="Participant">{{ item.participant_name || 'N/A' }}</td>
+                <td class="py-3 pr-4 break-words" data-label="Participant"><strong class="block">{{ item.customer_name?.trim() || item.participant_name?.trim() || item.customer_email?.trim() || 'User information unavailable' }}</strong><small v-if="item.customer_email && (item.customer_name?.trim() || item.participant_name?.trim())" class="mt-1 block text-slate-400">{{ item.customer_email }}</small><small v-if="item.registration_number" class="mt-1 block text-slate-400">{{ item.registration_number }}</small></td>
                 <td class="py-3 pr-4 break-words" data-label="Package">{{ item.package_name || 'N/A' }}</td>
                 <td class="py-3 pr-4" data-label="Channel">{{ item.channel_code || item.provider || 'N/A' }}</td>
                 <td class="py-3 pr-4" data-label="Status">
@@ -717,7 +717,9 @@ const filteredTransactions = computed(() => {
       item.provider_order_id,
       item.provider_transaction_id,
       item.participant_name,
+      item.customer_name,
       item.customer_email,
+      item.registration_number,
       item.package_name,
       item.channel_code,
       item.provider,
