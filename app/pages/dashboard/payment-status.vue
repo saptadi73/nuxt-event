@@ -35,7 +35,10 @@ import { isOrderFullyPaid } from '~/utils/orderPaymentProgress';
 import { useEvent } from '~/composables/useEvent';
 import { usePayment, type OrderItem, type PaymentItem, type PendingOrderProductItem } from '~/composables/usePayment';
 
-definePageMeta({ middleware: 'auth' });
+definePageMeta({
+  middleware: 'auth',
+  alias: ['/payment/success', '/payment/failed']
+});
 const { locale } = useI18n();
 const messages = {
   en: { eyebrow: '{provider} Payment Status', paymentStatus: 'Payment status', provider: 'Provider', packageTotal: 'Package total', checkingConfirmation: 'Checking for {provider} confirmation…', viewInvoice: 'View invoice', tryAgain: 'Try payment again', checkAgain: 'Check again', checking: 'Checking…', dashboard: 'Dashboard', reference: 'Reference', payment: 'Payment', statuses: { created: 'Created', pending: 'Awaiting verification', success: 'Payment successful', failed: 'Payment failed', expired: 'Checkout expired', canceled: 'Payment canceled' }, received: 'Payment received', notCompleted: 'Payment not completed', processing: 'Payment processing', verified: '{provider} notification has been verified by the backend.', retry: 'You may safely create a new {provider} checkout.', wait: 'Do not create another checkout while backend verification is in progress.', retrievalError: 'Payment status could not be retrieved.', missingReference: 'Payment reference was not found in this browser.', seo: 'Payment Status' },

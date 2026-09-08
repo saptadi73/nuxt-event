@@ -66,6 +66,27 @@ Alternatively, set the value in `.env` and then run `npm run build` or `npm run 
 5. Frontend polls `GET /api/v1/payments/{payment_id}` and waits for backend verification.
 6. Final status is authoritative; browser redirect is not proof of payment.
 
+### Payment redirection URLs
+
+After deploying the frontend, configure the payment gateway dashboard with:
+
+| Setting | Production URL |
+| --- | --- |
+| Successful payment | `https://iwbif.id/payment/success` |
+| Failed payment | `https://iwbif.id/payment/failed` |
+
+Both routes display the existing payment status page and verify the actual status
+with the backend. The URL itself never marks an order as paid or failed. These
+pages require a signed-in participant, just like `/dashboard/payment-status`.
+For local development, use the same paths on your frontend development origin.
+
+When generating redirect URLs per transaction, the backend can append
+`payment_id`, `order_id` (the internal order UUID), or `registration_id` as query
+parameters. Without these parameters, the page uses the payment reference saved
+in the same browser tab during checkout. A missing reference is shown as an
+error; it is never treated as successful payment. These are browser return URLs,
+not backend webhook URLs.
+
 ## Delegate registration
 
 The Delegate form saves the registration draft, optionally uploads a passport

@@ -102,6 +102,7 @@ export default defineNuxtConfig({
     '/speakers/**': { ssr: false },
     '/program': { ssr: false },
     '/dashboard/**': { ssr: false },
+    '/payment/**': { ssr: false },
     '/admin/**': { ssr: false }
   },
   compatibilityDate: '2026-08-01'
