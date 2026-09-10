@@ -124,7 +124,7 @@ export interface ParticipantReportPackage {
 
 export interface ParticipantReportItem {
   participant_id: string;
-  registration_id?: string;
+  registration_id?: string | null;
   registration_number?: string;
   user_id?: string;
   full_name?: string;

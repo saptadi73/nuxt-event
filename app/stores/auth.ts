@@ -199,14 +199,18 @@ export const useAuthStore = defineStore('auth', {
       const id = typeof payload.sub === 'string' ? payload.sub : typeof payload.id === 'string' ? payload.id : undefined;
       const email = typeof payload.email === 'string' ? payload.email : undefined;
       const fullName = typeof payload.full_name === 'string' ? payload.full_name : typeof payload.name === 'string' ? payload.name : undefined;
+      const storedUser = import.meta.client ? readStoredUser() : null;
+      const storedUserMatchesToken = Boolean(storedUser && (!id || !storedUser.id || storedUser.id === id));
 
       this.user = {
+        ...(storedUserMatchesToken ? storedUser : null),
         ...(this.user ?? {}),
         ...(id ? { id } : {}),
         ...(email ? { email } : {}),
         ...(fullName ? { full_name: fullName } : {}),
         ...(role ? { role } : {})
       };
+      writeStoredUser(this.user);
     },
     setTokens({ accessToken, refreshToken }: { accessToken: string; refreshToken: string }) {
       this.accessToken = accessToken;

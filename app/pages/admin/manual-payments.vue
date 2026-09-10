@@ -14,13 +14,19 @@
         <div class="rounded-2xl border border-amber-300/20 bg-amber-300/5 p-4 text-sm leading-6 text-amber-100"><strong>Verification required.</strong> Record this payment only after the participant has completed registration and the offline funds have actually been received.</div>
         <div class="mt-6 space-y-5">
           <label class="field"><span>Payment method</span><select v-model="form.payment_method"><option value="cash">Cash</option><option value="manual_transfer">Manual Bank Transfer</option><option value="edc">EDC</option><option value="other_offline">Other Offline</option></select></label>
-          <label class="field"><span>Registration</span><input v-model.trim="form.registrationId" required list="offline-registration-options" placeholder="Select or enter registration UUID" autocomplete="off"><datalist id="offline-registration-options"><option v-for="item in registrations" :key="item.registration_id || item.participant_id" :value="item.registration_id">{{ item.registration_number || item.full_name || item.email }}</option></datalist></label>
+          <div class="space-y-3">
+            <label class="field"><span>Search participant</span><input v-model="registrationSearch" type="search" placeholder="Type a registered name or email" autocomplete="off" :disabled="submitting" @input="clearRegistrationSelection"></label>
+            <label class="field"><span>Registration</span><select v-model="form.registrationId" required :disabled="registrationsLoading || !!registrationsError || submitting" @change="confirmed = false"><option disabled value="">{{ registrationsLoading ? 'Loading registered participants...' : 'Select a registered participant' }}</option><option v-for="item in filteredRegistrations" :key="item.registration_id" :value="item.registration_id">{{ item.full_name || 'Unnamed participant' }} · {{ item.email || 'No email' }}{{ item.registration_number ? ` · ${item.registration_number}` : '' }}</option></select></label>
+            <p v-if="registrationsError" role="alert" class="text-sm text-red-200">{{ registrationsError }} <button type="button" class="underline" @click="loadRegistrations()">Retry</button></p>
+            <p v-else-if="!registrationsLoading && !filteredRegistrations.length" role="status" class="text-sm text-slate-400">{{ emptyRegistrationMessage }}</p>
+            <p v-if="selectedRegistration" class="break-words text-sm text-emerald-200">Selected: {{ selectedRegistration.full_name || 'Unnamed participant' }} · {{ selectedRegistration.email || 'No email' }}{{ selectedRegistration.registration_number ? ` · ${selectedRegistration.registration_number}` : '' }}</p>
+          </div>
           <label class="field"><span>Receipt number</span><input v-model.trim="form.receipt_number" required minlength="3" maxlength="128" placeholder="CASH-IWBIF-2026-00125" autocomplete="off"></label>
           <label class="field"><span>Amount <small>(optional; leave empty to settle the exact remaining balance)</small></span><input v-model.number="form.amount" type="number" min="1" step="1" placeholder="Backend-calculated remaining amount"></label>
           <label class="field"><span>Paid at <small>(optional)</small></span><input v-model="form.paid_at" type="datetime-local"></label>
           <label class="field"><span>Verification notes <small>(optional)</small></span><textarea v-model.trim="form.notes" rows="4" maxlength="1000" placeholder="Bank statement checked by organizer" /></label>
           <label class="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-slate-300"><input v-model="confirmed" type="checkbox" class="mt-1 h-4 w-4 accent-amber-300"><span>I have verified the registration, outstanding balance, receipt, and receipt of funds.</span></label>
-          <button class="w-full rounded-full bg-amber-300 px-6 py-3 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50" :disabled="submitting || !confirmed">{{ submitting ? 'Creating payment...' : 'Create offline payment' }}</button>
+          <button class="w-full rounded-full bg-amber-300 px-6 py-3 font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50" :disabled="submitting || !confirmed || !selectedRegistration || registrationsLoading || !!registrationsError">{{ submitting ? 'Creating payment...' : 'Create offline payment' }}</button>
         </div>
       </form>
 
@@ -62,13 +68,64 @@ const feedbackTone = ref<'success' | 'error'>('success');
 const reportLoading = ref(false);
 const reportError = ref('');
 const manualTransactions = ref<PaymentReportTransaction[]>([]);
-const registrations = ref<ParticipantReportItem[]>([]);
+const registrations = ref<Array<ParticipantReportItem & { registration_id: string }>>([]);
+const registrationSearch = ref('');
+const registrationsLoading = ref(false);
+const registrationsError = ref('');
+const skippedRegistrationMatches = ref(0);
+const registrationSearchTimer = ref<ReturnType<typeof setTimeout> | null>(null);
+let registrationsRequestSerial = 0;
+const filteredRegistrations = computed(() => {
+  const query = registrationSearch.value.trim().toLocaleLowerCase();
+  return registrations.value.filter(item => !query || [item.full_name, item.email].some(value => value?.toLocaleLowerCase().includes(query)));
+});
+const emptyRegistrationMessage = computed(() => {
+  if (registrationSearch.value.trim() && skippedRegistrationMatches.value) {
+    return 'Participant found, but no linked registration is available for offline payment.';
+  }
+  return registrationSearch.value.trim() ? 'No registered participants match this name or email.' : 'No registered participants found.';
+});
+const selectedRegistration = computed(() => filteredRegistrations.value.find(item => item.registration_id === form.registrationId));
+const clearRegistrationSelection = () => {
+  form.registrationId = '';
+  confirmed.value = false;
+};
+const loadRegistrations = async (search = registrationSearch.value.trim()) => {
+  const requestSerial = ++registrationsRequestSerial;
+  registrationsLoading.value = true;
+  registrationsError.value = '';
+  clearRegistrationSelection();
+  try {
+    const participants = new Map<string, ParticipantReportItem & { registration_id: string }>();
+    let skippedMatches = 0;
+    let page = 1;
+    while (true) {
+      const response = await getParticipantReport({ page, size: 100, search: search || undefined });
+      const rows = response.data || [];
+      rows.forEach(item => { if (item.registration_id) participants.set(item.registration_id, { ...item, registration_id: item.registration_id }); else skippedMatches += 1; });
+      const pages = response.meta?.pages;
+      const size = response.meta?.size || 100;
+      if (!rows.length || (pages !== undefined ? page >= pages : response.meta?.total !== undefined ? page * size >= response.meta.total : rows.length < size)) break;
+      page += 1;
+    }
+    if (requestSerial !== registrationsRequestSerial) return;
+    skippedRegistrationMatches.value = skippedMatches;
+    registrations.value = [...participants.values()].sort((a, b) => (a.full_name || a.email || '').localeCompare(b.full_name || b.email || ''));
+  } catch {
+    if (requestSerial !== registrationsRequestSerial) return;
+    registrations.value = [];
+    skippedRegistrationMatches.value = 0;
+    registrationsError.value = 'Registered participants could not be loaded.';
+  } finally {
+    if (requestSerial === registrationsRequestSerial) registrationsLoading.value = false;
+  }
+};
 const createdTicket = ref<Record<string, unknown> | null>(null);
 const loadManualReport = async () => { reportLoading.value = true; reportError.value = ''; try { manualTransactions.value = (await getManualPaymentReport()).data?.transactions || []; } catch (error) { const value = error as { data?: { message?: string } }; reportError.value = value.data?.message || 'Manual payment report could not be loaded.'; } finally { reportLoading.value = false; } };
 const openProof = async (proofId: string, fileName?: string) => { reportError.value = ''; try { const blob = await downloadManualProof(proofId); const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.target = '_blank'; anchor.rel = 'noopener'; anchor.download = fileName || 'payment-proof'; anchor.click(); window.setTimeout(() => URL.revokeObjectURL(url), 60_000); } catch (error) { const value = error as { data?: { message?: string } }; reportError.value = value.data?.message || 'Payment proof could not be opened.'; } };
 
 const submitConfirmation = async () => {
-  if (submitting.value || !confirmed.value) return;
+  if (submitting.value || !confirmed.value || !selectedRegistration.value || registrationsLoading.value || registrationsError.value) return;
   submitting.value = true;
   feedback.value = '';
   createdTicket.value = null;
@@ -86,6 +143,7 @@ const submitConfirmation = async () => {
     feedback.value = response.message || 'The offline payment has been created and fully reconciled.';
     createdTicket.value = response.data.ticket || null;
     form.registrationId = '';
+    registrationSearch.value = '';
     form.receipt_number = '';
     form.amount = null;
     form.notes = '';
@@ -101,7 +159,12 @@ const submitConfirmation = async () => {
     submitting.value = false;
   }
 };
-onMounted(async () => { await Promise.all([loadManualReport(), getParticipantReport({ page: 1, size: 100 }).then(response => { registrations.value = (response.data || []).filter(item => item.registration_id); }).catch(() => { registrations.value = []; })]); });
+watch(registrationSearch, () => {
+  if (registrationSearchTimer.value) clearTimeout(registrationSearchTimer.value);
+  registrationSearchTimer.value = setTimeout(() => { void loadRegistrations(); }, 300);
+});
+onBeforeUnmount(() => { if (registrationSearchTimer.value) clearTimeout(registrationSearchTimer.value); });
+onMounted(async () => { await Promise.all([loadManualReport(), loadRegistrations()]); });
 </script>
 
 <style scoped>
