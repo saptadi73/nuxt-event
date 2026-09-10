@@ -59,8 +59,8 @@ export function useEmailNotifications() {
     api<ApiResponse<EmailPreview>>(`${base(eventId)}/${encodeURIComponent(trigger)}/preview`, { method: 'POST', body: { variables } });
   const sendTest = (eventId: string, trigger: string, recipient: string, variables: Record<string, string> = {}) =>
     api<ApiResponse<EmailTestResult>>(`${base(eventId)}/${encodeURIComponent(trigger)}/test-send`, { method: 'POST', body: { recipient, variables } });
-  const getDeliveryHistory = (eventId: string, limit = 100) =>
-    api<ApiResponse<EmailDeliveryItem[]>>(`${base(eventId)}/logs/history`, { query: { limit: Math.min(Math.max(limit, 1), 500) } });
+  const getDeliveryHistory = (eventId: string, limit = 100, params: { search?: string; status?: string; page?: number; size?: number } = {}) =>
+    api<ApiResponse<EmailDeliveryItem[]>>(`${base(eventId)}/logs/history`, { query: { limit: Math.min(Math.max(limit, 1), 500), ...params } });
   const getAccountPreferences = (eventId: string, userId: string) =>
     api<ApiResponse<EmailAccountPreference[]>>(`${base(eventId)}/accounts/${encodeURIComponent(userId)}/preferences`);
   const updateAccountPreference = (eventId: string, userId: string, trigger: string, isEnabled: boolean | null) =>

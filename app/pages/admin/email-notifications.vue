@@ -154,7 +154,7 @@
         <div class="history-summary">
           <div><strong>{{ deliveryCounts.sent }}</strong><span>Berhasil dikirim</span></div>
           <div><strong>{{ deliveryCounts.failed }}</strong><span>Gagal dikirim</span></div>
-          <div><strong>{{ filteredDeliveries.length }}</strong><span>Ditemukan dari {{ deliveries.length }}</span></div>
+          <div><strong>{{ historyMeta.total }}</strong><span>Hasil pencarian</span></div>
         </div>
 
         <div class="glass-card history-table">
@@ -164,7 +164,7 @@
             <label class="field"><span>Per halaman</span><select v-model.number="historyPageSize"><option :value="10">10</option><option :value="20">20</option><option :value="50">50</option><option :value="100">100</option></select></label>
           </div>
           <div class="table-scroll data-table-shell"><table><thead><tr><th>Penerima</th><th>Jenis email</th><th>Status</th><th>Waktu</th></tr></thead><tbody><tr v-for="item in paginatedDeliveries" :key="item.id"><td data-label="Penerima"><strong>{{ item.recipient }}</strong><small>{{ item.subject }}</small></td><td data-label="Jenis email">{{ triggerInfo(item.trigger).title }}</td><td data-label="Status"><span class="delivery-status" :class="item.status">{{ deliveryStatusLabel(item.status) }}</span><small v-if="item.error_message" class="error-text">{{ item.error_message }}</small></td><td data-label="Waktu">{{ formatDate(item.sent_at || item.created_at) }}</td></tr><tr v-if="!historyLoading && !paginatedDeliveries.length"><td colspan="4" class="empty-cell">{{ deliveries.length ? 'Riwayat tidak ditemukan.' : 'Belum ada riwayat pengiriman.' }}</td></tr></tbody></table></div>
-          <footer v-if="filteredDeliveries.length" class="history-pagination"><span>Menampilkan {{ historyPageStart }}–{{ historyPageEnd }} dari {{ filteredDeliveries.length }}</span><div><button type="button" class="secondary" :disabled="historyPage === 1" @click="historyPage--">Sebelumnya</button><span>Halaman {{ historyPage }} / {{ historyTotalPages }}</span><button type="button" class="secondary" :disabled="historyPage === historyTotalPages" @click="historyPage++">Berikutnya</button></div></footer>
+          <footer v-if="filteredDeliveries.length" class="history-pagination"><span>Menampilkan {{ historyPageStart }}–{{ historyPageEnd }} dari {{ historyMeta.total }}</span><div><button type="button" class="secondary" :disabled="historyPage === 1" @click="historyPage--">Sebelumnya</button><span>Halaman {{ historyPage }} / {{ historyTotalPages }}</span><button type="button" class="secondary" :disabled="historyPage === historyTotalPages" @click="historyPage++">Berikutnya</button></div></footer>
         </div>
       </section>
     </template>
@@ -181,6 +181,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTableReload } from '~/composables/useTableReload';
 import { useAdminOperations, type AdminUserItem } from '~/composables/useAdminOperations';
 import { useEmailNotifications, type EmailAccountPreference, type EmailDeliveryItem, type EmailNotificationTemplate, type EmailPreview } from '~/composables/useEmailNotifications';
 import { useEvent, type EventItem } from '~/composables/useEvent';
@@ -233,19 +234,12 @@ const deliveryCounts = computed(() => ({
   sent: deliveries.value.filter(item => ['sent', 'success'].includes(item.status.toLowerCase())).length,
   failed: deliveries.value.filter(item => ['failed', 'error'].includes(item.status.toLowerCase())).length
 }));
-const normalizedDeliveryStatus = (status: string) => ['sent', 'success'].includes(status.toLowerCase()) ? 'sent' : ['failed', 'error'].includes(status.toLowerCase()) ? 'failed' : 'pending';
-const filteredDeliveries = computed(() => {
-  const query = historySearch.value.toLowerCase();
-  return deliveries.value.filter(item => {
-    if (historyStatus.value && normalizedDeliveryStatus(item.status) !== historyStatus.value) return false;
-    if (!query) return true;
-    return [item.recipient, item.subject, item.trigger, triggerInfo(item.trigger).title, item.status, item.error_message || ''].join(' ').toLowerCase().includes(query);
-  });
-});
-const historyTotalPages = computed(() => Math.max(1, Math.ceil(filteredDeliveries.value.length / historyPageSize.value)));
-const paginatedDeliveries = computed(() => filteredDeliveries.value.slice((historyPage.value - 1) * historyPageSize.value, historyPage.value * historyPageSize.value));
-const historyPageStart = computed(() => filteredDeliveries.value.length ? (historyPage.value - 1) * historyPageSize.value + 1 : 0);
-const historyPageEnd = computed(() => Math.min(historyPage.value * historyPageSize.value, filteredDeliveries.value.length));
+const filteredDeliveries = computed(() => deliveries.value);
+const historyMeta=reactive({total:0,pages:0});
+const historyTotalPages=computed(()=>Math.max(1,historyMeta.pages));
+const paginatedDeliveries=computed(()=>deliveries.value);
+const historyPageStart=computed(()=>deliveries.value.length?(historyPage.value-1)*historyPageSize.value+1:0);
+const historyPageEnd=computed(()=>Math.min((historyPage.value-1)*historyPageSize.value+deliveries.value.length,historyMeta.total));
 const changedPreferenceCount = computed(() => accountPreferences.value.filter(preference => preferenceDraft[preference.trigger] !== preferenceChoice(preference.override_enabled)).length);
 
 const triggerInfo = (trigger: string) => {
@@ -296,12 +290,14 @@ const loadTemplates = async () => {
   } catch (error) { showFeedback(apiError(error), 'error'); templates.value = []; }
   finally { loading.value = false; }
 };
+let tableRequestId=0;
 const loadHistory = async () => {
+  const requestId=++tableRequestId;
   if (!eventId.value) return;
   historyLoading.value = true;
-  try { deliveries.value = (await emailApi.getDeliveryHistory(eventId.value, 500)).data || []; historyPage.value = 1; }
-  catch (error) { showFeedback(apiError(error), 'error'); }
-  finally { historyLoading.value = false; }
+  try { const result=await emailApi.getDeliveryHistory(eventId.value,100,{search:historySearch.value,status:historyStatus.value,page:historyPage.value,size:historyPageSize.value}); if(requestId!==tableRequestId)return; deliveries.value=result.data||[];Object.assign(historyMeta,{total:result.meta?.total??0,pages:result.meta?.pages??0}); }
+  catch (error) { if(requestId!==tableRequestId)return; showFeedback(apiError(error), 'error'); }
+  finally { if(requestId===tableRequestId)historyLoading.value = false; }
 };
 const loadUsers = async () => {
   usersLoading.value = true;
@@ -374,12 +370,15 @@ const deliveryStatusLabel = (status: string) => ['sent', 'success'].includes(sta
 const formatDate = (value?: string | null) => value ? new Intl.DateTimeFormat(locale.value === 'zh-CN' ? 'zh-CN' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—';
 
 watch(eventId, async () => {
+  historyPage.value=1;
   selectedType.value = '';
   accountPreferences.value = [];
   await Promise.all([loadTemplates(), loadHistory()]);
   if (selectedUserId.value) await loadPreferences();
 });
-watch([historySearch, historyStatus, historyPageSize], () => { historyPage.value = 1; });
+useTableReload(historySearch,historyPage,historyPageSize,loadHistory);
+watch(historyTotalPages,value=>{if(historyPage.value>value)historyPage.value=value;});
+watch(historyStatus,()=>{historyPage.value=1;void loadHistory();});
 await Promise.all([loadTemplates(), loadHistory(), loadUsers()]);
 </script>
 

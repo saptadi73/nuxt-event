@@ -10,6 +10,7 @@
     </header>
 
     <form class="glass-card mt-7 grid gap-4 rounded-3xl p-5 sm:grid-cols-2 lg:grid-cols-4" @submit.prevent="applyFilters">
+      <label class="field sm:col-span-2 lg:col-span-4"><span>Search transactions</span><input v-model.trim="search" type="search" placeholder="Order, participant, email, registration, provider, or reference"></label>
       <label class="field"><span>Status</span><select v-model="filters.status"><option value="">All statuses</option><option v-for="status in statuses" :key="status" :value="status">{{ status }}</option></select></label>
       <label class="field"><span>Provider</span><input v-model.trim="filters.provider" placeholder="midtrans, doku, manual_transfer"></label>
       <label class="field"><span>Channel</span><input v-model.trim="filters.channel_code" placeholder="QRIS, BCA, BNI"></label>
@@ -37,12 +38,12 @@
       </div>
 
       <div v-if="loading" class="py-16 text-center text-slate-400">Loading transactions...</div>
-      <div v-else-if="!transactions.length" class="py-16 text-center text-slate-400">No transactions match these filters.</div>
+      <div v-else-if="!visibleTransactions.length" class="py-16 text-center text-slate-400">No transactions match this search and filter.</div>
       <div v-else class="mt-5 overflow-x-auto data-table-shell">
         <table class="w-full min-w-[1100px] text-left text-sm">
           <thead><tr><th class="w-10"><input :checked="allVisibleSelected" type="checkbox" class="accent-amber-300" aria-label="Select all visible transactions" @change="toggleAll"></th><th>Order</th><th>Registration user</th><th>Provider / reference</th><th>Status</th><th>Amount</th><th>Paid / expiry</th><th class="text-right">Actions</th></tr></thead>
           <tbody>
-            <tr v-for="item in transactions" :key="paymentId(item)" :class="item.deleted_at ? 'opacity-55' : ''">
+            <tr v-for="item in visibleTransactions" :key="paymentId(item)" :class="item.deleted_at ? 'opacity-55' : ''">
               <td><input :checked="selectedIds.includes(paymentId(item))" :disabled="!item.allowed_actions?.length" type="checkbox" class="accent-amber-300" :aria-label="`Select ${item.order_number || item.customer_name || item.participant_name || item.customer_email || 'transaction'}`" @change="toggleOne(paymentId(item))"></td>
               <td data-label="Order"><strong class="block text-white">{{ item.order_number || 'Order number unavailable' }}</strong></td>
               <td data-label="Registration user">
@@ -73,6 +74,7 @@
 </template>
 
 <script setup lang="ts">
+import { useDebouncedReload } from '~/composables/useTableReload';
 import { useAdminReport, type PaymentReportResponse, type PaymentReportTransaction } from '~/composables/useAdminReport';
 
 definePageMeta({ middleware: ['auth', 'admin'] });
@@ -92,12 +94,14 @@ const saving = ref(false);
 const feedback = ref('');
 const feedbackTone = ref<'success' | 'error'>('success');
 const selectedIds = ref<string[]>([]);
+const search = ref('');
 const dialog = reactive<{ open: boolean; action: TransactionAction; ids: string[]; notes: string; paid_at: string; step: 1 | 2; finalAcknowledged: boolean }>({ open: false, action: 'success', ids: [], notes: '', paid_at: '', step: 1, finalAcknowledged: false });
 const transactions = computed(() => report.value.transactions || []);
 const paymentId = (item: PaymentReportTransaction): string => item.payment_id || item.id || '';
 const providerReference = (item: PaymentReportTransaction) => [item.provider_order_id, item.provider_transaction_id]
   .find(value => value?.trim() && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.trim()));
-const allVisibleSelectableIds = computed(() => transactions.value.filter(item => item.allowed_actions?.length).map(paymentId));
+const visibleTransactions = computed(() => transactions.value);
+const allVisibleSelectableIds = computed(() => visibleTransactions.value.filter(item => item.allowed_actions?.length).map(paymentId));
 const allVisibleSelected = computed(() => allVisibleSelectableIds.value.length > 0 && allVisibleSelectableIds.value.every(id => selectedIds.value.includes(id)));
 const pageStart = computed(() => meta.total ? offset.value + 1 : 0);
 const pageEnd = computed(() => Math.min(offset.value + transactions.value.length, meta.total));
@@ -105,9 +109,11 @@ const summaryCards = computed(() => [{ label: 'Total', value: report.value.summa
 const actionTitle = computed(() => dialog.action === 'success' ? 'Confirm payment' : dialog.action === 'canceled' ? 'Cancel transaction' : 'Delete transaction');
 
 const errorText = (error: unknown) => { const value = error as { data?: { message?: string; errors?: Array<{ message: string }> }; message?: string }; return value.data?.errors?.[0]?.message || value.data?.message || value.message || 'The request could not be completed.'; };
-const loadTransactions = async () => { loading.value = true; feedback.value = ''; try { const response = await getAdminTransactions({ ...filters, limit: limit.value, offset: offset.value }); report.value = response.data || emptySummary(); meta.total = response.meta?.total ?? report.value.transactions.length; meta.limit = response.meta?.limit ?? limit.value; meta.offset = response.meta?.offset ?? offset.value; selectedIds.value = []; } catch (error) { feedbackTone.value = 'error'; feedback.value = errorText(error); } finally { loading.value = false; } };
+let tableRequestId=0;
+const loadTransactions = async () => {
+  const requestId=++tableRequestId; loading.value = true; feedback.value = ''; try { const response = await getAdminTransactions({ ...filters, search: search.value, page: Math.floor(offset.value / limit.value) + 1, size: limit.value }); if(requestId!==tableRequestId)return; report.value = response.data || emptySummary(); meta.total = response.meta?.total ?? report.value.transactions.length; meta.limit = response.meta?.limit ?? limit.value; meta.offset = response.meta?.offset ?? offset.value; selectedIds.value = []; } catch (error) { if(requestId!==tableRequestId)return; feedbackTone.value = 'error'; feedback.value = errorText(error); } finally { if(requestId===tableRequestId)loading.value = false; } };
 const applyFilters = () => { offset.value = 0; loadTransactions(); };
-const resetFilters = () => { Object.assign(filters, { status: '', provider: '', channel_code: '', event_id: '', date_from: '', date_to: '', include_deleted: false }); applyFilters(); };
+const resetFilters = () => { search.value = ''; Object.assign(filters, { status: '', provider: '', channel_code: '', event_id: '', date_from: '', date_to: '', include_deleted: false }); applyFilters(); };
 const changeLimit = () => { offset.value = 0; loadTransactions(); };
 const previousPage = () => { offset.value = Math.max(0, offset.value - limit.value); loadTransactions(); };
 const nextPage = () => { offset.value += limit.value; loadTransactions(); };
@@ -125,6 +131,8 @@ const money = (amount = 0, currency = 'IDR') => new Intl.NumberFormat('id-ID', {
 const formatDate = (value?: string | null) => value ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—';
 const statusClass = (value?: string) => value === 'success' ? 'status-live' : ['failed', 'expired', 'refunded', 'canceled'].includes(value || '') ? 'status-off' : 'status-draft';
 
+watch(search, () => { offset.value = 0; });
+useDebouncedReload(search, loadTransactions);
 await loadTransactions();
 </script>
 

@@ -5,9 +5,11 @@
       <div class="flex flex-wrap gap-3"><NuxtLink to="/program" class="action-secondary">View public program</NuxtLink><button class="action-primary" :disabled="!selectedEventId" @click="openCreate">+ New session</button></div>
     </div>
 
-    <div class="mt-8 flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/[.04] p-4 sm:flex-row sm:items-end sm:justify-between">
+    <div class="mt-8 flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/[.04] p-4 sm:flex-row sm:items-end">
       <label class="field w-full sm:max-w-md"><span>Event</span><select v-model="selectedEventId"><option v-for="event in events" :key="event.id" :value="event.id">{{ event.name }}</option></select></label>
-      <p class="text-sm text-slate-400">{{ sessions.length }} sessions</p>
+      <label class="field flex-1"><span>Search</span><input v-model.trim="search" type="search" placeholder="Title, type, room, or status"></label>
+      <label class="field sm:w-32"><span>Per page</span><select v-model.number="pageSize"><option :value="10">10</option><option :value="20">20</option><option :value="50">50</option></select></label>
+      <p class="pb-3 text-sm text-slate-400">{{ tableMeta.total }} sessions</p>
     </div>
     <p v-if="feedback" class="mt-5 rounded-2xl border p-4 text-sm" :class="feedbackTone === 'error' ? 'border-red-400/30 bg-red-950/30 text-red-100' : 'border-emerald-300/30 bg-emerald-950/30 text-emerald-100'">{{ feedback }}</p>
 
@@ -17,8 +19,8 @@
           <thead class="border-b border-white/10 bg-white/[.045] text-[11px] uppercase tracking-[.18em] text-slate-400"><tr><th class="px-5 py-4">Session</th><th class="px-5 py-4">Schedule</th><th class="px-5 py-4">Room</th><th class="px-5 py-4">Capacity</th><th class="px-5 py-4">Status</th><th class="px-5 py-4 text-right">Actions</th></tr></thead>
           <tbody class="divide-y divide-white/[.07]">
             <tr v-if="loading"><td colspan="6" class="px-5 py-12 text-center text-slate-400">Loading program...</td></tr>
-            <tr v-else-if="!sessions.length"><td colspan="6" class="px-5 py-12 text-center text-slate-400">No sessions are available for this event.</td></tr>
-            <tr v-for="session in sessions" v-else :key="session.id" class="transition hover:bg-cyan-300/[.035]">
+            <tr v-else-if="!filteredSessions.length"><td colspan="6" class="px-5 py-12 text-center text-slate-400">No sessions are available for this event.</td></tr>
+            <tr v-for="session in paginatedSessions" v-else :key="session.id" class="transition hover:bg-cyan-300/[.035]">
               <td class="px-5 py-4" data-label="Session"><p class="break-words font-bold text-white">{{ session.title }}</p><p class="mt-1 text-xs capitalize text-cyan-200">{{ session.session_type || 'session' }}</p></td>
               <td class="px-5 py-4 text-sm text-slate-300" data-label="Schedule"><p class="break-words">{{ formatDay(session.start_at) }}</p><p class="mt-1 break-words text-xs text-slate-500">{{ formatTime(session.start_at) }}–{{ formatTime(session.end_at) }}</p></td>
               <td class="px-5 py-4 text-sm text-slate-300 break-words" data-label="Room">{{ session.room_name || 'TBA' }}</td><td class="px-5 py-4 text-sm text-slate-300" data-label="Capacity">{{ session.capacity || '—' }}</td>
@@ -29,6 +31,7 @@
         </table>
       </div>
     </div>
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-400"><span>Showing {{ pageStart }}–{{ pageEnd }} of {{ tableMeta.total }}</span><div class="flex items-center gap-3"><button class="table-button" :disabled="currentPage <= 1" @click="currentPage--">Previous</button><span>Page {{ currentPage }} of {{ totalPages }}</span><button class="table-button" :disabled="currentPage >= totalPages" @click="currentPage++">Next</button></div></div>
 
     <Teleport to="body"><div v-if="modalOpen" class="modal-backdrop"><form class="modal-card" @submit.prevent="saveSession">
       <div class="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5 sm:px-7"><div><p class="text-xs uppercase tracking-[.24em] text-cyan-200">Program editor</p><h2 class="mt-2 text-2xl font-black">{{ editingId ? 'Update session' : 'Create session' }}</h2></div><button type="button" class="modal-close" aria-label="Close" @click="closeModal">×</button></div>
@@ -48,6 +51,7 @@
 </template>
 
 <script setup lang="ts">
+import { useTableReload } from '~/composables/useTableReload';
 import { useEvent, type EventItem, type SessionItem } from '~/composables/useEvent';
 import { useAdminContent, type SessionMutationPayload } from '~/composables/useAdminContent';
 definePageMeta({ middleware: ['auth', 'admin'] }); useSeoMeta({ title: 'Manage Program | IWBIF 2026' });
@@ -55,6 +59,7 @@ const { getEvents } = useEvent(); const adminApi = useAdminContent();
 const { data: eventResponse } = await useAsyncData('admin-program-events', () => getEvents(1, 100));
 const events = computed<EventItem[]>(() => eventResponse.value?.data || []); const selectedEventId = ref(events.value[0]?.id || ''); const selectedEvent = computed(() => events.value.find(item => item.id === selectedEventId.value));
 const sessions = ref<SessionItem[]>([]); const loading = ref(false); const saving = ref(false); const editingId = ref(''); const modalOpen = ref(false); const feedback = ref(''); const feedbackTone = ref<'success'|'error'>('success');
+const search=ref(''),currentPage=ref(1),pageSize=ref(20);const filteredSessions=computed(()=>sessions.value);const tableMeta=reactive({total:0,pages:0});const totalPages=computed(()=>Math.max(1,tableMeta.pages));const paginatedSessions=computed(()=>sessions.value);const pageStart=computed(()=>sessions.value.length?(currentPage.value-1)*pageSize.value+1:0);const pageEnd=computed(()=>Math.min((currentPage.value-1)*pageSize.value+sessions.value.length,tableMeta.total));
 type SessionTranslationFields=Record<string,unknown>&{title?:string;description?:string;session_type?:string;room_name?:string};
 const activeTab=ref<'en'|'zh-CN'>('en'),translationLoading=ref(false),translationExists=ref(false);const emptyZhForm=()=>({title:'',description:'',session_type:'',room_name:''});const zhForm=reactive(emptyZhForm());
 const translationStatuses=ref<Record<string,'loading'|'complete'|'missing'|'error'>>({});
@@ -63,7 +68,7 @@ const emptyForm = ():SessionForm => ({ title:'', slug:'', description:'', sessio
 const apiError=(error:unknown)=>{const value=error as {data?:{message?:string;errors?:Array<{message:string}>}};return value.data?.errors?.[0]?.message||value.data?.message||(error instanceof Error?error.message:'The session could not be saved.');};
 const localDate=(value:string)=>{const date=new Date(value);return new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16);};
 const loadTranslationStatuses=async()=>{translationStatuses.value=Object.fromEntries(sessions.value.map(item=>[item.id,'loading'])) as Record<string,'loading'|'complete'|'missing'|'error'>;await Promise.all(sessions.value.map(async item=>{try{const rows=(await adminApi.getContentTranslations('session',item.id)).data||[];translationStatuses.value[item.id]=rows.some(row=>row.locale==='zh-CN')?'complete':'missing';}catch{translationStatuses.value[item.id]='error';}}));};
-const loadSessions=async()=>{if(!selectedEvent.value?.slug){sessions.value=[];translationStatuses.value={};return;}loading.value=true;try{sessions.value=(await adminApi.getSessions(selectedEvent.value.slug, 'en')).data||[];await loadTranslationStatuses();}catch(error){feedbackTone.value='error';feedback.value=apiError(error);}finally{loading.value=false;}};
+let tableRequestId=0;const loadSessions=async()=>{const requestId=++tableRequestId;if(!selectedEvent.value?.slug){sessions.value=[];translationStatuses.value={};return;}loading.value=true;try{const result=await adminApi.getSessions(selectedEvent.value.slug, 'en',{search:search.value,page:currentPage.value,size:pageSize.value});if(requestId!==tableRequestId)return;sessions.value=result.data||[];Object.assign(tableMeta,{total:result.meta?.total??0,pages:result.meta?.pages??0});await loadTranslationStatuses();}catch(error){if(requestId!==tableRequestId)return;feedbackTone.value='error';feedback.value=apiError(error);}finally{if(requestId===tableRequestId)loading.value=false;}};
 const resetForm=()=>{editingId.value='';activeTab.value='en';translationLoading.value=false;translationExists.value=false;Object.assign(form,emptyForm());Object.assign(zhForm,emptyZhForm());}; const openCreate=()=>{resetForm();modalOpen.value=true;};
 const loadChineseTranslation=async(sessionId:string)=>{translationLoading.value=true;try{const rows=(await adminApi.getContentTranslations<SessionTranslationFields>('session',sessionId)).data||[];const row=rows.find(item=>item.locale==='zh-CN');translationExists.value=Boolean(row);const fields=row?.fields||{};Object.assign(zhForm,{title:String(fields.title||''),description:String(fields.description||''),session_type:String(fields.session_type||''),room_name:String(fields.room_name||'')});}catch(error){feedbackTone.value='error';feedback.value=`Chinese translation could not be loaded. ${apiError(error)}`;}finally{translationLoading.value=false;}};
 const openEdit=async(session:SessionItem)=>{resetForm();editingId.value=session.id;Object.assign(form,{title:session.title,slug:session.slug||'',description:session.description||'',session_type:session.session_type||'session',room_name:session.room_name||'',start_at:localDate(session.start_at),end_at:localDate(session.end_at),capacity:session.capacity??null,status:session.status||'published'});modalOpen.value=true;await loadChineseTranslation(session.id);};
@@ -72,7 +77,7 @@ const hasChineseContent=()=>Object.values(zhForm).some(value=>value.trim());
 const saveSession=async()=>{if(!selectedEventId.value||saving.value)return;if(new Date(form.end_at)<=new Date(form.start_at)){feedbackTone.value='error';feedback.value='End time must be after start time.';activeTab.value='en';return;}saving.value=true;const payload={...form,slug:form.slug||null,description:form.description||null,room_name:form.room_name||null,capacity:form.capacity||null,start_at:new Date(form.start_at).toISOString(),end_at:new Date(form.end_at).toISOString()};let sourceSaved=false;try{let sessionId=editingId.value;if(sessionId)await adminApi.updateSession(sessionId,payload);else{const created=await adminApi.createSession({...payload,event_id:selectedEventId.value});sessionId=created.data.id;editingId.value=sessionId;}sourceSaved=true;if(hasChineseContent()){try{await adminApi.saveContentTranslation('session',sessionId,{...zhForm});translationExists.value=true;}catch(error){feedbackTone.value='error';feedback.value=`English source saved, but the Chinese translation failed. ${apiError(error)}`;activeTab.value='zh-CN';await loadSessions();return;}}feedbackTone.value='success';feedback.value=hasChineseContent()?'English source and Chinese translation saved.':'English source saved. Chinese translation remains missing.';closeModal();await loadSessions();}catch(error){feedbackTone.value='error';feedback.value=apiError(error);if(sourceSaved)await loadSessions();}finally{saving.value=false;}};
 const removeChineseTranslation=async()=>{if(!editingId.value||saving.value)return;if(!window.confirm('Delete the Simplified Chinese translation? The English source will remain unchanged.'))return;if(!window.confirm('Confirm again: public Chinese pages will fall back to English.'))return;saving.value=true;try{await adminApi.deleteContentTranslation('session',editingId.value);Object.assign(zhForm,emptyZhForm());translationExists.value=false;feedbackTone.value='success';feedback.value='Chinese translation deleted.';}catch(error){feedbackTone.value='error';feedback.value=apiError(error);}finally{saving.value=false;}};
 const removeSession=async(session:SessionItem)=>{if(!window.confirm(`Delete session "${session.title}"?`))return;try{await adminApi.deleteSession(session.id);feedbackTone.value='success';feedback.value='Session deleted.';await loadSessions();}catch(error){feedbackTone.value='error';feedback.value=apiError(error);}};
-watch(selectedEventId,loadSessions); if(selectedEventId.value)await loadSessions();
+watch(selectedEventId,()=>{currentPage.value=1;void loadSessions();});useTableReload(search,currentPage,pageSize,loadSessions);watch(totalPages,value=>{if(currentPage.value>value)currentPage.value=value;});if(selectedEventId.value)await loadSessions();
 const formatDay=(value:string)=>new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeZone:'Asia/Jakarta'}).format(new Date(value)); const formatTime=(value:string)=>new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'}).format(new Date(value));
 </script>
 

@@ -1,4 +1,4 @@
-import { useApi, type ApiResponse } from '~/composables/useApi';
+import type { useApi, ApiResponse } from '~/composables/useApi';
 import type { AnnouncementItem, CertificateItem } from '~/composables/useEventUpdates';
 
 export interface AdminUserItem {
@@ -30,18 +30,19 @@ export interface CertificatePayload { event_id: string; user_id: string; certifi
 
 export function useAdminOperations() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
-  const getUsers = (page = 1, size = 20, role = '', status = '') => {
+  const getUsers = (page = 1, size = 20, role = '', status = '', search = '') => {
     const query = new URLSearchParams({ page: String(page), size: String(size) });
+    if (search.trim()) query.set('search', search.trim());
     if (role) query.set('role', role); if (status) query.set('status', status);
     return api<ApiResponse<AdminUserItem[]>>(`/admin/users?${query}`);
   };
   const createUser = (body: AdminUserCreatePayload) => api<ApiResponse<AdminUserItem>>('/admin/users', { method: 'POST', body });
   const updateUser = (id: string, body: AdminUserUpdatePayload) => api<ApiResponse<AdminUserItem>>(`/admin/users/${id}`, { method: 'PUT', body });
-  const getAdminAnnouncements = (eventId: string) => api<ApiResponse<AnnouncementItem[]>>(`/admin/events/${eventId}/announcements`);
+  const getAdminAnnouncements = (eventId: string, query: { search?: string; page?: number; size?: number } = {}) => api<ApiResponse<AnnouncementItem[]>>(`/admin/events/${eventId}/announcements`, { query });
   const createAnnouncement = (eventId: string, body: AnnouncementPayload) => api<ApiResponse<AnnouncementItem>>(`/admin/events/${eventId}/announcements`, { method: 'POST', body });
   const updateAnnouncement = (id: string, body: AnnouncementPayload) => api<ApiResponse<AnnouncementItem>>(`/admin/announcements/${id}`, { method: 'PUT', body });
   const deleteAnnouncement = (id: string) => api(`/admin/announcements/${id}`, { method: 'DELETE' });
-  const getAdminCertificates = (eventId: string) => api<ApiResponse<CertificateItem[]>>(`/admin/events/${eventId}/certificates`);
+  const getAdminCertificates = (eventId: string, query: { search?: string; page?: number; size?: number } = {}) => api<ApiResponse<CertificateItem[]>>(`/admin/events/${eventId}/certificates`, { query });
   const createCertificate = (body: CertificatePayload) => api<ApiResponse<CertificateItem>>('/admin/certificates', { method: 'POST', body });
   const updateCertificate = (id: string, body: CertificatePayload) => api<ApiResponse<CertificateItem>>(`/admin/certificates/${id}`, { method: 'PUT', body });
   const deleteCertificate = (id: string) => api(`/admin/certificates/${id}`, { method: 'DELETE' });

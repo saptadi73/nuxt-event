@@ -195,7 +195,7 @@
         </div>
         <div v-if="isMidtransReport" class="mb-3">
           <button type="button" class="rounded-full border border-rose-300/35 bg-rose-300/10 px-3 py-2 text-xs font-bold text-rose-100" @click="showManualReviewOnly = !showManualReviewOnly">
-            {{ showManualReviewOnly ? 'Tampilkan semua transaksi' : 'Tampilkan hanya perlu verifikasi' }}
+            {{ showManualReviewOnly ? 'Tampilkan semua transaksi' : 'Perlu verifikasi pada halaman ini' }}
           </button>
         </div>
         <div class="mb-2 flex flex-wrap gap-2 text-xs">
@@ -204,7 +204,7 @@
           <span class="inline-flex rounded-full border border-rose-300/30 px-2 py-1 text-rose-200">Failed/Expired</span>
         </div>
         <div class="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-400">
-          <span>{{ paginatedTransactions.length }} dari {{ filteredTransactions.length }} transaksi</span>
+          <span>{{ paginatedTransactions.length }} dari {{ reportMeta.total }} transaksi</span>
           <label class="flex items-center gap-2">
             <span class="text-xs uppercase tracking-[0.16em] text-slate-500">Per halaman</span>
             <select v-model.number="itemsPerPage" class="rounded-full border border-white/15 bg-slate-900 px-3 py-2 text-sm text-white outline-none">
@@ -500,8 +500,9 @@ const csvFileName = computed(() => {
   return `sales-report-${eventName}${period || `-${fallbackDate}`}.csv`;
 });
 
+let tableRequestId=0;
 const loadReport = async () => {
-  if (loading.value) return;
+  const requestId=++tableRequestId;
   loading.value = true;
   errorMessage.value = '';
   const storagePrefix = 'admin:manual-review-count:';
@@ -514,8 +515,9 @@ const loadReport = async () => {
   }
 
   try {
-    const response = await getReport(buildReportParams());
-    report.value = response.data || defaultReport;
+    const response = await getReport({...buildReportParams(),search:searchTerm.value,page:currentPage.value,size:itemsPerPage.value});
+    if(requestId!==tableRequestId)return; report.value = response.data || defaultReport;
+    Object.assign(reportMeta,{total:response.meta?.total??0,pages:response.meta?.pages??0});
     lastUpdated.value = new Date();
     if (isMidtransReport) {
       const nextManualReviewCount = response.data?.transactions
@@ -534,14 +536,11 @@ const loadReport = async () => {
         showManualReviewAlert(t('adminReports.manualReviewRemain'));
       }
     }
-    if (currentPage.value !== 1) {
-      currentPage.value = 1;
-    }
-  } catch (error) {
+  } catch (error) { if(requestId!==tableRequestId)return;
     errorMessage.value = t('adminReports.loadError');
     console.error(error);
   } finally {
-    loading.value = false;
+    if(requestId===tableRequestId)loading.value = false;
   }
 };
 
@@ -704,41 +703,10 @@ const channelOptions = computed(() => [...new Set(byChannel.value.map((item) => 
 const dailyRevenue = computed(() => report.value.daily_revenue ?? []);
 const dailyRevenueMax = computed(() => Math.max(...dailyRevenue.value.map((item) => item.amount), 1));
 const transactions = computed(() => report.value.transactions ?? []);
-const filteredTransactions = computed(() => {
-  const q = searchTerm.value.trim().toLowerCase();
-  if (!q) return transactions.value;
-
-  const filtered = showManualReviewOnly.value ? transactions.value.filter(requiresManualReview) : transactions.value;
-  return filtered.filter((item) => {
-    const haystack = [
-      item.order_number,
-      item.id,
-      item.payment_id,
-      item.provider_order_id,
-      item.provider_transaction_id,
-      item.participant_name,
-      item.customer_name,
-      item.customer_email,
-      item.registration_number,
-      item.package_name,
-      item.channel_code,
-      item.provider,
-      item.transaction_status,
-      item.status
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase();
-    return haystack.includes(q);
-  });
-});
-
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredTransactions.value.length / itemsPerPage.value)));
-const paginatedTransactions = computed(() => {
-  const page = Math.max(1, Math.min(currentPage.value, totalPages.value));
-  const start = (page - 1) * itemsPerPage.value;
-  return filteredTransactions.value.slice(start, start + itemsPerPage.value);
-});
+const filteredTransactions = computed(() => showManualReviewOnly.value ? transactions.value.filter(requiresManualReview) : transactions.value);
+const reportMeta=reactive({total:0,pages:0});
+const totalPages = computed(() => Math.max(1,reportMeta.pages));
+const paginatedTransactions = computed(() => filteredTransactions.value);
 
 watch(totalPages, () => {
   if (currentPage.value > totalPages.value) {
@@ -875,10 +843,12 @@ watch([dateFrom, dateTo, statusFilter, channelFilter, packageIdFilter], () => {
 watch([searchTerm, itemsPerPage], () => {
   currentPage.value = 1;
   syncFiltersToUrl();
+  scheduleAutoReload();
 });
 
 watch(currentPage, () => {
   syncFiltersToUrl();
+  scheduleAutoReload();
 });
 
 onMounted(() => {

@@ -1,4 +1,4 @@
-import { useApi, type ApiResponse } from '~/composables/useApi';
+import type { useApi, ApiResponse } from '~/composables/useApi';
 
 export type AttendanceCheckInType = 'qr' | 'manual' | 'staff';
 
@@ -65,6 +65,7 @@ export interface AttendanceSummary {
 
 export interface AttendanceReportResponse {
   summary?: AttendanceSummary;
+  attendees?: AttendanceRegistrant[];
   registrants?: AttendanceRegistrant[];
   rows?: AttendanceRegistrant[];
   items?: AttendanceRegistrant[];
@@ -86,8 +87,9 @@ export function useAttendance() {
       body: payload
     });
 
-  const getEventAttendanceReport = (eventId: string, includeWithoutTicket = true) => {
+  const getEventAttendanceReport = (eventId: string, includeWithoutTicket = true, params: { search?: string; page?: number; size?: number } = {}) => {
     const query = new URLSearchParams({ include_without_ticket: String(includeWithoutTicket) });
+    Object.entries(params).forEach(([key, value]) => { if (value !== undefined) query.set(key, String(value)); });
     return api<ApiResponse<AttendanceReportResponse>>(`/attendance/events/${encodeURIComponent(eventId)}/report?${query.toString()}`);
   };
 

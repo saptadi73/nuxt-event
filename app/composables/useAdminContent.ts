@@ -124,7 +124,7 @@ export function useAdminContent() {
   const createDelegatePackageFacility = (eventId: string, packageId: string, payload: DelegatePackageFacilityPayload) => api<ApiResponse<DelegatePackageFacility>>(`/admin/events/${eventId}/delegate-packages/${packageId}/facilities`, { method: 'POST', body: payload });
   const updateDelegatePackageFacility = (facilityId: string, payload: DelegatePackageFacilityPayload) => api<ApiResponse<DelegatePackageFacility>>(`/admin/delegate-package-facilities/${facilityId}`, { method: 'PUT', body: payload });
   const deleteDelegatePackageFacility = (facilityId: string) => api(`/admin/delegate-package-facilities/${facilityId}`, { method: 'DELETE' });
-  const getSessions = (eventSlug: string, locale?: 'en' | 'zh-CN') => api<ApiResponse<SessionItem[]>>(`/events/${eventSlug}/sessions`, { query: locale ? { locale } : undefined });
+  const getSessions = (eventSlug: string, locale?: 'en' | 'zh-CN', params: { search?: string; page?: number; size?: number } = {}) => api<ApiResponse<SessionItem[]>>(`/events/${eventSlug}/sessions`, { query: { locale, ...params } });
   const createSession = (payload: SessionMutationPayload & { event_id: string }) => api<ApiResponse<SessionItem>>('/sessions', { method: 'POST', body: payload });
   const updateSession = (sessionId: string, payload: SessionMutationPayload) => api<ApiResponse<SessionItem>>(`/sessions/${sessionId}`, { method: 'PUT', body: payload });
   const deleteSession = (sessionId: string) => api(`/sessions/${sessionId}`, { method: 'DELETE' });
@@ -132,7 +132,7 @@ export function useAdminContent() {
   const updateSpeaker = (speakerId: string, payload: SpeakerMutationPayload) => api<ApiResponse<SpeakerItem>>(`/speakers/${speakerId}`, { method: 'PUT', body: payload });
   const deleteSpeaker = (speakerId: string) => api(`/speakers/${speakerId}`, { method: 'DELETE' });
   const attachSpeakerToEvent = (speakerId: string, eventId: string) => api(`/speakers/${speakerId}/events`, { method: 'POST', body: { event_id: eventId } });
-  const getCommittee = (eventId: string, locale: 'en' | 'zh-CN' = 'en') => api<ApiResponse<CommitteeMemberItem[]>>('/admin/committee', { query: { event_id: eventId, locale } });
+  const getCommittee = (eventId: string, locale: 'en' | 'zh-CN' = 'en', params: { search?: string; page?: number; size?: number } = {}) => api<ApiResponse<CommitteeMemberItem[]>>('/admin/committee', { query: { event_id: eventId, locale, ...params } });
   const createCommitteeMember = (payload: CommitteeMemberMutationPayload) => api<ApiResponse<CommitteeMemberItem>>('/admin/committee', { method: 'POST', body: payload });
   const updateCommitteeMember = (memberId: string, payload: CommitteeMemberMutationPayload) => api<ApiResponse<CommitteeMemberItem>>(`/admin/committee/${encodeURIComponent(memberId)}`, { method: 'PUT', body: payload });
   const uploadCommitteePhoto = (memberId: string, file: File) => { const body = new FormData(); body.append('file', file); return api<ApiResponse<CommitteeMemberItem>>(`/admin/committee/${encodeURIComponent(memberId)}/photo`, { method: 'POST', body }); };

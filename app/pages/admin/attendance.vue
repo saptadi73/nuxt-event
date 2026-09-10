@@ -12,7 +12,7 @@
         <button class="rounded-full border border-white/20 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/10" @click="refreshReport">
           Refresh report
         </button>
-        <button class="rounded-full bg-cyan-300 px-5 py-2.5 text-sm font-black text-slate-950 transition hover:brightness-110" @click="exportCsv">
+        <button class="rounded-full bg-cyan-300 px-5 py-2.5 text-sm font-black text-slate-950 transition hover:brightness-110" :disabled="exportingCsv" @click="exportCsv">
           Export CSV
         </button>
       </div>
@@ -158,6 +158,11 @@
           </article>
         </div>
 
+        <div class="flex flex-col gap-3 rounded-2xl border border-white/10 bg-slate-900/40 p-4 sm:flex-row sm:items-end">
+          <label class="grid flex-1 gap-2 text-sm"><span class="text-[10px] uppercase tracking-[0.24em] text-slate-400">Search</span><input v-model.trim="attendanceSearch" type="search" placeholder="Participant, registration, ticket, organization, or gate" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" /></label>
+          <label class="grid gap-2 text-sm sm:w-32"><span class="text-[10px] uppercase tracking-[0.24em] text-slate-400">Per page</span><select v-model.number="attendancePageSize" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none"><option :value="10">10</option><option :value="20">20</option><option :value="50">50</option><option :value="100">100</option></select></label>
+        </div>
+
         <div class="data-table-shell overflow-x-auto">
           <table class="min-w-full text-left text-sm text-slate-300">
             <thead>
@@ -171,7 +176,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in attendanceRows" :key="row.registration_id || row.ticket_id || row.participant_name || row.ticket_number || Math.random()" class="border-b border-white/5 last:border-0">
+              <tr v-for="row in paginatedAttendanceRows" :key="row.registration_id || row.ticket_id || row.participant_name || row.ticket_number || Math.random()" class="border-b border-white/5 last:border-0">
                 <td class="py-3 pr-4" data-label="Registrant">
                   <div class="break-words font-semibold text-white">{{ row.participant_name || 'Unknown participant' }}</div>
                   <div class="break-words text-xs text-slate-400">{{ row.registration_number || row.registration_id || 'N/A' }}</div>
@@ -193,18 +198,20 @@
                   </button>
                 </td>
               </tr>
-              <tr v-if="!attendanceRows.length">
+              <tr v-if="!filteredAttendanceRows.length">
                 <td colspan="6" class="py-6 text-center text-sm text-slate-400">No attendance rows were returned for this event.</td>
               </tr>
             </tbody>
           </table>
         </div>
+        <div class="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-400"><span>Showing {{ attendancePageStart }}–{{ attendancePageEnd }} of {{ attendanceMeta.total }}</span><div class="flex items-center gap-3"><button class="rounded-full border border-white/20 px-4 py-2 font-bold text-white disabled:opacity-40" :disabled="attendancePage <= 1" @click="attendancePage--">Previous</button><span>Page {{ attendancePage }} of {{ attendanceTotalPages }}</span><button class="rounded-full border border-white/20 px-4 py-2 font-bold text-white disabled:opacity-40" :disabled="attendancePage >= attendanceTotalPages" @click="attendancePage++">Next</button></div></div>
       </div>
     </article>
   </section>
 </template>
 
 <script setup lang="ts">
+import { useTableReload } from '~/composables/useTableReload';
 import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser';
 import { useAttendance, type AttendanceRegistrant, type AttendanceScanResponse } from '~/composables/useAttendance';
 import { useEvent, type EventItem } from '~/composables/useEvent';
@@ -228,6 +235,15 @@ const reportLoading = ref(false);
 const reportError = ref('');
 const includeWithoutTicket = ref(true);
 const attendanceRows = ref<AttendanceRegistrant[]>([]);
+const attendanceSearch = ref('');
+const attendancePage = ref(1);
+const attendancePageSize = ref(20);
+const filteredAttendanceRows = computed(() => attendanceRows.value);
+const attendanceMeta = reactive({total:0,pages:0});
+const attendanceTotalPages = computed(() => Math.max(1,attendanceMeta.pages));
+const paginatedAttendanceRows = computed(() => attendanceRows.value);
+const attendancePageStart = computed(() => attendanceRows.value.length ? (attendancePage.value-1)*attendancePageSize.value+1 : 0);
+const attendancePageEnd = computed(() => Math.min((attendancePage.value-1)*attendancePageSize.value+attendanceRows.value.length,attendanceMeta.total));
 const summaryCards = ref<Array<{ label: string; value: string; note: string }>>([]);
 const videoRef = ref<HTMLVideoElement | null>(null);
 let scannerControls: IScannerControls | null = null;
@@ -264,7 +280,7 @@ const normalizeAttendanceRows = (payload: unknown): AttendanceRegistrant[] => {
   const nested = source.data && typeof source.data === 'object' ? source.data as Record<string, unknown> : source;
   const list = Array.isArray(nested.registrants)
     ? nested.registrants
-    : Array.isArray(nested.registrations)
+    : Array.isArray(nested.attendees) ? nested.attendees : Array.isArray(nested.registrations)
       ? nested.registrations
     : Array.isArray(nested.rows)
       ? nested.rows
@@ -277,41 +293,57 @@ const normalizeAttendanceRows = (payload: unknown): AttendanceRegistrant[] => {
   return list as AttendanceRegistrant[];
 };
 
+let tableRequestId=0;
 const refreshReport = async () => {
+  const requestId=++tableRequestId;
   if (!selectedEventId.value) return;
   reportLoading.value = true;
   reportError.value = '';
 
   try {
-    const response = await getEventAttendanceReport(selectedEventId.value, includeWithoutTicket.value);
-    const payload = response?.data ?? {};
+    const response = await getEventAttendanceReport(selectedEventId.value, includeWithoutTicket.value, {search:attendanceSearch.value,page:attendancePage.value,size:attendancePageSize.value});
+    if(requestId!==tableRequestId)return; const payload = response?.data ?? {};
     const rows = normalizeAttendanceRows(payload);
     attendanceRows.value = rows;
+    Object.assign(attendanceMeta,{total:response.meta?.total??0,pages:response.meta?.pages??0});
 
     const summary = payload.summary as Record<string, unknown> | undefined;
     const attendanceRate = Number(summary?.attendance_rate ?? summary?.total_checked_in ?? 0);
 
     summaryCards.value = [
-      { label: 'Total', value: String(summary?.total_registrations ?? summary?.total_participants ?? summary?.total ?? rows.length), note: 'Registered guests' },
+      { label: 'Total', value: String(summary?.total_registered ?? summary?.total_registrations ?? summary?.total_participants ?? summary?.total ?? rows.length), note: 'Registered guests' },
       { label: 'Checked in', value: String(summary?.checked_in ?? summary?.total_checked_in ?? rows.filter((item) => item.is_checked_in || item.status === 'checked_in').length), note: 'Present today' },
-      { label: 'Pending', value: String(summary?.pending ?? rows.filter((item) => !(item.is_checked_in || item.status === 'checked_in')).length), note: 'Waiting to scan' },
+      { label: 'Pending', value: String(summary?.total_not_checked_in ?? summary?.pending ?? rows.filter((item) => !(item.is_checked_in || item.status === 'checked_in')).length), note: 'Waiting to scan' },
       { label: 'Attendance rate', value: `${Number.isFinite(attendanceRate) ? attendanceRate : 0}%`, note: 'Overall attendance' }
     ];
-  } catch (error) {
+  } catch (error) { if(requestId!==tableRequestId)return;
     const value = error as { data?: { message?: string } };
     reportError.value = value.data?.message || 'Unable to load attendance report.';
   } finally {
-    reportLoading.value = false;
+    if(requestId===tableRequestId)reportLoading.value = false;
   }
 };
 
-const exportCsv = () => {
-  if (!attendanceRows.value.length) {
-    return;
-  }
+const exportingCsv=ref(false);
+const exportCsv = async () => {
+  if (!selectedEventId.value || exportingCsv.value) return;
+  exportingCsv.value=true;
+  const exportEventId=selectedEventId.value;
+  const exportSearch=attendanceSearch.value;
+  const exportIncludeWithoutTicket=includeWithoutTicket.value;
+  try {
+  const exportRows: AttendanceRegistrant[]=[];
+  let exportPage=1;
+  let exportPages=1;
+  do {
+    const response=await getEventAttendanceReport(exportEventId,exportIncludeWithoutTicket,{search:exportSearch,page:exportPage,size:100});
+    exportRows.push(...normalizeAttendanceRows(response.data));
+    exportPages=response.meta?.pages??1;
+    exportPage++;
+  } while(exportPage<=exportPages);
 
   const headers = ['registration_number', 'participant_name', 'organization_name', 'ticket_number', 'status', 'checked_in_at', 'gate_name'];
-  const rows = attendanceRows.value.map((row) => [
+  const rows = exportRows.map((row) => [
     row.registration_number || '',
     row.participant_name || '',
     row.organization_name || '',
@@ -326,11 +358,12 @@ const exportCsv = () => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `attendance-report-${selectedEventId.value || 'event'}.csv`;
+  link.download = `attendance-report-${exportEventId}.csv`;
   document.body.appendChild(link);
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+  } catch { reportError.value='Unable to export attendance report.'; } finally { exportingCsv.value=false; }
 };
 
 const fetchEvents = async () => {
@@ -349,15 +382,23 @@ const fetchEvents = async () => {
 };
 
 watch(selectedEventId, () => {
+  attendancePage.value = 1;
   if (selectedEventId.value) {
     refreshReport();
   }
 });
 
 watch(includeWithoutTicket, () => {
+  attendancePage.value = 1;
   if (selectedEventId.value) {
     refreshReport();
   }
+});
+
+useTableReload(attendanceSearch,attendancePage,attendancePageSize,refreshReport);
+
+watch(attendanceTotalPages, (value) => {
+  if (attendancePage.value > value) attendancePage.value = value;
 });
 
 const submitManualCheckIn = async () => {

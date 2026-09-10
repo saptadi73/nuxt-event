@@ -4,8 +4,8 @@ import type { SpeakerItem } from '~/composables/useEvent';
 export function useSpeaker() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
 
-  const getSpeakers = (page = 1, size = 100, locale?: 'en' | 'zh-CN') =>
-    api<ApiResponse<SpeakerItem[]>>(`/speakers?page=${page}&size=${size}`, { query: locale ? { locale } : undefined });
+  const getSpeakers = (page = 1, size = 100, locale?: 'en' | 'zh-CN', search = '') =>
+    api<ApiResponse<SpeakerItem[]>>(`/speakers?page=${page}&size=${size}`, { query: { locale, search } });
 
   const uploadSpeakerPhoto = (speakerId: string, file: File) => {
     const normalizedSpeakerId = speakerId.trim();

@@ -163,8 +163,8 @@ export function useEvent() {
 
   const getEvent = (eventId: string) => api<ApiResponse<EventItem>>(`/events/${eventId}`);
 
-  const getEventSessions = (slug: string) =>
-    api<ApiResponse<SessionItem[]>>(`/events/${slug}/sessions`);
+  const getEventSessions = (slug: string, query: { search?: string; page?: number; size?: number } = {}) =>
+    api<ApiResponse<SessionItem[]>>(`/events/${slug}/sessions`, { query });
 
   const getSessionsByEventId = (eventId: string) =>
     api<ApiResponse<SessionItem[]>>(`/sessions/events/${eventId}`);
