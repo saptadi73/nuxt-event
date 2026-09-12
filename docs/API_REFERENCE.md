@@ -626,10 +626,10 @@ PATCH /api/v1/events/{event_id}/registrations/{registration_id}
 
 ```json
 {
-  "full_name":"Delegate Name","job_title":"Director",
+  "job_title":"Director",
   "company_organization":"Example Company",
-  "nationality":"Indonesian","title":"Ms.","business_sector":"Technology",
-  "email":"delegate@example.com","office_phone":null,
+  "business_sector":"Technology",
+  "office_phone":null,
   "company_website":"https://example.com","linkedin":null,
   "company_address":"Jakarta","participation_categories":["Delegate","Buyer"],
   "presentation_topic":null,"products_interested":"Digital commerce",
@@ -652,7 +652,7 @@ dari local storage ke payload ini.
 Response:
 
 ```json
-{"id":"uuid","event_id":"uuid","participant_id":"uuid","registration_number":"IWBIF-XXXXXXXXXX","status":"draft","detail":{"delegate_package_id":"uuid","full_name":"Delegate Name"}}
+{"id":"uuid","event_id":"uuid","participant_id":"uuid","registration_number":"IWBIF-XXXXXXXXXX","status":"draft","detail":{"delegate_package_id":"uuid","job_title":"Director"}}
 ```
 
 Lifecycle:
@@ -697,15 +697,6 @@ Checkout memberi `order_id`, `order_number`, `total_amount`, `currency`, dan
 status order. Backend menyimpan snapshot product pada `order_items`. Gunakan
 order tersebut untuk payment. Frontend dapat memilih gateway tanpa membuat
 ulang order:
-
-Alur UI DOKU memakai DOKU Checkout. Pemilihan QRIS, VA, kartu, atau metode
-lain berlangsung di halaman DOKU. Backend membagi semua tagihan di atas
-Rp9.000.000 menjadi pembayaran maksimal Rp9.000.000 sebelum pemilihan metode.
-Nominal dihitung backend; frontend hanya mengirim `order_id`.
-Lihat [DOKU Checkout](DOKU_CHECKOUT.md). Endpoint order-method/direct sebelumnya
-merupakan alur legacy dan tidak dipanggil untuk checkout baru dari UI.
-
-Endpoint hosted yang digunakan:
 
 ```http
 POST /api/v1/payments/doku/checkout
@@ -1295,16 +1286,12 @@ Response memiliki pagination `page`, `size`, `total`, `pages`. Setiap item:
 ```
 
 `GET /api/v1/orders/{order_id}/detail` mengembalikan struktur item yang sama.
-Untuk melanjutkan hosted checkout (Midtrans atau DOKU lama):
+Untuk melanjutkan:
 
 ```json
 POST /api/v1/orders/{order_id}/continue-payment
 {"provider":"doku"}
 ```
-
-UI DOKU saat ini melanjutkan melalui modal dan endpoint order-method di atas,
-bukan endpoint hosted ini. Attempt aktif mencegah pergantian metode; attempt
-kedaluwarsa yang masih aktif harus direkonsiliasi sebelum membuat tagihan baru.
 
 Nilai provider adalah `doku` atau `midtrans`. Attempt aktif yang belum expired
 dapat menggunakan URL/token lama; attempt gagal/expired tetap tersimpan dan
@@ -1749,16 +1736,6 @@ transaction tidak ditampilkan kecuali `include_deleted=true`. Pagination berada
 pada `meta`; `data.transactions` hanya berisi slice sesuai `limit` dan `offset`,
 sedangkan agregasi pada `data.summary` dihitung dari seluruh hasil filter.
 
-Identitas pada setiap item `data.transactions` menggunakan `customer_name`,
-`customer_email`, dan `registration_number` (nullable), bukan `participant_name`.
-Nama diambil dari detail delegate, lalu profil peserta registrasi, akun peserta,
-dan akun pemilik order jika sumber sebelumnya kosong. Email menggunakan detail
-delegate, akun peserta registrasi, lalu akun pemilik order. Dengan demikian,
-order store-first tetap memiliki identitas akun sebelum registrasi ditautkan.
-Jika seluruh sumber tidak tersedia, nilai tetap `null`; frontend menampilkan
-informasi belum tersedia dan tidak menggantinya dengan UUID. `payment_id` dan
-`order_id` tetap disimpan untuk operasi internal, tanpa ditampilkan di tabel.
-
 Contoh response `GET /api/v1/admin/transactions?limit=20&offset=0`:
 
 ```json
@@ -1784,9 +1761,6 @@ Contoh response `GET /api/v1/admin/transactions?limit=20&offset=0`:
       "payment_id": "75c9e112-2974-49e2-bd6c-65c23e343d28",
       "order_id": "ad3df206-c6cc-4053-b80a-edb59b9f4647",
       "order_number": "ORD-2026-0001",
-      "customer_name": "Example Participant",
-      "customer_email": "participant@example.com",
-      "registration_number": "REG-2026-0001",
       "provider": "midtrans",
       "transaction_status": "success",
       "order_status": "paid",
@@ -2102,6 +2076,7 @@ Contoh response participant dengan lebih dari satu package:
 ```json
 {
   "participant_id": "participant-uuid",
+  "registration_id": "registration-uuid",
   "user_id": "user-uuid",
   "full_name": "Participant Example",
   "email": "participant@example.com",
@@ -2113,6 +2088,7 @@ Contoh response participant dengan lebih dari satu package:
     {
       "event_id": "event-uuid",
       "package_id": "package-a-uuid",
+      "registration_id": "registration-uuid",
       "package_code": "A",
       "package_name": "Package A",
       "package_type": "delegate",
@@ -2131,6 +2107,7 @@ Contoh response participant dengan lebih dari satu package:
     {
       "event_id": "event-uuid",
       "package_id": "package-c-uuid",
+      "registration_id": "registration-uuid",
       "package_code": "C",
       "package_name": "Package C",
       "package_type": "delegate",
@@ -2149,6 +2126,27 @@ Contoh response participant dengan lebih dari satu package:
   ]
 }
 ```
+
+Kontrak `registration_id` untuk form Manual Payments:
+
+- `data[].registration_id`: UUID string atau `null`, diambil dari
+  `registration_id` pertama yang tidak `null` dalam `packages` hasil filter.
+- `data[].packages[].registration_id`: UUID string dari registrasi yang terhubung
+  ke order pembelian tersebut, atau `null` jika order belum terhubung ke registrasi.
+- Field ini bukan `participant_id` maupun `user_id`. Gunakan UUID registrasi untuk
+  `POST /api/v1/admin/registrations/{registration_id}/offline-payments`.
+- Nilai tingkat participant dapat `null` ketika tidak ada pembelian yang
+  dikembalikan dengan relasi registrasi. Ini tidak membuktikan participant belum
+  memiliki registrasi; laporan mengambil relasi dari order.
+- Jika terdapat beberapa registrasi, pilih registrasi yang sesuai dengan event
+  dan pembelian tujuan. Nilai tingkat participant adalah ringkasan pertama,
+  bukan penanda registrasi terbaru atau yang masih harus dibayar.
+
+Kolom `registration_id` juga tersedia di CSV. Baris package memakai relasi
+registrasi order masing-masing, sehingga nilainya dapat kosong.
+
+Untuk alur pencarian dan penanganan nilai `null`, lihat
+[Offline Registration Payment](OFFLINE_REGISTRATION_PAYMENT.md#participant-search-for-manual-payments).
 
 `payment_status` melekat pada payment terakhir dari order package tersebut,
 bukan status global participant. Karena itu satu participant dapat mempunyai
@@ -2730,3 +2728,57 @@ Dokumen tambahan:
 - `docs/FRONTEND_MIDTRANS_PAYMENT_INTEGRATION.md`
 - `docs/FRONTEND_STORE_PURCHASE_FLOW.md`
 - `docs/DOKU_SNAP_SANDBOX_SETUP.md`
+
+## Pembaruan profil delegate (12 September 2026)
+
+Form create/edit profil delegate tidak lagi memuat `title`, `full_name`,
+`nationality`, atau `email`. Hapus input, validasi wajib, prefill, dan keempat
+key tersebut dari payload frontend. Schema `DelegateRegistrationWrite` dan
+response `detail` tidak menyertakannya; key dari client lama diabaikan.
+Registrasi user tidak berubah dan tidak ditambah field baru.
+
+Backend membuat participant otomatis dari akun login; nama memakai
+`users.full_name`, dengan fallback `users.email` jika nama belum tersedia.
+Frontend tidak perlu memanggil PUT profil participant sebelum membuat delegate.
+Kolom identitas delegate lama dipertahankan sebagai data historis nullable,
+tanpa mewajibkan duplikasi untuk registrasi baru. Jalankan `alembic upgrade head`
+sebelum menjalankan backend baru. Tidak ada penghapusan massal data lama.
+
+Catatan: backend akun saat ini memiliki email dan nama opsional, tetapi belum
+memiliki title/nationality. Perubahan ini hanya menghapusnya dari profil delegate.
+
+## Hapus percobaan pembayaran setelah lunas
+
+Panduan lengkap beserta contoh request/response, penanganan error, dan urutan
+deployment: [Hapus riwayat percobaan pembayaran](USER_PAYMENT_HISTORY_CLEANUP.md).
+
+`POST /api/v1/orders/{order_id}/payment-attempts/delete` membutuhkan login
+pemilik order. Body:
+
+```json
+{"payment_ids":["3eb77361-a806-4e56-b0c2-adfa0c6f0271","c5748a39-7661-4cd7-8cd3-bb80d1dc2978"]}
+```
+
+Pilih 1-100 ID per request. Semua ID harus berada di order yang sama milik user.
+Order harus berstatus `paid` dan saldo tersisa berdasarkan pembayaran sukses
+harus nol, dengan jumlah pembayaran sukses lebih dari nol. Percobaan berstatus `created`, `pending`, `failed`, `expired`, atau
+`canceled` dapat dihapus dari riwayat user. Pembayaran `success` dan `refunded`
+tidak dapat dihapus. Validasi dilakukan untuk seluruh pilihan sebelum perubahan;
+request yang berisi ID tidak valid ditolak tanpa menghapus sebagian pilihan.
+Pengulangan ID atau request yang sama tidak membuat audit duplikat.
+
+Response sukses: `data.payment_ids` berisi ID yang dihapus dari riwayat.
+Error: `ORDER_NOT_FOUND` / `PAYMENT_NOT_FOUND` (404),
+`ORDER_NOT_FULLY_PAID` / `PAYMENT_DELETE_FORBIDDEN` (409), atau validasi body (422).
+
+Frontend menampilkan checkbox dan tombol **Delete selected** pada order lunas
+di cart, payment, dan payment status. Setelah konfirmasi dan response sukses,
+hapus ID tersebut dari daftar lokal. Muat ulang memakai GET `/orders` atau
+GET `/orders/{order_id}/detail`; kedua response menyaring percobaan tersembunyi.
+
+Implementasi menggunakan `payments.hidden_from_user_at` dan audit `USER_HIDDEN`.
+Ini tidak membatalkan checkout di provider, tidak menghapus catatan finansial,
+dan tidak mengubah saldo, invoice, tiket, maupun pemrosesan webhook. Jika ada
+konfirmasi pembayaran terlambat yang mengubah status menjadi sukses/refund,
+catatan tersebut kembali terlihat setelah refresh. Data tetap tersedia untuk admin.
+Migrasi `202609120046` harus diterapkan (`alembic upgrade head`) sebelum deploy backend.
