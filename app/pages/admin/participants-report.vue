@@ -114,6 +114,7 @@
                 <th class="py-3 pr-4">{{ t('adminParticipants.profileStatus') }}</th>
                 <th class="py-3 pr-4">{{ t('adminParticipants.registration') }}</th>
                 <th class="py-3 pr-4">{{ t('adminParticipants.packages') }}</th>
+                <th class="py-3 pr-4">{{ t('adminParticipants.profileDetails') }}</th>
               </tr>
             </thead>
             <tbody>
@@ -147,9 +148,13 @@
                   </div>
                   <span v-else class="text-slate-500">{{ t('adminParticipants.noPackage') }}</span>
                 </td>
+                <td class="py-3 pr-4" :data-label="t('adminParticipants.profileDetails')">
+                  <button v-if="item.profile_status === 'complete' && item.participant_id" class="rounded-full border border-cyan-300/40 px-3 py-2 text-xs font-bold text-cyan-100" @click="selectedProfile = item">{{ t('adminParticipants.viewProfile') }}</button>
+                  <span v-else class="text-slate-500">—</span>
+                </td>
               </tr>
               <tr v-if="!filteredParticipants.length">
-                <td colspan="5" class="py-6 text-center text-slate-500" data-label="">{{ t('adminParticipants.noData') }}</td>
+                <td colspan="6" class="py-6 text-center text-slate-500" data-label="">{{ t('adminParticipants.noData') }}</td>
               </tr>
             </tbody>
           </table>
@@ -174,6 +179,7 @@
         </div>
       </article>
     </div>
+    <ParticipantProfileDialog v-if="selectedProfile" :key="selectedProfile.participant_id || ''" :participant="selectedProfile" @close="selectedProfile = null" />
   </section>
 </template>
 
@@ -189,6 +195,7 @@ definePageMeta({ middleware: ['auth', 'admin'] });
 useSeoMeta({ title: 'Participants Report | IWBIF 2026' });
 
 const authStore = useAuthStore();
+const selectedProfile = ref<ParticipantReportItem | null>(null);
 const { getParticipantReport, downloadParticipantReport } = useAdminReport();
 const { getEvents, getEventDelegatePackages } = useEvent();
 

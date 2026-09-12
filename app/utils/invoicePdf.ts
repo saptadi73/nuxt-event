@@ -1,7 +1,7 @@
 import { toCanvas } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 
-export const downloadInvoicePdf = async (element: HTMLElement, title: string) => {
+export const downloadDocumentPdf = async (element: HTMLElement, title: string) => {
   const clone = element.cloneNode(true) as HTMLElement;
   const container = document.createElement('div');
   container.setAttribute('aria-hidden', 'true');
@@ -76,3 +76,5 @@ export const downloadInvoicePdf = async (element: HTMLElement, title: string) =>
     container.remove();
   }
 };
+
+export const downloadInvoicePdf = downloadDocumentPdf;

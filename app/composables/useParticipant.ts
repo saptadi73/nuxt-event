@@ -1,4 +1,4 @@
-import { useApi, type ApiResponse } from '~/composables/useApi';
+import type { useApi, ApiResponse } from '~/composables/useApi';
 
 export interface ParticipantProfile {
   id: string;
@@ -21,6 +21,9 @@ export function useParticipant() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
 
   const getMyProfile = () => api<ApiResponse<ParticipantProfile>>('/participants/me');
+
+  const getParticipant = (id: string) =>
+    api<ApiResponse<ParticipantProfile>>(`/participants/${encodeURIComponent(id)}`);
 
   const getParticipants = (page = 1, size = 20) =>
     api<ApiResponse<ParticipantProfile[] | { items: ParticipantProfile[] }>>(`/participants?page=${page}&size=${size}`);
@@ -49,6 +52,7 @@ export function useParticipant() {
 
   return {
     getMyProfile,
+    getParticipant,
     getParticipants,
     upsertMyProfile,
     patchMyProfile,
