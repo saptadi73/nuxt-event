@@ -127,6 +127,10 @@ export function usePayment() {
     const response = await api<ApiResponse<PendingOrderRecord[]>>('/orders', { query: { ...(status ? { status } : {}), ...(eventId ? { event_id: eventId } : {}), page, size } });
     return { ...response, data: response.data.map(normalizeOrderDetail) };
   };
+  const deletePaymentAttempts = (orderId: string, paymentIds: string[]) =>
+    api<ApiResponse<{ payment_ids: string[] }>>(`/orders/${encodeURIComponent(orderId)}/payment-attempts/delete`, {
+      method: 'POST', body: { payment_ids: paymentIds }
+    });
   const getOrderDetail = async (orderId: string) => {
     const response = await api<ApiResponse<PendingOrderRecord>>(`/orders/${encodeURIComponent(orderId)}/detail`);
     return { ...response, data: normalizeOrderDetail(response.data) };
@@ -176,6 +180,7 @@ export function usePayment() {
     getOrder,
     getPendingOrders,
     getOrderDetail,
+    deletePaymentAttempts,
     getOutstandingOrders,
     continueOrderPayment,
     cancelPendingOrder,

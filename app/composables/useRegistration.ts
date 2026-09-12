@@ -2,13 +2,9 @@ import type { useApi, ApiResponse } from '~/composables/useApi';
 
 export interface RegistrationPayload {
   event_id: string;
-  full_name: string;
   job_title: string;
   company_organization: string;
-  nationality: string;
-  title: string;
   business_sector: string;
-  email: string;
   office_phone?: string | null;
   company_website?: string | null;
   linkedin?: string | null;

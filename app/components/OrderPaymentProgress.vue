@@ -12,6 +12,7 @@
         <strong :class="part.status === 'paid' ? 'text-emerald-200' : 'text-amber-200'">{{ copy.statuses[part.status] || part.status }}</strong>
       </li>
     </ol>
+    <PaymentAttemptCleanup :order="order" :attempts="attempts || []" @removed="emit('attempts-removed', $event)" />
     <p v-if="!progress.complete" class="mt-3 text-xs leading-6 text-slate-300">{{ copy.notice }}</p>
   </div>
 </template>
@@ -20,6 +21,7 @@
 import type { OrderItem, PaymentItem } from '~/composables/usePayment';
 import { orderPaymentProgress } from '~/utils/orderPaymentProgress';
 const props = defineProps<{ order: OrderItem; attempts?: PaymentItem[] }>();
+const emit = defineEmits<{ 'attempts-removed': [ids: string[]] }>();
 const { locale } = useI18n();
 const progress = computed(() => orderPaymentProgress(props.order, props.attempts));
 const copy = computed(() => locale.value === 'zh-CN' ? {

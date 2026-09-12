@@ -14,7 +14,7 @@
         <div v-if="displayOrderUsdTotal > 0" class="mt-4 border-t border-white/10 pt-4 text-sm"><span class="text-slate-400">{{ copy.packageTotal }}</span><strong class="block text-xl text-amber-200">{{ usd(displayOrderUsdTotal) }}</strong></div>
         <p v-if="polling" class="mt-3 text-sm text-amber-200">{{ copy.checkingConfirmation.replace('{provider}', paymentProviderLabel) }}</p>
       </div>
-      <OrderPaymentProgress v-if="order" :order="order" :attempts="paymentAttempts" />
+      <OrderPaymentProgress v-if="order" :order="order" :attempts="paymentAttempts" @attempts-removed="ids => paymentAttempts = paymentAttempts.filter(attempt => !ids.includes(attempt.id))" />
       <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <NuxtLink v-if="status === 'success'" :to="registrationFlow.profilePendingType.value ? `/register/${registrationFlow.profilePendingType.value}` : invoiceTo" class="rounded-full bg-amber-300 px-5 py-3 font-semibold text-slate-950">{{ registrationFlow.profilePendingType.value ? (locale === 'zh-CN' ? '完善注册资料' : 'Complete registration details') : copy.viewInvoice }}</NuxtLink>
         <button v-else-if="order && !isOrderFullyPaid(order) && (order.allowed_actions?.includes('continue_payment') || ['pending', 'partially_paid', 'draft'].includes(order.status))" class="rounded-full bg-cyan-300 px-5 py-3 font-semibold text-slate-950 disabled:opacity-50" :disabled="checking" @click="continuePayment">{{ locale === 'zh-CN' ? '继续付款' : 'Continue payment' }}</button>

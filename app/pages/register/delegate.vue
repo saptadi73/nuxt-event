@@ -89,7 +89,6 @@
 </template>
 <script setup lang="ts">
 import {useEvent} from '~/composables/useEvent';
-import {useParticipant} from '~/composables/useParticipant';
 import {useRegistration,type RegistrationPayload} from '~/composables/useRegistration';
 
 definePageMeta({ middleware: ['auth', 'registration-payment'] });
@@ -122,14 +121,12 @@ const validationCopy = computed(() => locale.value === 'zh-CN'
 useSeoMeta({ title: () => `${copy.value.eyebrow} | IWBIF 2026`, description: () => copy.value.description });
 
 const { getEvents, getEventActivities } = useEvent();
-const { upsertMyProfile } = useParticipant();
 const { createRegistration, getMyRegistrations, getRegistration, updateRegistration, submitRegistration, uploadPassport, getRegistrationDocuments } = useRegistration();
 const registrationFlow = useRegistrationFlow();
 
-type TextKey = 'full_name' | 'job_title' | 'company_organization' | 'nationality' | 'title' | 'business_sector' | 'email' | 'company_website' | 'linkedin';
+type TextKey = 'job_title' | 'company_organization' | 'business_sector' | 'company_website' | 'linkedin';
 type IdentityField = { key: TextKey; label: string; type?: string; autocomplete?: string; options?: readonly string[]; required?: boolean };
 
-const titleOptions = ['Mrs.', 'Ms.', 'Dr.', 'Prof.', 'Mr.', 'Others'] as const;
 const businessSectorOptions = [
   'Agriculture',
   'Food & Beverage',
@@ -151,13 +148,9 @@ const lookingForOptions = ['Buyer', 'Distributor', 'Importer', 'Retailer', 'Inve
 const preferredCountryOptions = ['Indonesia', 'Malaysia', 'China', 'Singapore', 'Thailand', 'Vietnam', 'Cambodia', 'Philippines', 'Others'] as const;
 const airportOptions = ['CGK', 'HLP', 'Other'] as const;
 const identityFields = computed<IdentityField[]>(() => [
-  { key: 'full_name', label: copy.value.fields[0], autocomplete: 'name' },
-  { key: 'title', label: copy.value.fields[1], options: titleOptions },
   { key: 'job_title', label: copy.value.fields[2] },
   { key: 'company_organization', label: copy.value.fields[3], autocomplete: 'organization' },
-  { key: 'nationality', label: copy.value.fields[4] },
   { key: 'business_sector', label: copy.value.fields[5], options: businessSectorOptions },
-  { key: 'email', label: copy.value.fields[6], type: 'email', autocomplete: 'email' },
   { key: 'company_website', label: copy.value.fields[7], type: 'url', required: false },
   { key: 'linkedin', label: copy.value.fields[8], type: 'url', required: false }
 ]);
@@ -174,13 +167,9 @@ const optionLabel = (value: string) => locale.value === 'zh-CN' ? (zhOptionLabel
 
 const form = reactive({
   event_id: '',
-  full_name: '',
   job_title: '',
   company_organization: '',
-  nationality: '',
-  title: '',
   business_sector: '',
-  email: '',
   office_phone: '',
   company_website: '',
   linkedin: '',
@@ -322,7 +311,6 @@ const focusField = (key: string) => {
 };
 
 const nullable = (value: string) => value || null;
-const isValidEmail = (value: string) => { const parts = value.split('@'); return parts.length === 2 && Boolean(parts[0]) && Boolean(parts[1]?.includes('.')) && !value.includes(' '); };
 const isValidOptionalUrl = (value: string) => { if (!value) return true; try { const parsed = new URL(value); return parsed.protocol === 'http:' || parsed.protocol === 'https:'; } catch { return false; } };
 
 const submit = async () => {
@@ -337,10 +325,6 @@ const submit = async () => {
     await nextTick();
     const firstMissing = missingFields.value[0];
     if (firstMissing) focusField(firstMissing.key);
-    return;
-  }
-  if (!isValidEmail(form.email)) {
-    feedback.value = validationCopy.value.email;
     return;
   }
   if (!isValidOptionalUrl(form.company_website) || !isValidOptionalUrl(form.linkedin)) {
@@ -358,12 +342,6 @@ const submit = async () => {
   submitting.value = true;
 
   try {
-    await upsertMyProfile({
-      full_name: form.full_name,
-      organization_name: form.company_organization,
-      biography: form.business_objectives
-    });
-
     const payload = {
       ...form,
       company_website: nullable(form.company_website),
