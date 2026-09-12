@@ -19,6 +19,12 @@
   },
   "legal": { "information": "法律信息", "updated": "最后更新：2026年8月1日。请联系主办方以获取适用于本次活动的政策版本。" },
   "adminParticipants": {
+    "accountSection": "注册账户",
+    "companySection": "公司",
+    "delegateSection": "代表注册资料",
+    "exhibitorSection": "参展商注册资料",
+    "businessSection": "商务配对",
+    "noProfileSection": "此部分尚无已保存的数据。",
     "profileDetails": "参与者资料",
     "viewProfile": "查看资料",
     "closeProfile": "关闭",

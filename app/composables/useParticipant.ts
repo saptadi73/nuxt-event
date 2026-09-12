@@ -17,6 +17,16 @@ export interface ParticipantPayload {
   biography?: string;
 }
 
+export interface CompleteParticipantProfile {
+  participant_id: string;
+  account: Record<string, unknown>;
+  profile: ParticipantProfile;
+  companies: Record<string, unknown>[];
+  registrations: Record<string, unknown>[];
+  exhibitors: Record<string, unknown>[];
+  business_matching: Record<string, unknown>[];
+}
+
 export function useParticipant() {
   const api = useNuxtApp().$api as ReturnType<typeof useApi>;
 
@@ -24,6 +34,9 @@ export function useParticipant() {
 
   const getParticipant = (id: string) =>
     api<ApiResponse<ParticipantProfile>>(`/participants/${encodeURIComponent(id)}`);
+
+  const getCompleteParticipantProfile = (id: string) =>
+    api<ApiResponse<CompleteParticipantProfile>>(`/admin/reports/participants/${encodeURIComponent(id)}/profile`);
 
   const getParticipants = (page = 1, size = 20) =>
     api<ApiResponse<ParticipantProfile[] | { items: ParticipantProfile[] }>>(`/participants?page=${page}&size=${size}`);
@@ -53,6 +66,7 @@ export function useParticipant() {
   return {
     getMyProfile,
     getParticipant,
+    getCompleteParticipantProfile,
     getParticipants,
     upsertMyProfile,
     patchMyProfile,

@@ -19,6 +19,12 @@
   },
   "legal": { "information": "Legal Information", "updated": "Last updated: August 1, 2026. Contact the organizer for the policy version that applies to your event." },
   "adminParticipants": {
+    "accountSection": "Registration account",
+    "companySection": "Company",
+    "delegateSection": "Delegate registration",
+    "exhibitorSection": "Exhibitor registration",
+    "businessSection": "Business matching",
+    "noProfileSection": "No data has been saved for this section.",
     "profileDetails": "Participant profile",
     "viewProfile": "View Profile",
     "closeProfile": "Close",

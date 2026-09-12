@@ -23,6 +23,9 @@ export const downloadDocumentPdf = async (element: HTMLElement, title: string) =
   });
   const details = clone.querySelector('dl');
   if (details) details.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
+  if (clone.hasAttribute('data-full-profile')) {
+    clone.querySelectorAll('dl').forEach(list => { list.style.gridTemplateColumns = 'minmax(0, 1fr)'; });
+  }
   container.appendChild(clone);
   document.body.appendChild(container);
 
@@ -36,7 +39,7 @@ export const downloadDocumentPdf = async (element: HTMLElement, title: string) =
       })));
     const bounds = clone.getBoundingClientRect();
     // Keep detail fields, item rows and totals together across page breaks.
-    const blocks = Array.from(clone.querySelectorAll<HTMLElement>(':scope > div:first-child, dl > div, li, :scope > div:last-child > div'))
+    const blocks = Array.from(clone.querySelectorAll<HTMLElement>(':scope > div:first-child, dl > div, li, :scope > div:last-child > div, section > h4'))
       .map(node => {
         const rect = node.getBoundingClientRect();
         return { top: rect.top - bounds.top, bottom: rect.bottom - bounds.top };

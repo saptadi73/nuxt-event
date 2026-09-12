@@ -28,11 +28,22 @@ migration is needed. An older backend without status data displays Unavailable.
 ## View and download one profile
 
 Each complete participant row with a profile ID offers View Profile. The dialog
-loads `/participants/{participant_id}` using the authenticated API client and
-shows the name, organization, biography, optional photo, and contact/country
-fields from the report row. Failed requests offer Retry.
+loads `/admin/reports/participants/{participant_id}/profile` using the authenticated
+API client. This admin-only endpoint combines fresh account data, basic profile,
+companies, all delegate registrations, exhibitor registrations, and business
+matching profiles across events. Table filters do not restrict this complete
+participant dossier. Failed requests offer Retry.
+
+Delegate details include the full saved form, accommodation/travel, selected
+packages, named activities, and document metadata. Business matching includes
+the full business profile and preferred time slots. Each repeated record retains
+its event context. Empty sections are explicitly shown. Password hashes, auth
+tokens, and document storage paths are excluded. Document metadata describes
+uploads; the exports do not embed attachments.
 
 Download PDF exports the displayed profile using the existing multipage PDF
-renderer. Download CSV exports one UTF-8 row, including a photo URL when present;
-CSV quotes multiline fields and neutralizes spreadsheet formula prefixes.
-These actions reuse the existing backend endpoint and require no backend edits.
+renderer. Download CSV exports one UTF-8 row with section-qualified keys and
+numbered repeated records. Both formats use all combined profile fields,
+including photo URLs, false/zero values, lists, and empty fields. CSV quotes
+multiline fields and neutralizes spreadsheet formula prefixes. Deploy the
+frontend together with the new backend endpoint. No migration is required.
