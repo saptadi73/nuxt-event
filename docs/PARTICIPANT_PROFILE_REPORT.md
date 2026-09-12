@@ -47,3 +47,9 @@ numbered repeated records. Both formats use all combined profile fields,
 including photo URLs, false/zero values, lists, and empty fields. CSV quotes
 multiline fields and neutralizes spreadsheet formula prefixes. Deploy the
 frontend together with the new backend endpoint. No migration is required.
+
+Detail/PDF/CSV presentation omits technical UUID identifier fields and UUID-only
+values. Business identifiers such as tax IDs and registration numbers remain.
+Calendar dates use Indonesian long-date formatting without changing their day.
+Timestamps are converted to Asia/Jakarta and labeled WIB; timestamps without
+an offset are interpreted as UTC. All three presentations share this formatting.
