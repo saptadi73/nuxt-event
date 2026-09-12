@@ -42,6 +42,13 @@
           <option value="refunded">refunded</option>
         </select>
       </label>
+      <label class="grid gap-2 text-sm">
+        <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminParticipants.profileStatus') }}</span>
+        <select v-model="profileStatusFilter" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none">
+          <option value="">{{ t('adminParticipants.allStatuses') }}</option>
+          <option v-for="status in profileStatuses" :key="status" :value="status">{{ t(`adminParticipants.profile_${status}`) }}</option>
+        </select>
+      </label>
       <div class="flex items-end gap-2">
         <button :disabled="loading || !hasActiveFilters" class="rounded-full border border-white/20 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50" @click="resetFilters">
           {{ t('adminParticipants.reset') }}
@@ -50,19 +57,19 @@
 
       <label class="grid gap-2 text-sm">
         <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminParticipants.paidFrom') }}</span>
-        <input v-model="dateFrom" type="date" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" />
+        <input v-model="dateFrom" type="date" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" >
       </label>
       <label class="grid gap-2 text-sm">
         <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminParticipants.paidUntil') }}</span>
-        <input v-model="dateTo" type="date" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" />
+        <input v-model="dateTo" type="date" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" >
       </label>
       <label class="grid gap-2 text-sm sm:col-span-2">
         <span class="text-xs uppercase tracking-[0.2em] text-slate-400">{{ t('adminParticipants.search') }}</span>
-        <input v-model="searchTerm" type="text" :placeholder="t('adminParticipants.searchPlaceholder')" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" />
+        <input v-model="searchTerm" type="text" :placeholder="t('adminParticipants.searchPlaceholder')" class="rounded-full border border-white/15 bg-slate-900 px-4 py-3 text-sm text-white outline-none" >
       </label>
 
       <p class="text-xs text-slate-400 sm:col-span-6">
-        {{ t('adminParticipants.filterHelp') }}
+        {{ t('adminParticipants.filterHelp') }} {{ t('adminParticipants.profileHelp') }}
       </p>
       <p v-if="hasDateRangeInvalid" class="text-xs text-rose-300 sm:col-span-6">
         {{ t('adminParticipants.invalidDateRange') }}
@@ -81,9 +88,10 @@
       <article class="glass-card rounded-3xl p-5">
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 class="text-lg font-bold">{{ t('adminParticipants.participants') }}</h2>
-          <a :href="csvUrl" :download="csvFileName" class="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-100">{{ t('adminParticipants.downloadCsv') }}</a>
+          <button :disabled="csvLoading" class="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.18em] text-cyan-100" @click="downloadCsv">{{ t('adminParticipants.downloadCsv') }}</button>
         </div>
 
+        <p v-if="csvError" role="alert" class="mb-3 text-sm text-rose-300">{{ csvError }}</p>
         <div class="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-400">
           <span>{{ t('adminParticipants.resultCount', { filtered: filteredParticipants.length, total: totalParticipants, page: currentPage }) }}</span>
           <label class="flex items-center gap-2">
@@ -103,18 +111,24 @@
               <tr class="border-b border-white/10 text-xs uppercase tracking-[0.18em] text-slate-400">
                 <th class="py-3 pr-4">{{ t('adminParticipants.participant') }}</th>
                 <th class="py-3 pr-4">{{ t('adminParticipants.organization') }}</th>
+                <th class="py-3 pr-4">{{ t('adminParticipants.profileStatus') }}</th>
                 <th class="py-3 pr-4">{{ t('adminParticipants.registration') }}</th>
                 <th class="py-3 pr-4">{{ t('adminParticipants.packages') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="item in filteredParticipants" :key="item.participant_id" class="border-b border-white/5 last:border-0">
+              <tr v-for="item in filteredParticipants" :key="item.user_id || item.participant_id || item.email" class="border-b border-white/5 last:border-0">
                 <td class="py-3 pr-4" :data-label="t('adminParticipants.participant')">
                   <p class="font-semibold text-white">{{ item.full_name || t('adminParticipants.notAvailable') }}</p>
                   <p class="text-xs text-slate-400">{{ item.email || t('adminParticipants.notAvailable') }}</p>
                   <p class="text-xs text-slate-500">{{ item.phone || '' }}</p>
                 </td>
                 <td class="py-3 pr-4" :data-label="t('adminParticipants.organization')">{{ item.organization_name || t('adminParticipants.notAvailable') }}</td>
+                <td class="py-3 pr-4" :data-label="t('adminParticipants.profileStatus')">
+                  <span class="inline-flex rounded-full px-2 py-1 text-xs" :class="item.profile_status === 'complete' ? 'status-success' : 'status-pending'">
+                    {{ t(`adminParticipants.profile_${item.profile_status || 'unknown'}`) }}
+                  </span>
+                </td>
                 <td class="py-3 pr-4" :data-label="t('adminParticipants.registration')">
                   <span class="inline-flex rounded-full border border-white/15 px-2 py-1 text-xs">{{ item.registration_status || t('adminParticipants.notAvailable') }}</span>
                 </td>
@@ -135,7 +149,7 @@
                 </td>
               </tr>
               <tr v-if="!filteredParticipants.length">
-                <td colspan="4" class="py-6 text-center text-slate-500" data-label="">{{ t('adminParticipants.noData') }}</td>
+                <td colspan="5" class="py-6 text-center text-slate-500" data-label="">{{ t('adminParticipants.noData') }}</td>
               </tr>
             </tbody>
           </table>
@@ -175,12 +189,16 @@ definePageMeta({ middleware: ['auth', 'admin'] });
 useSeoMeta({ title: 'Participants Report | IWBIF 2026' });
 
 const authStore = useAuthStore();
-const { getParticipantReport } = useAdminReport();
+const { getParticipantReport, downloadParticipantReport } = useAdminReport();
 const { getEvents, getEventDelegatePackages } = useEvent();
 
 const eventFilter = ref('');
 const packageIdFilter = ref('');
 const paymentStatusFilter = ref('');
+const profileStatuses: readonly string[] = ['not_started', 'partial', 'complete'];
+const profileStatusFilter = ref('');
+const csvLoading = ref(false);
+const csvError = ref('');
 const searchTerm = ref('');
 const dateFrom = ref('');
 const dateTo = ref('');
@@ -212,6 +230,7 @@ const hasActiveFilters = computed(() => {
     !!eventFilter.value ||
     !!packageIdFilter.value ||
     !!paymentStatusFilter.value ||
+    !!profileStatusFilter.value ||
     !!searchTerm.value ||
     !!dateFrom.value ||
     !!dateTo.value
@@ -227,6 +246,7 @@ const buildReportParams = () => {
   if (eventFilter.value) params.event_id = eventFilter.value;
   if (packageIdFilter.value) params.package_id = packageIdFilter.value;
   if (paymentStatusFilter.value) params.payment_status = paymentStatusFilter.value;
+  if (profileStatusFilter.value) params.profile_status = profileStatusFilter.value;
   if (searchTerm.value.trim()) params.search = searchTerm.value.trim();
 
   return params;
@@ -244,6 +264,8 @@ const readFiltersFromQuery = () => {
   eventFilter.value = getQueryString(q.event_id);
   packageIdFilter.value = getQueryString(q.package_id);
   paymentStatusFilter.value = getQueryString(q.payment_status);
+  const profileStatus = getQueryString(q.profile_status);
+  profileStatusFilter.value = profileStatuses.includes(profileStatus) ? profileStatus : '';
   searchTerm.value = getQueryString(q.search);
   dateFrom.value = getQueryString(q.date_from);
   dateTo.value = getQueryString(q.date_to);
@@ -259,6 +281,7 @@ const buildQueryState = () => ({
   event_id: eventFilter.value || undefined,
   package_id: packageIdFilter.value || undefined,
   payment_status: paymentStatusFilter.value || undefined,
+  profile_status: profileStatusFilter.value || undefined,
   search: searchTerm.value || undefined,
   date_from: dateFrom.value || undefined,
   date_to: dateTo.value || undefined,
@@ -276,16 +299,29 @@ const syncFiltersToUrl = () => {
   router.replace({ query: nextQuery });
 };
 
-const csvUrl = computed(() => {
-  const query = new URLSearchParams();
-  const params = buildReportParams();
-  Object.entries(params).forEach(([key, value]) => {
-    if (key === 'page' || key === 'size') return;
-    if (value !== undefined && value !== '') query.append(key, String(value));
-  });
-  const path = '/admin/reports/participants.csv';
-  return query.toString() ? `${path}?${query.toString()}` : path;
-});
+const downloadCsv = async () => {
+  if (csvLoading.value) return;
+  csvLoading.value = true;
+  csvError.value = '';
+  try {
+    const params = buildReportParams();
+    delete params.page;
+    delete params.size;
+    const blob = await downloadParticipantReport(params);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = csvFileName.value;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch {
+    csvError.value = t('adminParticipants.csvError');
+  } finally {
+    csvLoading.value = false;
+  }
+};
 
 const csvFileName = computed(() => {
   const selectedEvent = events.value.find((item) => item.id === eventFilter.value);
@@ -328,6 +364,7 @@ const resetFilters = () => {
   eventFilter.value = '';
   packageIdFilter.value = '';
   paymentStatusFilter.value = '';
+  profileStatusFilter.value = '';
   searchTerm.value = '';
   dateFrom.value = '';
   dateTo.value = '';
@@ -441,7 +478,7 @@ watch(eventFilter, async () => {
   scheduleAutoReload();
 });
 
-watch([packageIdFilter, paymentStatusFilter, searchTerm], () => {
+watch([packageIdFilter, paymentStatusFilter, profileStatusFilter, searchTerm], () => {
   currentPage.value = 1;
   syncFiltersToUrl();
   scheduleAutoReload();

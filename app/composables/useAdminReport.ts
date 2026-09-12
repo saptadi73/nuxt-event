@@ -123,7 +123,9 @@ export interface ParticipantReportPackage {
 }
 
 export interface ParticipantReportItem {
-  participant_id: string;
+  participant_id: string | null;
+  profile_status?: 'not_started' | 'partial' | 'complete';
+  profile_missing_fields?: string[];
   registration_id?: string | null;
   registration_number?: string;
   user_id?: string;
@@ -210,6 +212,9 @@ export function useAdminReport() {
     return api<ApiResponse<ParticipantReportItem[]>>(`/admin/reports/participants${suffix}`);
   };
 
+  const downloadParticipantReport = (params: Record<string, string | number | undefined> = {}) =>
+    api<Blob>(`/admin/reports/participants.csv${buildQuery(params)}`, { responseType: 'blob' });
+
   return {
     getReport,
     getAdminTransactions,
@@ -221,6 +226,7 @@ export function useAdminReport() {
     getManualPaymentReport,
     downloadManualProof,
     getParticipantReport,
+    downloadParticipantReport,
     isMidtransReport: paymentProvider.isMidtrans
   };
 }

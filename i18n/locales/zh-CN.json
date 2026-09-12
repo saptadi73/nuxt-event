@@ -19,6 +19,14 @@
   },
   "legal": { "information": "法律信息", "updated": "最后更新：2026年8月1日。请联系主办方以获取适用于本次活动的政策版本。" },
   "adminParticipants": {
+    "profileStatus": "资料状态",
+    "profile_not_started": "未填写",
+    "profile_partial": "部分填写",
+    "profile_complete": "完整",
+    "profile_unknown": "暂无状态",
+    "profileHelp": "资料状态筛选适用于全部结果。姓名、机构、简介和照片均填写时视为完整；仅有姓名视为未填写。状态反映当前数据，不代表已保存资料表单。",
+    "csvError": "无法下载参与者报告。",
+
     "panel": "主办方控制台", "title": "参会者报告", "lastUpdated": "最后更新：{value}", "role": "角色：{value}",
     "event": "活动", "allEvents": "全部活动", "package": "套餐", "loadingPackages": "正在加载套餐…", "allPackages": "全部套餐", "paymentStatus": "付款状态", "allStatuses": "全部状态", "reset": "重置",
     "paidFrom": "付款开始日期", "paidUntil": "付款结束日期", "search": "搜索参会者", "searchPlaceholder": "搜索姓名、邮箱或机构", "filterHelp": "活动、套餐、付款状态和搜索筛选将应用于服务器（延迟 350 毫秒）。日期范围会按当前页面的 paid_at 筛选套餐。", "invalidDateRange": "开始日期不能晚于结束日期。",

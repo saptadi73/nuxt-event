@@ -19,6 +19,14 @@
   },
   "legal": { "information": "Legal Information", "updated": "Last updated: August 1, 2026. Contact the organizer for the policy version that applies to your event." },
   "adminParticipants": {
+    "profileStatus": "Profile status",
+    "profile_not_started": "Not filled in",
+    "profile_partial": "Partial",
+    "profile_complete": "Complete",
+    "profile_unknown": "Unavailable",
+    "profileHelp": "Profile status filters all results. Complete means name, organization, biography, and photo are filled in; a name alone counts as not filled in. Status reflects current data, not proof of saving the profile form.",
+    "csvError": "Unable to download the participants report.",
+
     "panel": "Organizer Panel", "title": "Participants report", "lastUpdated": "Last updated: {value}", "role": "Role: {value}",
     "event": "Event", "allEvents": "All events", "package": "Package", "loadingPackages": "Loading packages...", "allPackages": "All packages", "paymentStatus": "Payment status", "allStatuses": "All statuses", "reset": "Reset",
     "paidFrom": "Paid from", "paidUntil": "Paid until", "search": "Search participants", "searchPlaceholder": "Search name, email, or organization", "filterHelp": "Event, package, payment status, and search filters are applied on the server (350 ms delay). The date period filters packages by paid_at on the displayed page.", "invalidDateRange": "The start date cannot be after the end date.",
